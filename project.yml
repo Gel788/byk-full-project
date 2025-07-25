@@ -1,0 +1,64 @@
+name: бык
+options:
+  bundleIdPrefix: com.byk
+  deploymentTarget:
+    iOS: "17.0"
+  developmentLanguage: ru
+  xcodeVersion: "15.0"
+
+targets:
+  BykApp:бык
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: бык
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.byk.app
+      PRODUCT_NAME: BykApp
+      SWIFT_VERSION: 5.0
+      IPHONEOS_DEPLOYMENT_TARGET: 17.0
+    info:
+      properties:
+        CFBundleDisplayName: бык
+        CFBundleIdentifier: com.бык.app
+        CFBundleName: бык
+        CFBundlePackageType: APPL
+        CFBundleShortVersionString: 1.0
+        CFBundleVersion: 1
+        LSRequiresIPhoneOS: true
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+          UISceneConfigurations:
+            UIWindowSceneSessionRoleApplication:
+              - UISceneConfigurationName: Default Configuration
+                UISceneDelegateClassName: $(PRODUCT_MODULE_NAME).SceneDelegate
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        NSCameraUsageDescription: "Приложению необходим доступ к камере для работы с AR-меню и 3D просмотром блюд"
+        NSLocationWhenInUseUsageDescription: "Приложению необходим доступ к местоположению для поиска ближайших ресторанов"
+        NSPhotoLibraryUsageDescription: "Приложению необходим доступ к фото галерее для загрузки изображений в посты"
+
+schemes:
+  быкApp:бык
+    build:
+      targets:
+        быкApp: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release 
