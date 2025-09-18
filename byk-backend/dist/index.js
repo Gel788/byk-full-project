@@ -7,7 +7,6 @@ const express_1 = __importDefault(require("express"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
-const helmet_1 = __importDefault(require("helmet"));
 const morgan_1 = __importDefault(require("morgan"));
 // Import routes
 const users_1 = __importDefault(require("./routes/users"));
@@ -22,17 +21,24 @@ const adminRoutes_1 = __importDefault(require("./admin/routes/adminRoutes"));
 // Load environment variables
 dotenv_1.default.config();
 const app = (0, express_1.default)();
-// Middleware
-app.use((0, helmet_1.default)());
-app.use((0, morgan_1.default)("combined"));
+// CORS for all requests
 app.use((0, cors_1.default)({
     origin: ["http://localhost:3000", "http://localhost:3001"],
     credentials: true
 }));
+// Static files with CORS headers
+app.use('/uploads', (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    // Убираем Cross-Origin-Resource-Policy чтобы не блокировать изображения
+    next();
+}, express_1.default.static('uploads'));
+// Middleware (helmet disabled for development)
+// app.use(helmet());
+app.use((0, morgan_1.default)("combined"));
 app.use(express_1.default.json({ limit: "10mb" }));
 app.use(express_1.default.urlencoded({ extended: true, limit: "10mb" }));
-// Static files
-app.use('/uploads', express_1.default.static('uploads'));
 // Connect to MongoDB
 mongoose_1.default
     .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/byk_holding")

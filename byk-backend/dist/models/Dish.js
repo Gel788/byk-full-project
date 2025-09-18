@@ -40,7 +40,7 @@ const DishSchema = new mongoose_1.Schema({
     price: { type: Number, required: true },
     category: { type: String, required: true },
     restaurantId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Restaurant', required: true },
-    imageURL: { type: String, required: true },
+    imageURL: { type: String, required: false, default: '' },
     preparationTime: { type: Number, default: 15 },
     calories: { type: Number, default: 0 },
     allergens: [{ type: String }],

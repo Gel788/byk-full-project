@@ -161,7 +161,7 @@ export default function AdminDashboard() {
   const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState<string>('delivery')
   const [selectedDishes, setSelectedDishes] = useState<Array<{dishId: string, dishName: string, quantity: number, price: number}>>([])
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null)
-  const [files, setFiles] = useState<any[]>([])
+  const [files, setFiles] = useState<Array<{id: string, filename: string, url: string, originalName?: string, size?: number}>>([])
   const [uploading, setUploading] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -757,7 +757,7 @@ export default function AdminDashboard() {
     }
   }
 
-  const handleSaveRestaurant = async (restaurantData: any) => {
+  const handleSaveRestaurant = async (restaurantData: Partial<Restaurant>) => {
     try {
       // Получаем загруженные фото и видео
       const imageFiles = files.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif'))
@@ -813,7 +813,7 @@ export default function AdminDashboard() {
     }
   }
 
-  const handleSaveDish = async (dishData: any) => {
+  const handleSaveDish = async (dishData: Partial<Dish>) => {
     try {
       // Получаем загруженные фото
       const imageFiles = files.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif'))
@@ -888,7 +888,7 @@ export default function AdminDashboard() {
     }
   }
 
-  const handleSaveNews = async (newsData: any) => {
+  const handleSaveNews = async (newsData: Partial<News>) => {
     try {
       // Получаем только изображения из загруженных файлов
       const imageFiles = files.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif'))
@@ -949,7 +949,7 @@ export default function AdminDashboard() {
     }
   }
 
-  const handleSaveUser = async (userData: any) => {
+  const handleSaveUser = async (userData: Partial<User>) => {
     try {
       console.log('Сохранение пользователя:', userData)
       
@@ -1038,7 +1038,7 @@ export default function AdminDashboard() {
     return selectedDishes.reduce((total, dish) => total + (dish.price * dish.quantity), 0)
   }
 
-  const handleSaveOrder = async (orderData: any) => {
+  const handleSaveOrder = async (orderData: Partial<Order>) => {
     try {
       console.log('Сохранение заказа:', orderData)
       
@@ -1096,7 +1096,7 @@ export default function AdminDashboard() {
     }
   }
 
-  const handleSaveReservation = async (reservationData: any) => {
+  const handleSaveReservation = async (reservationData: Partial<Reservation>) => {
     try {
       console.log('Сохранение бронирования:', reservationData)
 
@@ -2347,7 +2347,7 @@ export default function AdminDashboard() {
                                 {file.originalName || file.filename}
                               </h3>
                               <p className="text-sm text-gray-500">
-                                {(file.size / 1024 / 1024).toFixed(2)} MB
+                                {file.size ? (file.size / 1024 / 1024).toFixed(2) : '0.00'} MB
                               </p>
                             </div>
                           </div>
@@ -2592,67 +2592,67 @@ export default function AdminDashboard() {
                 if (editingDish) {
                   // Форма для блюд
                   const data = {
-                    name: formData.get('dishName'),
-                    description: formData.get('dishDescription'),
-                    price: parseFloat(formData.get('dishPrice') as string),
-                    category: formData.get('dishCategory'),
-                    restaurantId: formData.get('dishRestaurant'),
-                    imageURL: formData.get('dishImage'),
+                    name: formData.get('dishName') as string || '',
+                    description: formData.get('dishDescription') as string || '',
+                    price: parseFloat(formData.get('dishPrice') as string || '0'),
+                    category: formData.get('dishCategory') as string || '',
+                    restaurantId: formData.get('dishRestaurant') as string || '',
+                    imageURL: formData.get('dishImage') as string || '',
                     isAvailable: formData.get('dishAvailable') === 'true',
-                    preparationTime: parseInt(formData.get('dishPreparationTime') as string),
-                    calories: parseInt(formData.get('dishCalories') as string),
+                    preparationTime: parseInt(formData.get('dishPreparationTime') as string || '0'),
+                    calories: parseInt(formData.get('dishCalories') as string || '0'),
                     allergens: (formData.get('dishAllergens') as string)?.split(',').map(a => a.trim()).filter(a => a) || []
                   }
                   handleSaveDish(data)
                 } else if (editingOrder) {
                   // Форма для заказов
                   const data = {
-                    userId: formData.get('userId') || editingOrder.userId || 'default-user-id',
-                    userName: formData.get('userName'),
-                    restaurantId: formData.get('restaurantId'),
-                    deliveryMethod: formData.get('deliveryMethod'),
-                    deliveryAddress: formData.get('deliveryAddress') || undefined,
-                    pickupRestaurantId: formData.get('pickupRestaurantId') || undefined,
-                    paymentMethod: formData.get('paymentMethod'),
+                    userId: (formData.get('userId') as string) || editingOrder?.userId || 'default-user-id',
+                    userName: (formData.get('userName') as string) || '',
+                    restaurantId: (formData.get('restaurantId') as string) || '',
+                    deliveryMethod: (formData.get('deliveryMethod') as string) || 'delivery',
+                    deliveryAddress: (formData.get('deliveryAddress') as string) || undefined,
+                    pickupRestaurantId: (formData.get('pickupRestaurantId') as string) || undefined,
+                    paymentMethod: (formData.get('paymentMethod') as string) || 'cash',
                     totalAmount: calculateTotalAmount(),
-                    status: formData.get('status'),
+                    status: (formData.get('status') as string) || 'pending',
                     items: selectedDishes
                   }
                   handleSaveOrder(data)
                 } else if (false && editingReservation) {
                   // Форма для бронирований - отключена в общем модале
                   const data = {
-                    userId: formData.get('userId') || editingReservation.userId || 'default-user-id',
-                    userName: formData.get('userName') || editingReservation.userName,
-                    restaurantId: formData.get('restaurantId'),
-                    date: formData.get('date'),
-                    time: formData.get('time'),
-                    guests: parseInt(formData.get('guests') as string),
-                    status: formData.get('status'),
-                    specialRequests: formData.get('specialRequests')
+                    userId: (formData.get('userId') as string) || editingReservation?.userId || 'default-user-id',
+                    userName: (formData.get('userName') as string) || editingReservation?.userName || '',
+                    restaurantId: (formData.get('restaurantId') as string) || '',
+                    date: (formData.get('date') as string) || '',
+                    time: (formData.get('time') as string) || '',
+                    guests: parseInt(formData.get('guests') as string || '1'),
+                    status: (formData.get('status') as 'pending' | 'confirmed' | 'cancelled') || 'pending',
+                    specialRequests: (formData.get('specialRequests') as string) || ''
                   }
                   handleSaveReservation(data)
                 } else if (editingRestaurant) {
                   // Форма для ресторанов
                   const data = {
-                    name: formData.get('name'),
-                    brand: formData.get('brand'),
-                    city: formData.get('city'),
-                    rating: parseFloat(formData.get('rating') as string),
-                    description: formData.get('description'),
-                    address: formData.get('address'),
-                    phone: formData.get('phone'),
-                    email: formData.get('email'),
-                    workingHours: formData.get('workingHours')
+                    name: (formData.get('name') as string) || '',
+                    brand: (formData.get('brand') as string) || '',
+                    city: (formData.get('city') as string) || '',
+                    rating: parseFloat(formData.get('rating') as string || '0'),
+                    description: (formData.get('description') as string) || '',
+                    address: (formData.get('address') as string) || '',
+                    phone: (formData.get('phone') as string) || '',
+                    email: (formData.get('email') as string) || '',
+                    workingHours: (formData.get('workingHours') as string) || ''
                   }
                   handleSaveRestaurant(data)
                 } else if (editingNews) {
                   // Форма для новостей
                   const data = {
-                    title: formData.get('newsTitle'),
-                    content: formData.get('newsContent'),
-                    author: formData.get('newsAuthor'),
-                    category: formData.get('newsCategory'),
+                    title: (formData.get('newsTitle') as string) || '',
+                    content: (formData.get('newsContent') as string) || '',
+                    author: (formData.get('newsAuthor') as string) || '',
+                    category: (formData.get('newsCategory') as string) || '',
                     tags: (formData.get('newsTags') as string)?.split(',').map(t => t.trim()).filter(t => t) || [],
                     isPublished: formData.get('newsPublished') === 'true'
                   }
@@ -2660,11 +2660,11 @@ export default function AdminDashboard() {
                 } else if (editingUser) {
                   // Форма для пользователей
                   const data = {
-                    fullName: formData.get('userName'),
-                    email: formData.get('userEmail'),
-                    phone: formData.get('userPhone'),
-                    membershipLevel: formData.get('userMembershipLevel'),
-                    loyaltyPoints: parseInt(formData.get('userLoyaltyPoints') as string) || 0,
+                    fullName: (formData.get('userName') as string) || '',
+                    email: (formData.get('userEmail') as string) || '',
+                    phone: (formData.get('userPhone') as string) || '',
+                    membershipLevel: (formData.get('userMembershipLevel') as string) || 'bronze',
+                    loyaltyPoints: parseInt(formData.get('userLoyaltyPoints') as string || '0'),
                     isActive: formData.get('userActive') === 'true'
                   }
                   handleSaveUser(data)
@@ -3093,7 +3093,7 @@ export default function AdminDashboard() {
                                   </div>
                                   <div className="flex-1">
                                     <p className="text-sm font-medium text-gray-900">{file.originalName}</p>
-                                    <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                    <p className="text-xs text-gray-500">{file.size ? (file.size / 1024 / 1024).toFixed(2) : '0.00'} MB</p>
                                   </div>
                                   <a 
                                     href={file.url} 
@@ -3867,7 +3867,7 @@ export default function AdminDashboard() {
                         .filter(dish => {
                           const dishRestaurantId = typeof dish.restaurantId === 'string' 
                             ? dish.restaurantId 
-                            : dish.restaurantId?._id
+                            : (dish.restaurantId as {_id: string})?._id
                           return dishRestaurantId === editingOrder?.restaurantId
                         })
                         .length === 0 ? (
@@ -3877,7 +3877,7 @@ export default function AdminDashboard() {
                             Всего блюд: {dishes.length}, ID ресторана: {editingOrder?.restaurantId}
                           </div>
                           <div className="text-xs text-gray-400 mt-1">
-                            Блюда в базе: {dishes.map(d => `${d.name} (${typeof d.restaurantId === 'string' ? d.restaurantId : d.restaurantId?._id})`).join(', ')}
+                            Блюда в базе: {dishes.map(d => `${d.name} (${typeof d.restaurantId === 'string' ? d.restaurantId : (d.restaurantId as {_id: string})?._id})`).join(', ')}
                           </div>
                         </div>
                       ) : (
@@ -3885,7 +3885,7 @@ export default function AdminDashboard() {
                         .filter(dish => {
                           const dishRestaurantId = typeof dish.restaurantId === 'string' 
                             ? dish.restaurantId 
-                            : dish.restaurantId?._id
+                            : (dish.restaurantId as {_id: string})?._id
                           return dishRestaurantId === editingOrder?.restaurantId
                         })
                         .map((dish) => (
@@ -4739,7 +4739,7 @@ export default function AdminDashboard() {
                   <h4 className="font-semibold text-gray-900 mb-3">🍽️ Состав заказа</h4>
                   {previewOrder && Array.isArray(previewOrder.items) && previewOrder.items.length > 0 ? (
                     <div className="space-y-2">
-                      {previewOrder.items.map((item: any, index: number) => (
+                      {previewOrder.items.map((item: {dishName: string, quantity: number, price: number}, index: number) => (
                         <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
                           <div className="flex-1">
                             <p className="text-sm font-medium text-gray-900">{item.dishName}</p>
@@ -4755,7 +4755,7 @@ export default function AdminDashboard() {
                         <div className="flex justify-between items-center">
                           <span className="text-lg font-semibold text-gray-900">Итого:</span>
                           <span className="text-lg font-semibold text-gray-900">
-                            {(previewOrder.items?.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0) || 0)}₽
+                            {(previewOrder.items?.reduce((sum: number, item: {price: number, quantity: number}) => sum + (item.price * item.quantity), 0) || 0)}₽
                           </span>
                         </div>
                       </div>
@@ -4833,14 +4833,14 @@ export default function AdminDashboard() {
                   
                   // Форма для бронирований
                   const data = {
-                    userId: formData.get('userId') || editingReservation?.userId || 'default-user-id',
-                    userName: formData.get('userName') || editingReservation?.userName,
-                    restaurantId: formData.get('restaurantId'),
-                    date: formData.get('date'),
-                    time: formData.get('time'),
-                    guests: parseInt(formData.get('guests') as string),
-                    status: formData.get('status'),
-                    specialRequests: formData.get('specialRequests')
+                    userId: (formData.get('userId') as string) || editingReservation?.userId || 'default-user-id',
+                    userName: (formData.get('userName') as string) || editingReservation?.userName || '',
+                    restaurantId: (formData.get('restaurantId') as string) || '',
+                    date: (formData.get('date') as string) || '',
+                    time: (formData.get('time') as string) || '',
+                    guests: parseInt(formData.get('guests') as string || '1'),
+                    status: (formData.get('status') as 'pending' | 'confirmed' | 'cancelled') || 'pending',
+                    specialRequests: (formData.get('specialRequests') as string) || ''
                   }
                   handleSaveReservation(data)
                 }}
