@@ -42,6 +42,8 @@ class AuthService: ObservableObject {
                 email: data.email ?? ""
             )
             
+            print("AuthService: Регистрируем нового пользователя - \(newUser.fullName), \(newUser.email)")
+            
             // Сохранение пользователя
             saveUser(newUser)
             savePassword(phoneNumber: data.phoneNumber, password: data.password)
@@ -50,6 +52,8 @@ class AuthService: ObservableObject {
             currentUser = newUser
             isAuthenticated = true
             isLoading = false
+            
+            print("AuthService: Регистрация завершена успешно")
         }
     }
     
@@ -78,10 +82,14 @@ class AuthService: ObservableObject {
                 return
             }
             
+            print("AuthService: Вход пользователя - \(user.fullName), \(user.email)")
+            
             saveCurrentUser(user)
             currentUser = user
             isAuthenticated = true
             isLoading = false
+            
+            print("AuthService: Вход выполнен успешно")
         }
     }
     
@@ -95,6 +103,15 @@ class AuthService: ObservableObject {
     
     func getCurrentUser() -> User? {
         return currentUser
+    }
+    
+    func updateCurrentUser(_ user: User) {
+        print("AuthService: Обновляем данные пользователя - \(user.fullName), \(user.email)")
+        currentUser = user
+        saveCurrentUser(user)
+        // Также обновляем в основном хранилище
+        saveUser(user)
+        print("AuthService: Данные пользователя сохранены")
     }
     
     // MARK: - Storage Methods
@@ -124,8 +141,10 @@ class AuthService: ObservableObject {
     private func loadUserFromStorage() {
         guard let data = userDefaults.data(forKey: userKey),
               let user = try? JSONDecoder().decode(User.self, from: data) else {
+            print("AuthService: Нет сохраненного пользователя")
             return
         }
+        print("AuthService: Загружен пользователь из хранилища - \(user.fullName)")
         currentUser = user
         isAuthenticated = true
     }

@@ -70,7 +70,7 @@ class RestaurantService: ObservableObject {
         // THE БЫК
         let bykRestaurants = [
             Restaurant(
-                name: "THE БЫК на Тверской",
+                name: "THE БЫК на Тверской тест",
                 description: "Премиальные стейки из мраморной говядины",
                 address: "ул. Тверская, 15",
                 city: "Москва",

@@ -4,7 +4,6 @@ import Combine
 // MARK: - App State
 enum AppState {
     case splash
-    case onboarding
     case main
     case error(String)
 }
@@ -12,7 +11,7 @@ enum AppState {
 // MARK: - App Services
 @MainActor
 class AppServices: ObservableObject {
-    let authService = AuthService()
+    let authService = AuthService.shared  // Используем shared instance
     let restaurantService = RestaurantService()
     let cartViewModel: CartViewModel
     let reservationService = ReservationService()
@@ -21,6 +20,8 @@ class AppServices: ObservableObject {
     
     init() {
         self.cartViewModel = CartViewModel(restaurantService: restaurantService)
+        // Связываем UserDataService с AuthService
+        self.userDataService.setAuthService(authService)
     }
 }
 
@@ -45,23 +46,13 @@ class AppCoordinator: ObservableObject {
         
         // Имитация загрузки данных с временем для анимации
         Task {
-            try? await Task.sleep(nanoseconds: 5_000_000_000) // 5 секунд для анимации
+            try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 секунды для анимации
             await MainActor.run {
                 self.isLoading = false
-                
-                // Проверяем, прошел ли пользователь онбординг
-                if UserDefaults.standard.bool(forKey: "hasSeenOnboarding") {
-                    self.currentState = .main
-                } else {
-                    self.currentState = .onboarding
-                }
+                // Сразу переходим к основному приложению
+                self.currentState = .main
             }
         }
-    }
-    
-    func completeOnboarding() {
-        UserDefaults.standard.set(true, forKey: "hasSeenOnboarding")
-        currentState = .main
     }
     
     func showError(_ message: String) {

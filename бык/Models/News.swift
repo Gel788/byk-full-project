@@ -66,7 +66,7 @@ struct NewsItem: Identifiable, Equatable {
     
     // Mock данные для превью
     static let mock = NewsItem(
-        title: "Новое сезонное меню в THE БЫК",
+        title: "Новое сезонное меню в THE БЫК тест",
         description: "Мы рады представить вам наше новое сезонное меню, созданное специально для летнего сезона. Наши шеф-повара подготовили уникальные блюда.",
         image: "XXL_height",
         date: Date(),

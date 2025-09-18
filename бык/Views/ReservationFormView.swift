@@ -434,15 +434,17 @@ struct ReservationSuccessView: View {
     let onClose: () -> Void
     
     @State private var showingAnimation = false
+    @State private var showingActionSheet = false
     
     var body: some View {
         NavigationStack {
             ZStack {
-                // Градиентный фон
+                // Динамический градиентный фон
                 LinearGradient(
                     gradient: Gradient(colors: [
                         Color.black,
-                        brandColors.primary.opacity(0.1),
+                        brandColors.accent.opacity(0.1),
+                        brandColors.primary.opacity(0.05),
                         Color.black
                     ]),
                     startPoint: .topLeading,
@@ -450,144 +452,345 @@ struct ReservationSuccessView: View {
                 )
                 .ignoresSafeArea()
                 
-                VStack(spacing: 30) {
-                    Spacer()
-                    
-                    // Элегантная иконка успеха
-                    ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        brandColors.accent.opacity(0.2),
-                                        brandColors.primary.opacity(0.1)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 120, height: 120)
-                            .scaleEffect(showingAnimation ? 1 : 0)
-                            .animation(.spring(response: 0.6, dampingFraction: 0.8), value: showingAnimation)
-                        
-                        Circle()
-                            .stroke(brandColors.accent.opacity(0.3), lineWidth: 2)
-                            .frame(width: 120, height: 120)
-                            .scaleEffect(showingAnimation ? 1 : 0)
-                            .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.1), value: showingAnimation)
-                        
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 50, weight: .bold))
-                            .foregroundColor(brandColors.accent)
-                            .scaleEffect(showingAnimation ? 1 : 0)
-                            .animation(.spring(response: 0.5, dampingFraction: 0.6).delay(0.2), value: showingAnimation)
-                    }
-                    
-                    // Заголовок
-                    VStack(spacing: 12) {
-                        Text("Бронирование подтверждено!")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundColor(brandColors.accent)
-                            .opacity(showingAnimation ? 1 : 0)
-                            .animation(.easeInOut(duration: 0.5).delay(0.3), value: showingAnimation)
-                        
-                        Text("Ваш стол забронирован на указанное время")
-                            .font(.title3)
-                            .foregroundColor(.white.opacity(0.8))
-                            .multilineTextAlignment(.center)
-                            .opacity(showingAnimation ? 1 : 0)
-                            .animation(.easeInOut(duration: 0.5).delay(0.4), value: showingAnimation)
-                    }
-                    
-                    // Информация о бронировании
-                    VStack(spacing: 16) {
-                        InfoRow(icon: "building.2", title: "Ресторан", value: reservation.restaurant.name, brandColors: brandColors)
-                        InfoRow(icon: "calendar", title: "Дата и время", value: formatDate(reservation.date), brandColors: brandColors)
-                        InfoRow(icon: "person.2", title: "Гости", value: "\(reservation.guestCount) \(reservation.guestCount == 1 ? "гость" : "гостей")", brandColors: brandColors)
-                        InfoRow(icon: "tablecells", title: "Стол", value: "№\(reservation.tableNumber)", brandColors: brandColors)
-                        
-                        if let specialRequests = reservation.specialRequests, !specialRequests.isEmpty {
-                            InfoRow(icon: "text.bubble", title: "Пожелания", value: specialRequests, brandColors: brandColors)
-                        }
-                    }
-                    .padding(24)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color.black.opacity(0.9),
-                                        Color.black.opacity(0.7)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .stroke(
-                                        LinearGradient(
-                                            colors: [
-                                                brandColors.accent.opacity(0.4),
-                                                brandColors.accent.opacity(0.2)
-                                            ],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        ),
-                                        lineWidth: 1.5
+
+                
+                ScrollView {
+                    VStack(spacing: 32) {
+                        // Анимированная иконка успеха с пульсацией
+                        ZStack {
+                            // Внешние круги с пульсацией
+                            ForEach(0..<3) { index in
+                                Circle()
+                                    .stroke(brandColors.accent.opacity(0.3), lineWidth: 2)
+                                    .frame(width: 120 + CGFloat(index * 20), height: 120 + CGFloat(index * 20))
+                                    .scaleEffect(showingAnimation ? 1.2 : 0.8)
+                                    .opacity(showingAnimation ? 0.0 : 0.8)
+                                    .animation(
+                                        .easeInOut(duration: 2.0)
+                                        .repeatForever(autoreverses: true)
+                                        .delay(Double(index) * 0.2),
+                                        value: showingAnimation
                                     )
-                            )
-                            .shadow(color: brandColors.accent.opacity(0.2), radius: 10, x: 0, y: 5)
-                    )
-                    .opacity(showingAnimation ? 1 : 0)
-                    .animation(.easeInOut(duration: 0.5).delay(0.5), value: showingAnimation)
-                    
-                    Spacer()
-                    
-                    // Кнопки действий
-                    VStack(spacing: 16) {
-                        Button(action: {
-                            // TODO: Открыть список бронирований
-                        }) {
-                            HStack {
-                                Image(systemName: "calendar")
-                                    .font(.title3)
-                                Text("Мои бронирования")
-                                    .font(.headline)
-                                    .fontWeight(.semibold)
                             }
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(
-                                LinearGradient(
-                                    colors: [brandColors.accent, brandColors.primary],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
+                            
+                            // Основной круг
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [
+                                            brandColors.accent.opacity(0.3),
+                                            brandColors.primary.opacity(0.2)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
                                 )
-                            )
-                            .cornerRadius(16)
-                            .shadow(color: brandColors.accent.opacity(0.3), radius: 8, x: 0, y: 4)
+                                .frame(width: 140, height: 140)
+                                .scaleEffect(showingAnimation ? 1 : 0)
+                                .animation(.spring(response: 0.8, dampingFraction: 0.6), value: showingAnimation)
+                            
+                            // Галочка с вращением
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 60, weight: .bold))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [brandColors.accent, brandColors.primary],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .scaleEffect(showingAnimation ? 1 : 0)
+                                .rotationEffect(.degrees(showingAnimation ? 360 : 0))
+                                .animation(
+                                    .spring(response: 0.6, dampingFraction: 0.7).delay(0.3),
+                                    value: showingAnimation
+                                )
+                        }
+                        .padding(.top, 40)
+                        
+                        // Заголовок с эмодзи
+                        VStack(spacing: 16) {
+                            Text("🎉 Готово!")
+                                .font(.system(size: 32, weight: .bold, design: .rounded))
+                                .foregroundColor(brandColors.accent)
+                                .opacity(showingAnimation ? 1 : 0)
+                                .scaleEffect(showingAnimation ? 1 : 0.5)
+                                .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.4), value: showingAnimation)
+                            
+                            Text("Ваш стол успешно забронирован!")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(.white)
+                                .multilineTextAlignment(.center)
+                                .opacity(showingAnimation ? 1 : 0)
+                                .animation(.easeInOut(duration: 0.5).delay(0.5), value: showingAnimation)
+                            
+                            Text("Ждем вас в указанное время ✨")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(.white.opacity(0.7))
+                                .multilineTextAlignment(.center)
+                                .opacity(showingAnimation ? 1 : 0)
+                                .animation(.easeInOut(duration: 0.5).delay(0.6), value: showingAnimation)
                         }
                         
-                        Button(action: onClose) {
-                            Text("Вернуться к ресторанам")
-                                .font(.subheadline)
-                                .foregroundColor(.white.opacity(0.7))
+                        // Премиальная карточка с информацией о бронировании
+                        VStack(spacing: 20) {
+                            // Заголовок карточки
+                            HStack {
+                                Image(systemName: "star.fill")
+                                    .foregroundColor(.yellow)
+                                    .font(.system(size: 16))
+                                
+                                Text("Детали бронирования")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundColor(.white)
+                                
+                                Spacer()
+                                
+                                Text("№\(reservation.id.uuidString.prefix(6))")
+                                    .font(.system(size: 12, weight: .medium, design: .monospaced))
+                                    .foregroundColor(brandColors.accent)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(
+                                        Capsule()
+                                            .fill(brandColors.accent.opacity(0.2))
+                                    )
+                            }
+                            
+                            // Информация
+                            VStack(spacing: 16) {
+                                EnhancedInfoRow(
+                                    icon: "building.2.fill", 
+                                    title: "Ресторан", 
+                                    value: reservation.restaurant.name,
+                                    subtitle: reservation.restaurant.address,
+                                    brandColors: brandColors
+                                )
+                                
+                                EnhancedInfoRow(
+                                    icon: "calendar.badge.clock", 
+                                    title: "Дата и время", 
+                                    value: formatDate(reservation.date),
+                                    subtitle: getTimeUntilReservation(),
+                                    brandColors: brandColors
+                                )
+                                
+                                EnhancedInfoRow(
+                                    icon: "person.2.fill", 
+                                    title: "Количество гостей", 
+                                    value: "\(reservation.guestCount) \(reservation.guestCount == 1 ? "гость" : "гостей")",
+                                    subtitle: "Стол №\(reservation.tableNumber)",
+                                    brandColors: brandColors
+                                )
+                                
+                                if let specialRequests = reservation.specialRequests, !specialRequests.isEmpty {
+                                    EnhancedInfoRow(
+                                        icon: "text.bubble.fill", 
+                                        title: "Особые пожелания", 
+                                        value: specialRequests,
+                                        subtitle: nil,
+                                        brandColors: brandColors
+                                    )
+                                }
+                            }
                         }
+                        .padding(24)
+                        .background(
+                            RoundedRectangle(cornerRadius: 24)
+                                .fill(.ultraThinMaterial)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 24)
+                                        .stroke(
+                                            LinearGradient(
+                                                colors: [
+                                                    brandColors.accent.opacity(0.6),
+                                                    brandColors.accent.opacity(0.2),
+                                                    Color.clear
+                                                ],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ),
+                                            lineWidth: 2
+                                        )
+                                )
+                                .shadow(color: brandColors.accent.opacity(0.3), radius: 20, x: 0, y: 10)
+                        )
+                        .opacity(showingAnimation ? 1 : 0)
+                        .scaleEffect(showingAnimation ? 1 : 0.9)
+                        .animation(.spring(response: 0.8, dampingFraction: 0.8).delay(0.7), value: showingAnimation)
+                        
+                        // Полезные быстрые действия
+                        VStack(spacing: 16) {
+                            Text("Что дальше?")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.white)
+                                .opacity(showingAnimation ? 1 : 0)
+                                .animation(.easeInOut(duration: 0.5).delay(0.9), value: showingAnimation)
+                            
+                            HStack(spacing: 12) {
+                                // Добавить в календарь
+                                QuickActionButton(
+                                    icon: "calendar.badge.plus",
+                                    title: "В календарь",
+                                    subtitle: "Добавить событие",
+                                    brandColors: brandColors,
+                                    isPrimary: true
+                                ) {
+                                    addToCalendar()
+                                }
+                                
+                                // Маршрут
+                                QuickActionButton(
+                                    icon: "location.fill",
+                                    title: "Маршрут",
+                                    subtitle: "Как добраться",
+                                    brandColors: brandColors,
+                                    isPrimary: false
+                                ) {
+                                    openRoute()
+                                }
+                            }
+                            
+                            HStack(spacing: 12) {
+                                // Позвонить в ресторан
+                                QuickActionButton(
+                                    icon: "phone.fill",
+                                    title: "Позвонить",
+                                    subtitle: "Связаться",
+                                    brandColors: brandColors,
+                                    isPrimary: false
+                                ) {
+                                    callRestaurant()
+                                }
+                                
+                                // Поделиться
+                                QuickActionButton(
+                                    icon: "square.and.arrow.up.fill",
+                                    title: "Поделиться",
+                                    subtitle: "Рассказать друзьям",
+                                    brandColors: brandColors,
+                                    isPrimary: false
+                                ) {
+                                    shareReservation()
+                                }
+                            }
+                        }
+                        .opacity(showingAnimation ? 1 : 0)
+                        .animation(.easeInOut(duration: 0.5).delay(1.0), value: showingAnimation)
+                        
+                        // Основные кнопки
+                        VStack(spacing: 12) {
+                            Button(action: {
+                                // TODO: Открыть список бронирований
+                            }) {
+                                HStack {
+                                    Image(systemName: "list.bullet.rectangle")
+                                        .font(.system(size: 18, weight: .semibold))
+                                    Text("Мои бронирования")
+                                        .font(.system(size: 18, weight: .semibold))
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 54)
+                                .background(
+                                    LinearGradient(
+                                        colors: [brandColors.accent, brandColors.primary],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .cornerRadius(16)
+                                .shadow(color: brandColors.accent.opacity(0.4), radius: 12, x: 0, y: 6)
+                            }
+                            
+                            Button(action: onClose) {
+                                Text("Вернуться к ресторанам")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.8))
+                            }
+                            .padding(.top, 8)
+                        }
+                        .opacity(showingAnimation ? 1 : 0)
+                        .animation(.easeInOut(duration: 0.5).delay(1.1), value: showingAnimation)
                     }
-                    .opacity(showingAnimation ? 1 : 0)
-                    .animation(.easeInOut(duration: 0.5).delay(0.6), value: showingAnimation)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 40)
                 }
-                .padding()
             }
             .navigationBarHidden(true)
             .onAppear {
                 withAnimation {
                     showingAnimation = true
                 }
+                // Добавляем haptic feedback
+                HapticManager.shared.successPattern()
             }
+        }
+    }
+    
+    // MARK: - Helper Methods
+    private func addToCalendar() {
+        HapticManager.shared.buttonPress()
+        // TODO: Реализовать добавление в календарь
+    }
+    
+    private func openRoute() {
+        HapticManager.shared.buttonPress()
+        
+        // Используем Яндекс Карты как основной сервис
+        if let url = YandexMapsConfig.routeURL(
+            to: (reservation.restaurant.location.latitude, reservation.restaurant.location.longitude), 
+            name: reservation.restaurant.name
+        ) {
+            if YandexMapsConfig.isYandexMapsInstalled {
+                UIApplication.shared.open(url)
+            } else {
+                // Fallback на веб-версию Яндекс Карт
+                if let webUrl = YandexMapsConfig.webURL(
+                    for: (reservation.restaurant.location.latitude, reservation.restaurant.location.longitude), 
+                    name: reservation.restaurant.name
+                ) {
+                    UIApplication.shared.open(webUrl)
+                }
+            }
+        }
+    }
+    
+    private func callRestaurant() {
+        HapticManager.shared.buttonPress()
+        if let phoneURL = URL(string: "tel://\(reservation.restaurant.contacts.phone)") {
+            UIApplication.shared.open(phoneURL)
+        }
+    }
+    
+    private func shareReservation() {
+        HapticManager.shared.buttonPress()
+        let shareText = "Забронировал стол в \(reservation.restaurant.name) на \(formatDate(reservation.date))!"
+        let activityVC = UIActivityViewController(activityItems: [shareText], applicationActivities: nil)
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            window.rootViewController?.present(activityVC, animated: true)
+        }
+    }
+    
+    private func getTimeUntilReservation() -> String {
+        let now = Date()
+        let timeInterval = reservation.date.timeIntervalSince(now)
+        
+        if timeInterval <= 0 {
+            return "Время прошло"
+        }
+        
+        let days = Int(timeInterval) / (24 * 3600)
+        let hours = Int(timeInterval) % (24 * 3600) / 3600
+        let minutes = Int(timeInterval) % 3600 / 60
+        
+        if days > 0 {
+            return "через \(days) \(days == 1 ? "день" : "дней")"
+        } else if hours > 0 {
+            return "через \(hours) \(hours == 1 ? "час" : "часов")"
+        } else {
+            return "через \(minutes) минут"
         }
     }
     
@@ -595,7 +798,111 @@ struct ReservationSuccessView: View {
         let formatter = DateFormatter()
         formatter.dateStyle = .long
         formatter.timeStyle = .short
+        formatter.locale = Locale(identifier: "ru_RU")
         return formatter.string(from: date)
+    }
+}
+
+// MARK: - Enhanced Info Row
+struct EnhancedInfoRow: View {
+    let icon: String
+    let title: String
+    let value: String
+    let subtitle: String?
+    let brandColors: (primary: Color, secondary: Color, accent: Color)
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            // Иконка в кружке
+            ZStack {
+                Circle()
+                    .fill(brandColors.accent.opacity(0.2))
+                    .frame(width: 44, height: 44)
+                
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(brandColors.accent)
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.white.opacity(0.7))
+                
+                Text(value)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.white)
+                
+                if let subtitle = subtitle {
+                    Text(subtitle)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(brandColors.accent.opacity(0.8))
+                }
+            }
+            
+            Spacer()
+        }
+    }
+}
+
+// MARK: - Quick Action Button
+struct QuickActionButton: View {
+    let icon: String
+    let title: String
+    let subtitle: String
+    let brandColors: (primary: Color, secondary: Color, accent: Color)
+    let isPrimary: Bool
+    let action: () -> Void
+    
+    @State private var isPressed = false
+    
+    var body: some View {
+        Button(action: {
+            withAnimation(.easeInOut(duration: 0.1)) {
+                isPressed = true
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                withAnimation(.easeInOut(duration: 0.1)) {
+                    isPressed = false
+                }
+                action()
+            }
+        }) {
+            VStack(spacing: 8) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            isPrimary 
+                            ? LinearGradient(colors: [brandColors.accent, brandColors.primary], startPoint: .topLeading, endPoint: .bottomTrailing)
+                            : LinearGradient(colors: [Color.white.opacity(0.1), Color.white.opacity(0.05)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                        )
+                        .frame(width: 50, height: 50)
+                        .overlay(
+                            Circle()
+                                .stroke(
+                                    isPrimary ? Color.clear : brandColors.accent.opacity(0.3),
+                                    lineWidth: 1.5
+                                )
+                        )
+                    
+                    Image(systemName: icon)
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(isPrimary ? .white : brandColors.accent)
+                }
+                
+                VStack(spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.white)
+                    
+                    Text(subtitle)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.white.opacity(0.6))
+                }
+            }
+        }
+        .scaleEffect(isPressed ? 0.95 : 1.0)
+        .animation(.easeInOut(duration: 0.1), value: isPressed)
     }
 }
 

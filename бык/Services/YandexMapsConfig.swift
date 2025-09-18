@@ -2,8 +2,8 @@ import Foundation
 import UIKit
 
 struct YandexMapsConfig {
-    // Замените на ваш API ключ от Яндекс Карт
-    static let apiKey = "YOUR_YANDEX_MAPS_API_KEY"
+    // API ключ от Яндекс Карт
+    static let apiKey = "b7c8becc-306b-400c-8fae-a1d18545814f"
     
     // URL схемы для открытия Яндекс Карт
     static let yandexMapsURLScheme = "yandexmaps://"

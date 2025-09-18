@@ -141,6 +141,10 @@ struct YandexMapViewWithActions: View {
     @Environment(\.dismiss) private var dismiss
     @State private var mapLoaded = false
     
+    private var brandColors: (primary: Color, secondary: Color, accent: Color) {
+        Colors.brandColors(for: restaurant.brand)
+    }
+    
     var body: some View {
         NavigationView {
             ZStack(alignment: .bottom) {
@@ -163,11 +167,12 @@ struct YandexMapViewWithActions: View {
                             .padding(.vertical, 12)
                             .background(
                                 LinearGradient(
-                                    colors: [Color("BykAccent"), Color("BykPrimary")],
+                                    colors: [brandColors.accent, brandColors.primary],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )
                             )
+                            .shadow(color: brandColors.accent.opacity(0.4), radius: 8, x: 0, y: 4)
                             .cornerRadius(12)
                         }
                         
@@ -177,11 +182,17 @@ struct YandexMapViewWithActions: View {
                                 Text("Поделиться")
                             }
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(.primary)
+                            .foregroundColor(brandColors.accent)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .background(Color(.systemGray6))
-                            .cornerRadius(12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(brandColors.accent.opacity(0.3), lineWidth: 1.5)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(.ultraThinMaterial)
+                                    )
+                            )
                         }
                     }
                     .padding(.horizontal, 20)
@@ -203,6 +214,8 @@ struct YandexMapViewWithActions: View {
     }
     
     private func openInYandexMaps() {
+        HapticManager.shared.buttonPress()
+        
         if let url = YandexMapsConfig.routeURL(to: (restaurant.location.latitude, restaurant.location.longitude), name: restaurant.name) {
             if YandexMapsConfig.isYandexMapsInstalled {
                 UIApplication.shared.open(url)
@@ -216,6 +229,8 @@ struct YandexMapViewWithActions: View {
     }
     
     private func shareLocation() {
+        HapticManager.shared.buttonPress()
+        
         let locationString = YandexMapsConfig.shareString(for: (restaurant.location.latitude, restaurant.location.longitude), name: restaurant.name, address: restaurant.address)
         let activityVC = UIActivityViewController(activityItems: [locationString], applicationActivities: nil)
         

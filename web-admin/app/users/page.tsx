@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import toast from 'react-hot-toast'
 import { 
   MagnifyingGlassIcon,
   UserIcon,
@@ -10,77 +11,107 @@ import {
   CalendarIcon,
   StarIcon,
   CurrencyDollarIcon,
-  ClockIcon
+  ClockIcon,
+  PlusIcon,
+  PencilIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline'
 import Layout from '@/components/Layout'
+import UserForm from '@/components/UserForm'
+import { userApi } from '@/lib/api'
 
-const mockUsers = [
-  {
-    id: '1',
-    name: 'Алексей Петров',
-    email: 'alexey@example.com',
-    phone: '+7 (999) 123-45-67',
-    registrationDate: '2023-12-01',
-    lastVisit: '2024-01-15T14:30:00Z',
-    totalOrders: 15,
-    totalSpent: 45000,
-    averageOrder: 3000,
-    rating: 4.8,
-    isActive: true,
-    avatar: null
-  },
-  {
-    id: '2',
-    name: 'Мария Сидорова',
-    email: 'maria@example.com',
-    phone: '+7 (999) 234-56-78',
-    registrationDate: '2023-11-15',
-    lastVisit: '2024-01-14T18:20:00Z',
-    totalOrders: 8,
-    totalSpent: 12000,
-    averageOrder: 1500,
-    rating: 4.5,
-    isActive: true,
-    avatar: null
-  },
-  {
-    id: '3',
-    name: 'Дмитрий Козлов',
-    email: 'dmitry@example.com',
-    phone: '+7 (999) 345-67-89',
-    registrationDate: '2023-10-20',
-    lastVisit: '2024-01-13T12:15:00Z',
-    totalOrders: 25,
-    totalSpent: 75000,
-    averageOrder: 3000,
-    rating: 4.9,
-    isActive: true,
-    avatar: null
-  },
-  {
-    id: '4',
-    name: 'Анна Волкова',
-    email: 'anna@example.com',
-    phone: '+7 (999) 456-78-90',
-    registrationDate: '2023-09-10',
-    lastVisit: '2024-01-10T16:45:00Z',
-    totalOrders: 3,
-    totalSpent: 4000,
-    averageOrder: 1333,
-    rating: 4.2,
-    isActive: false,
-    avatar: null
-  }
-]
+interface User {
+  _id: string
+  username: string
+  email: string
+  fullName: string
+  phone?: string
+  role: 'admin' | 'user'
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
 
 export default function UsersPage() {
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'active' | 'inactive'>('all')
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
 
-  const filteredUsers = mockUsers.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  // Load users on component mount
+  useEffect(() => {
+    loadUsers()
+  }, [])
+
+  const loadUsers = async () => {
+    try {
+      setLoading(true)
+      const response = await userApi.getUsers()
+      if (response.success && response.data) {
+        setUsers(response.data)
+      } else {
+        toast.error('Ошибка загрузки пользователей')
+      }
+    } catch (error) {
+      toast.error('Ошибка загрузки пользователей')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCreateUser = async (userData: any) => {
+    try {
+      const response = await userApi.createUser(userData)
+      if (response.success) {
+        toast.success('Пользователь успешно создан')
+        loadUsers()
+      } else {
+        toast.error(response.message || 'Ошибка создания пользователя')
+      }
+    } catch (error) {
+      toast.error('Ошибка создания пользователя')
+    }
+  }
+
+  const handleUpdateUser = async (userData: any) => {
+    if (!editingUser) return
+    
+    try {
+      const response = await userApi.updateUser(editingUser._id, userData)
+      if (response.success) {
+        toast.success('Пользователь успешно обновлен')
+        loadUsers()
+      } else {
+        toast.error(response.message || 'Ошибка обновления пользователя')
+      }
+    } catch (error) {
+      toast.error('Ошибка обновления пользователя')
+    }
+  }
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm('Вы уверены, что хотите удалить этого пользователя?')) return
+    
+    try {
+      const response = await userApi.deleteUser(userId)
+      if (response.success) {
+        toast.success('Пользователь успешно удален')
+        loadUsers()
+      } else {
+        toast.error(response.message || 'Ошибка удаления пользователя')
+      }
+    } catch (error) {
+      toast.error('Ошибка удаления пользователя')
+    }
+  }
+
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.phone.includes(searchTerm)
+                         user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (user.phone && user.phone.includes(searchTerm))
     const matchesStatus = selectedStatus === 'all' || 
                          (selectedStatus === 'active' && user.isActive) ||
                          (selectedStatus === 'inactive' && !user.isActive)
@@ -89,16 +120,11 @@ export default function UsersPage() {
   })
 
   const stats = {
-    total: mockUsers.length,
-    active: mockUsers.filter(u => u.isActive).length,
-    newThisMonth: mockUsers.filter(u => {
-      const registrationDate = new Date(u.registrationDate)
-      const thisMonth = new Date()
-      return registrationDate.getMonth() === thisMonth.getMonth() && 
-             registrationDate.getFullYear() === thisMonth.getFullYear()
-    }).length,
-    totalRevenue: mockUsers.reduce((acc, u) => acc + u.totalSpent, 0),
-    averageRating: mockUsers.reduce((acc, u) => acc + u.rating, 0) / mockUsers.length
+    total: users.length,
+    active: users.filter(u => u.isActive).length,
+    inactive: users.filter(u => !u.isActive).length,
+    admins: users.filter(u => u.role === 'admin').length,
+    regularUsers: users.filter(u => u.role === 'user').length
   }
 
   return (
@@ -109,6 +135,16 @@ export default function UsersPage() {
           <h1 className="text-2xl font-bold text-gray-900">Пользователи</h1>
           <p className="text-gray-600">Управление пользователями и аналитика</p>
         </div>
+        <button
+          onClick={() => {
+            setEditingUser(null)
+            setIsFormOpen(true)
+          }}
+          className="btn-primary flex items-center space-x-2"
+        >
+          <PlusIcon className="h-5 w-5" />
+          <span>Создать пользователя</span>
+        </button>
       </div>
 
       {/* Filters */}
@@ -177,11 +213,23 @@ export default function UsersPage() {
         <div className="card">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Новые в этом месяце</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.newThisMonth}</p>
+              <p className="text-sm font-medium text-gray-600">Неактивные</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.inactive}</p>
+            </div>
+            <div className="p-3 bg-red-100 rounded-lg">
+              <div className="h-6 w-6 bg-red-600 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Администраторы</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.admins}</p>
             </div>
             <div className="p-3 bg-purple-100 rounded-lg">
-              <CalendarIcon className="h-6 w-6 text-purple-600" />
+              <StarIcon className="h-6 w-6 text-purple-600" />
             </div>
           </div>
         </div>
@@ -189,23 +237,11 @@ export default function UsersPage() {
         <div className="card">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Общая выручка</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalRevenue.toLocaleString()} ₽</p>
+              <p className="text-sm font-medium text-gray-600">Обычные пользователи</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.regularUsers}</p>
             </div>
             <div className="p-3 bg-yellow-100 rounded-lg">
-              <CurrencyDollarIcon className="h-6 w-6 text-yellow-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Средний рейтинг</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.averageRating.toFixed(1)}</p>
-            </div>
-            <div className="p-3 bg-orange-100 rounded-lg">
-              <StarIcon className="h-6 w-6 text-orange-600" />
+              <UserIcon className="h-6 w-6 text-yellow-600" />
             </div>
           </div>
         </div>

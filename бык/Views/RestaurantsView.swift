@@ -8,6 +8,7 @@ struct RestaurantsView: View {
     @State private var selectedCity: String? = nil
     @State private var showFilters = false
     @State private var showProfile = false
+    // @State private var showMap = false // Скрыто пока
     
     private var availableCities: [String] {
         let cities = Set(restaurantService.restaurants.map { $0.city })
@@ -213,6 +214,19 @@ struct RestaurantsView: View {
         }
         
         return restaurants
+    }
+    
+    private func toggleFavorite(_ restaurant: Restaurant) {
+        let key = "favorite_\(restaurant.id)"
+        let isFavorite = UserDefaults.standard.bool(forKey: key)
+        UserDefaults.standard.set(!isFavorite, forKey: key)
+        
+        // Haptic feedback
+        if isFavorite {
+            HapticManager.shared.warningPattern()
+        } else {
+            HapticManager.shared.successPattern()
+        }
     }
     
     var body: some View {
@@ -429,6 +443,9 @@ struct RestaurantsView: View {
                                     restaurant: restaurant,
                                     onTap: {
                                         selectedRestaurant = restaurant
+                                    },
+                                    onFavoriteToggle: { restaurant in
+                                        toggleFavorite(restaurant)
                                     }
                                 )
                                 .transition(.asymmetric(
@@ -443,8 +460,8 @@ struct RestaurantsView: View {
             }
             .navigationTitle("Рестораны")
             .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                    .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
                         HapticManager.shared.buttonPress()
                         showProfile = true
@@ -465,9 +482,10 @@ struct RestaurantsView: View {
         .sheet(item: $selectedRestaurant) { restaurant in
             RestaurantDetailView(restaurant: restaurant)
         }
-        .sheet(isPresented: $showProfile) {
-            ProfileView()
-        }
+            .sheet(isPresented: $showProfile) {
+                ProfileView()
+            }
+
         .onAppear {
             HapticManager.shared.navigationTransition()
         }

@@ -93,7 +93,8 @@ struct CartView: View {
         }
         .sheet(isPresented: $showingCheckout) {
             if let restaurant = restaurantFromCart {
-                DeliveryMethodSelectionView(restaurant: restaurant)
+                ImprovedCheckoutView(restaurant: restaurant)
+                    .environmentObject(cartViewModel)
             }
         }
     }

@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   images: {
     domains: ['localhost', 'api.thebyk.ru'],
+    unoptimized: true,
   },
   async rewrites() {
     return [
@@ -10,6 +12,9 @@ const nextConfig = {
         destination: 'http://localhost:8000/api/:path*',
       },
     ]
+  },
+  experimental: {
+    appDir: true,
   },
 }
 

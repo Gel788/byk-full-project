@@ -9,7 +9,6 @@ struct NewsView: View {
     @State private var showingSearch = false
     @State private var isLoading = false
     @State private var searchSuggestions: [String] = []
-    @State private var selectedTab = 0 // 0 - Новости, 1 - Публикации
     @State private var showProfile = false
     
     var filteredNews: [NewsItem] {
@@ -26,14 +25,6 @@ struct NewsView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Сегментированный контрол
-            Picker("", selection: $selectedTab) {
-                Text("🐂 Новости").tag(0)
-                Text("📱 Публикации").tag(1)
-            }
-            .pickerStyle(SegmentedPickerStyle())
-            .padding(.horizontal)
-            .padding(.top, 8)
             
             // Поисковая строка с улучшенной анимацией
             if showingSearch {
@@ -90,38 +81,30 @@ struct NewsView: View {
             .transition(.scale.combined(with: .opacity))
             
             // Основной контент
-            if selectedTab == 0 {
-                // Новости
-                ZStack {
-                    if isLoading {
-                        NewsLoadingView()
-                            .transition(.opacity)
-                    } else if filteredNews.isEmpty {
-                        EmptyNewsView(searchText: searchText, selectedBrand: selectedBrand)
-                            .transition(.asymmetric(
-                                insertion: .scale.combined(with: .opacity),
-                                removal: .scale.combined(with: .opacity)
-                            ))
-                    } else {
-                        NewsListView(
-                            news: filteredNews,
-                            selectedNewsId: $selectedNewsId,
-                            showingNewsDetail: $showingNewsDetail
-                        )
+            ZStack {
+                if isLoading {
+                    NewsLoadingView()
+                        .transition(.opacity)
+                } else if filteredNews.isEmpty {
+                    EmptyNewsView(searchText: searchText, selectedBrand: selectedBrand)
                         .transition(.asymmetric(
-                            insertion: .move(edge: .bottom).combined(with: .opacity),
-                            removal: .move(edge: .bottom).combined(with: .opacity)
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .scale.combined(with: .opacity)
                         ))
-                        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: selectedTab)
-                    }
+                } else {
+                    NewsListView(
+                        news: filteredNews,
+                        selectedNewsId: $selectedNewsId,
+                        showingNewsDetail: $showingNewsDetail
+                    )
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .bottom).combined(with: .opacity),
+                        removal: .move(edge: .bottom).combined(with: .opacity)
+                    ))
                 }
-            } else {
-                // Публикации
-                PostsView()
-                    .animation(.spring(response: 0.6, dampingFraction: 0.8), value: selectedTab)
             }
         }
-        .navigationTitle(selectedTab == 0 ? "🐂 Новости" : "📱 Публикации")
+        .navigationTitle("🐂 Новости")
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {

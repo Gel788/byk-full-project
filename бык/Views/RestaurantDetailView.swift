@@ -5,6 +5,9 @@ struct RestaurantDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showingReservation = false
     @State private var showingMenu = false
+    @State private var showingPhotoGallery = false
+    @State private var showingReviews = false
+    @State private var isFavorite = false
     
     private var brandColors: (primary: Color, secondary: Color, accent: Color) {
         Colors.brandColors(for: restaurant.brand)
@@ -13,36 +16,299 @@ struct RestaurantDetailView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 0) {
-                    // Заголовок ресторана и инфо
-                    RestaurantInfoSection(
-                        restaurant: restaurant,
-                        brandColors: brandColors
-                    )
-                    .padding(.vertical, 20)
+                VStack(spacing: 20) {
+                    // Фото ресторана
+                    if !restaurant.imageURL.isEmpty {
+                        Button(action: { showingPhotoGallery = true }) {
+                            ZStack {
+                                Image(restaurant.imageURL)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(height: 250)
+                                    .clipped()
+                                    .cornerRadius(16)
+                                
+                                // Индикатор галереи
+                                VStack {
+                                    Spacer()
+                                    HStack {
+                                        Spacer()
+                                        
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "photo.stack")
+                                                .font(.caption)
+                                                .foregroundColor(.white)
+                                            
+                                            Text("5 фото")
+                                                .font(.caption)
+                                                .fontWeight(.medium)
+                                                .foregroundColor(.white)
+                                        }
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 6)
+                                        .background(
+                                            Capsule()
+                                                .fill(Color.black.opacity(0.6))
+                                        )
+                                        .padding(.trailing, 12)
+                                        .padding(.bottom, 12)
+                                    }
+                                }
+                            }
+                        }
+                    }
                     
-                    // Кнопки действий
-                    ActionButtonsSection(
-                        restaurant: restaurant,
-                        brandColors: brandColors,
-                        onReservation: { showingReservation = true }
-                    )
-                    .padding(.vertical, 20)
-                    
-                    // Карта
-                    RestaurantMapView(restaurant: restaurant)
-                        .padding(.bottom, 20)
+                    // Информация о ресторане
+                    VStack(alignment: .leading, spacing: 16) {
+                        // Название и рейтинг
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(restaurant.name)
+                                    .font(.title)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.white)
+                                
+                                Text(restaurant.cuisine)
+                                    .font(.subheadline)
+                                    .foregroundColor(.white.opacity(0.7))
+                            }
+                            
+                            Spacer()
+                            
+                            HStack(spacing: 4) {
+                                Image(systemName: "star.fill")
+                                    .foregroundColor(.yellow)
+                                Text(String(format: "%.1f", restaurant.rating))
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.white)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.black.opacity(0.8))
+                            .cornerRadius(8)
+                        }
+                        
+                        // Описание
+                        Text(restaurant.description)
+                            .font(.body)
+                            .foregroundColor(.white)
+                            .lineLimit(nil)
+                        
+                        // Отзывы
+                        Button(action: { showingReviews = true }) {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Отзывы")
+                                        .font(.headline)
+                                        .foregroundColor(brandColors.primary)
+                                    
+                                    HStack(spacing: 4) {
+                                        ForEach(0..<5) { index in
+                                            Image(systemName: "star.fill")
+                                                .font(.caption)
+                                                .foregroundColor(index < Int(restaurant.rating) ? .yellow : .gray)
+                                        }
+                                        
+                                        Text("\(String(format: "%.1f", restaurant.rating)) • 124 отзыва")
+                                            .font(.caption)
+                                            .foregroundColor(.white.opacity(0.7))
+                                    }
+                                }
+                                
+                                Spacer()
+                                
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.6))
+                            }
+                            .padding()
+                            .background(Color.black.opacity(0.8))
+                            .cornerRadius(12)
+                        }
+                        
+                        // Кнопки действий - ГЛАВНЫЕ И ВИДНЫЕ!
+                        VStack(spacing: 12) {
+                            // Бронирование - БОЛЬШАЯ КНОПКА
+                            Button(action: { 
+                                HapticManager.shared.buttonPress()
+                                showingReservation = true 
+                            }) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "calendar.badge.plus")
+                                        .font(.system(size: 18, weight: .bold))
+                                    Text("Забронировать столик")
+                                        .font(.system(size: 18, weight: .bold))
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
+                                .background(
+                                    LinearGradient(
+                                        colors: [brandColors.accent, brandColors.primary],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .cornerRadius(16)
+                                .shadow(color: brandColors.accent.opacity(0.3), radius: 8, x: 0, y: 4)
+                            }
+                            
+                            // Меню - ВТОРАЯ ВАЖНАЯ КНОПКА
+                            Button(action: { 
+                                HapticManager.shared.buttonPress()
+                                showingMenu = true 
+                            }) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "fork.knife")
+                                        .font(.system(size: 16, weight: .semibold))
+                                    Text("Посмотреть меню")
+                                        .font(.system(size: 16, weight: .semibold))
+                                }
+                                .foregroundColor(brandColors.primary)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 48)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .stroke(brandColors.primary, lineWidth: 2)
+                                        .background(Color.black.opacity(0.1))
+                                )
+                                .cornerRadius(14)
+                            }
+                            
+                            // Дополнительные кнопки
+                            HStack(spacing: 12) {
+                                // Позвонить
+                                Button(action: {
+                                    HapticManager.shared.buttonPress()
+                                    if let phoneURL = URL(string: "tel:\(restaurant.contacts.phone.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "(", with: "").replacingOccurrences(of: ")", with: "").replacingOccurrences(of: "-", with: ""))") {
+                                        UIApplication.shared.open(phoneURL)
+                                    }
+                                }) {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "phone.fill")
+                                        Text("Позвонить")
+                                    }
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .background(Color.green.opacity(0.8))
+                                    .cornerRadius(10)
+                                }
+                                
+                                // Маршрут
+                                Button(action: {
+                                    HapticManager.shared.buttonPress()
+                                    
+                                    // Используем Яндекс Карты
+                                    if let url = YandexMapsConfig.routeURL(
+                                        to: (restaurant.location.latitude, restaurant.location.longitude), 
+                                        name: restaurant.name
+                                    ) {
+                                        if YandexMapsConfig.isYandexMapsInstalled {
+                                            UIApplication.shared.open(url)
+                                        } else {
+                                            // Fallback на веб-версию
+                                            if let webUrl = YandexMapsConfig.webURL(
+                                                for: (restaurant.location.latitude, restaurant.location.longitude), 
+                                                name: restaurant.name
+                                            ) {
+                                                UIApplication.shared.open(webUrl)
+                                            }
+                                        }
+                                    }
+                                }) {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "location.fill")
+                                        Text("Маршрут")
+                                    }
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 12)
+                                    .background(Color.blue.opacity(0.8))
+                                    .cornerRadius(10)
+                                }
+                            }
+                        }
+                        .padding(.vertical, 10)
+                        
+                        // Особенности
+                        if !restaurant.features.isEmpty {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("Особенности")
+                                    .font(.headline)
+                                    .foregroundColor(brandColors.primary)
+                                
+                                LazyVGrid(columns: [
+                                    GridItem(.flexible()),
+                                    GridItem(.flexible())
+                                ], spacing: 8) {
+                                    ForEach(Array(restaurant.features.prefix(6)), id: \.self) { feature in
+                                        HStack(spacing: 8) {
+                                            Image(systemName: feature.icon)
+                                                .foregroundColor(brandColors.accent)
+                                            Text(feature.rawValue)
+                                                .font(.caption)
+                                                .foregroundColor(.white)
+                                        }
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(Color.black.opacity(0.8))
+                                        .cornerRadius(8)
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Карта
+                        RestaurantMapView(restaurant: restaurant)
+                            .frame(height: 200)
+                            .cornerRadius(12)
+                    }
+                    .padding(.horizontal, 20)
                 }
+                .padding(.bottom, 20)
             }
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .background(Color.black)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Закрыть") {
-                        dismiss()
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(.white.opacity(0.8))
                     }
-                    .foregroundColor(.white)
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    HStack(spacing: 16) {
+                        // Кнопка избранного
+                        Button(action: {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                                isFavorite.toggle()
+                            }
+                            UserDefaults.standard.set(isFavorite, forKey: "favorite_\(restaurant.id)")
+                            if isFavorite {
+                                HapticManager.shared.successPattern()
+                            } else {
+                                HapticManager.shared.warningPattern()
+                            }
+                        }) {
+                            Image(systemName: isFavorite ? "heart.fill" : "heart")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(isFavorite ? .red : .white)
+                                .scaleEffect(isFavorite ? 1.2 : 1.0)
+                        }
+                        
+                        // Кнопка поделиться
+                        Button(action: shareRestaurant) {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.system(size: 20, weight: .medium))
+                                .foregroundColor(.white.opacity(0.8))
+                        }
+                    }
                 }
             }
             .sheet(isPresented: $showingReservation) {
@@ -51,149 +317,31 @@ struct RestaurantDetailView: View {
             .sheet(isPresented: $showingMenu) {
                 MenuView(restaurant: restaurant)
             }
+            .sheet(isPresented: $showingPhotoGallery) {
+                RestaurantPhotoGalleryView(restaurant: restaurant)
+            }
+            .sheet(isPresented: $showingReviews) {
+                RestaurantReviewsView(restaurant: restaurant)
+            }
+            .onAppear {
+                isFavorite = UserDefaults.standard.bool(forKey: "favorite_\(restaurant.id)")
+            }
         }
-        .background(Color.black)
     }
-}
-
-private struct RestaurantInfoSection: View {
-    let restaurant: Restaurant
-    let brandColors: (primary: Color, secondary: Color, accent: Color)
     
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // Фото ресторана
-            if !restaurant.imageURL.isEmpty {
-                Image(restaurant.imageURL)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(height: 220)
-                    .clipped()
-                    .cornerRadius(16)
-            }
-            // Название и рейтинг
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(restaurant.name)
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(brandColors.primary)
-                    
-                    Text(restaurant.cuisine)
-                        .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.7))
-                }
-                
-                Spacer()
-                
-                HStack(spacing: 4) {
-                    Image(systemName: "star.fill")
-                        .foregroundColor(.yellow)
-                    Text(String(format: "%.1f", restaurant.rating))
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Color.black.opacity(0.8))
-                .cornerRadius(8)
-            }
-            
-            // Описание
-            Text(restaurant.description)
-                .font(.body)
-                .foregroundColor(.white)
-                .lineLimit(nil)
-            
-            // Особенности
-            if !restaurant.features.isEmpty {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Особенности")
-                        .font(.headline)
-                        .foregroundColor(brandColors.primary)
-                    
-                    LazyVGrid(columns: [
-                        GridItem(.flexible()),
-                        GridItem(.flexible())
-                    ], spacing: 8) {
-                        ForEach(Array(restaurant.features), id: \.self) { feature in
-                            HStack(spacing: 8) {
-                                Image(systemName: feature.icon)
-                                    .foregroundColor(brandColors.accent)
-                                Text(feature.rawValue)
-                                    .font(.caption)
-                                    .foregroundColor(.white)
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.black.opacity(0.8))
-                            .cornerRadius(8)
-                        }
-                    }
-                }
-            }
-            
-            // Часы работы
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Часы работы")
-                    .font(.headline)
-                    .foregroundColor(brandColors.primary)
-                
-                ForEach(Weekday.allCases, id: \.self) { weekday in
-                    HStack {
-                        Text(weekday.name)
-                            .font(.subheadline)
-                            .foregroundColor(.white)
-                        Spacer()
-                        Text("\(restaurant.workingHours.openTime) - \(restaurant.workingHours.closeTime)")
-                            .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.7))
-                    }
-                }
-            }
-            .padding()
-            .background(Color.black.opacity(0.8))
-            .cornerRadius(12)
+    private func shareRestaurant() {
+        let shareText = "Проверь этот ресторан: \(restaurant.name) - \(restaurant.description)"
+        let activityVC = UIActivityViewController(activityItems: [shareText], applicationActivities: nil)
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            window.rootViewController?.present(activityVC, animated: true)
         }
     }
 }
 
-private struct ActionButtonsSection: View {
-    let restaurant: Restaurant
-    let brandColors: (primary: Color, secondary: Color, accent: Color)
-    let onReservation: () -> Void
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            Button(action: onReservation) {
-                HStack {
-                    Image(systemName: "calendar")
-                    Text("Забронировать столик")
-                }
-                .font(.headline)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .background(brandColors.accent)
-                .cornerRadius(12)
-            }
-            
-            NavigationLink(destination: MenuView(restaurant: restaurant)) {
-                HStack {
-                    Image(systemName: "fork.knife")
-                    Text("Посмотреть меню")
-                }
-                .font(.headline)
-                .foregroundColor(brandColors.primary)
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .background(brandColors.secondary.opacity(0.1))
-                .cornerRadius(12)
-            }
-        }
+struct RestaurantDetailView_Previews: PreviewProvider {
+    static var previews: some View {
+        RestaurantDetailView(restaurant: Restaurant.mock)
     }
 }
-
-#Preview {
-    RestaurantDetailView(restaurant: Restaurant.mock)
-} 

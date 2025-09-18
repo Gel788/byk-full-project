@@ -189,7 +189,7 @@ struct DeliveryOrderInfoSection: View {
             
             VStack(spacing: 12) {
                 // Адрес доставки
-                DeliveryInfoRow(
+                OrderDetailInfoRow(
                     icon: "location.fill",
                     title: "Адрес доставки",
                     value: order.deliveryAddress,
@@ -197,7 +197,7 @@ struct DeliveryOrderInfoSection: View {
                 )
                 
                 // Время доставки
-                DeliveryInfoRow(
+                OrderDetailInfoRow(
                     icon: "clock.fill",
                     title: "Время доставки",
                     value: order.deliveryTime, style: .shortened,
@@ -207,14 +207,14 @@ struct DeliveryOrderInfoSection: View {
                 // Ожидаемое время доставки
                 if order.status == .delivering || order.status == .preparing {
                     if let estimated = order.estimatedDeliveryTime {
-                        DeliveryInfoRow(
+                        OrderDetailInfoRow(
                             icon: "timer",
                             title: "Ожидаемое время",
                             value: estimated, style: .shortened,
                             color: brandColors.primary
                         )
                     } else {
-                        DeliveryInfoRow(
+                        OrderDetailInfoRow(
                             icon: "timer",
                             title: "Ожидаемое время",
                             value: "—",
@@ -225,7 +225,7 @@ struct DeliveryOrderInfoSection: View {
                 
                 // Фактическое время доставки
                 if let actualTime = order.actualDeliveryTime {
-                    DeliveryInfoRow(
+                    OrderDetailInfoRow(
                         icon: "checkmark.circle.fill",
                         title: "Доставлен в",
                         value: actualTime, style: .shortened,
@@ -330,7 +330,7 @@ struct CourierInfoSection: View {
             DeliverySectionHeader(title: "Курьер", icon: "person.circle", color: brandColors.primary)
             
             VStack(spacing: 12) {
-                DeliveryInfoRow(
+                OrderDetailInfoRow(
                     icon: "person.fill",
                     title: "Имя курьера",
                     value: courierName,
@@ -343,7 +343,7 @@ struct CourierInfoSection: View {
                             UIApplication.shared.open(url)
                         }
                     }) {
-                        DeliveryInfoRow(
+                        OrderDetailInfoRow(
                             icon: "phone.fill",
                             title: "Телефон курьера",
                             value: phone,
@@ -374,7 +374,7 @@ struct PaymentSection: View {
             
             VStack(spacing: 12) {
                 // Способ оплаты
-                DeliveryInfoRow(
+                OrderDetailInfoRow(
                     icon: order.paymentMethod.icon,
                     title: "Способ оплаты",
                     value: order.paymentMethod.rawValue,
@@ -499,7 +499,7 @@ struct DeliverySectionHeader: View {
     }
 }
 
-struct DeliveryInfoRow: View {
+struct OrderDetailInfoRow: View {
     let icon: String
     let title: String
     let value: String

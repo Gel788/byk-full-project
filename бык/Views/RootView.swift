@@ -16,12 +16,6 @@ struct RootView: View {
                         coordinator.startApp()
                     }
                 
-            case .onboarding:
-                OnboardingView()
-                    .onReceive(NotificationCenter.default.publisher(for: Notification.Name("onboardingCompleted"))) { _ in
-                        coordinator.completeOnboarding()
-                    }
-                
             case .main:
                 // Основное приложение
                 MainTabView()

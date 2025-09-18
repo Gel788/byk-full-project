@@ -6,8 +6,14 @@ class UserDataService: ObservableObject {
     @Published var userReservations: [UserReservation] = []
     @Published var isLoading: Bool = false
     
+    private var authService: AuthService?
+    
     init() {
         generateTestData()
+    }
+    
+    func setAuthService(_ authService: AuthService) {
+        self.authService = authService
     }
     
     private func generateTestData() {
@@ -194,17 +200,56 @@ class UserDataService: ObservableObject {
     // MARK: - User Methods
     
     func getCurrentUser() -> User {
-        // Если есть авторизованный пользователь, возвращаем его
-        let authService = AuthService.shared
-        if let currentUser = authService.getCurrentUser() {
+        // Сначала пробуем получить из связанного authService
+        if let authService = authService, let currentUser = authService.getCurrentUser() {
+            print("UserDataService: Получены данные из связанного AuthService - \(currentUser.fullName)")
             return currentUser
         }
         
-        // Иначе возвращаем тестовые данные
+        // Если authService не установлен, пробуем AuthService.shared
+        if let currentUser = AuthService.shared.getCurrentUser() {
+            print("UserDataService: Получены данные из AuthService.shared - \(currentUser.fullName)")
+            return currentUser
+        }
+        
+        // В крайнем случае возвращаем тестовые данные (только для разработки)
+        print("UserDataService: Используются тестовые данные - пользователь не авторизован")
         return User(
-            username: "alex_petrov",
-            fullName: "Александр Петров",
-            email: "alex.petrov@email.com"
+            username: "guest",
+            fullName: "Гость",
+            email: "guest@email.com"
         )
+    }
+    
+    // MARK: - Profile Update Methods
+    
+    func updateUserProfile(name: String, email: String, phone: String) {
+        // Получаем текущего пользователя
+        guard let currentUser = authService?.getCurrentUser() ?? AuthService.shared.getCurrentUser() else {
+            print("Ошибка: пользователь не авторизован")
+            return
+        }
+        
+        // Создаем обновленного пользователя
+        let updatedUser = User(
+            username: currentUser.username,
+            fullName: name,
+            email: email
+        )
+        
+        // Обновляем в AuthService
+        if let authService = authService {
+            authService.updateCurrentUser(updatedUser)
+        } else {
+            AuthService.shared.updateCurrentUser(updatedUser)
+        }
+        
+        print("Профиль обновлен: имя=\(name), email=\(email), телефон=\(phone)")
+    }
+    
+    func updateUserPreferences(notifications: Bool, marketing: Bool, location: Bool) {
+        // Обновление настроек пользователя
+        print("Обновляем настройки: уведомления=\(notifications), маркетинг=\(marketing), геолокация=\(location)")
+        // TODO: Сохранение в UserDefaults или API
     }
 } 

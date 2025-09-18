@@ -6,9 +6,27 @@ struct ProfileView: View {
     @State private var showOrderHistory = false
     @State private var showReservations = false
     @State private var showDeliveryHistory = false
+    @State private var showProfileEdit = false
+    @State private var showSettings = false
+    @State private var showNotifications = false
+    @State private var showSupport = false
+    @State private var showLoyalty = false
     
     private var currentUser: User? {
-        userDataService.getCurrentUser()
+        // Сначала пробуем получить из AuthService (обновляется в реальном времени)
+        if let user = authService.currentUser {
+            return user
+        }
+        // Fallback на UserDataService
+        return userDataService.getCurrentUser()
+    }
+    
+    private var userStats: (orders: Int, reservations: Int, deliveries: Int) {
+        let orderStats = userDataService.getOrderStats()
+        let reservationStats = userDataService.getReservationStats()
+        let deliveryCount = userDataService.getOrdersByStatus(.delivered).count
+        
+        return (orderStats.total, reservationStats.active + reservationStats.completed, deliveryCount)
     }
     
     var body: some View {
@@ -19,9 +37,15 @@ struct ProfileView: View {
             } else {
                 ProfileContentView(
                     user: currentUser,
+                    userStats: userStats,
                     onShowOrderHistory: { showOrderHistory = true },
                     onShowReservations: { showReservations = true },
                     onShowDeliveryHistory: { showDeliveryHistory = true },
+                    onShowProfileEdit: { showProfileEdit = true },
+                    onShowSettings: { showSettings = true },
+                    onShowNotifications: { showNotifications = true },
+                    onShowSupport: { showSupport = true },
+                    onShowLoyalty: { showLoyalty = true },
                     onLogout: { authService.logout() }
                 )
                 .sheet(isPresented: $showOrderHistory) {
@@ -33,6 +57,23 @@ struct ProfileView: View {
                 .sheet(isPresented: $showDeliveryHistory) {
                     DeliveryHistoryView()
                 }
+                .sheet(isPresented: $showProfileEdit) {
+                    ProfileEditView(user: currentUser)
+                        .environmentObject(userDataService)
+                }
+                .sheet(isPresented: $showSettings) {
+                    ProfileSettingsView()
+                }
+                .sheet(isPresented: $showNotifications) {
+                    NotificationsView()
+                }
+                .sheet(isPresented: $showSupport) {
+                    SupportView()
+                }
+                .sheet(isPresented: $showLoyalty) {
+                    LoyaltyProgramView()
+                        .environmentObject(userDataService)
+                }
             }
         }
     }
@@ -41,9 +82,15 @@ struct ProfileView: View {
 // MARK: - Profile Content View
 struct ProfileContentView: View {
     let user: User?
+    let userStats: (orders: Int, reservations: Int, deliveries: Int)
     let onShowOrderHistory: () -> Void
     let onShowReservations: () -> Void
     let onShowDeliveryHistory: () -> Void
+    let onShowProfileEdit: () -> Void
+    let onShowSettings: () -> Void
+    let onShowNotifications: () -> Void
+    let onShowSupport: () -> Void
+    let onShowLoyalty: () -> Void
     let onLogout: () -> Void
     
     var body: some View {
@@ -106,9 +153,9 @@ struct ProfileContentView: View {
                         
                         // Статистика
                         StatisticsSectionView(
-                            orderCount: 5, // TODO: Получать из сервиса
-                            reservationCount: 3,
-                            deliveryCount: 8
+                            orderCount: userStats.orders,
+                            reservationCount: userStats.reservations,
+                            deliveryCount: userStats.deliveries
                         )
                         .padding(.horizontal, 20)
                         
@@ -119,7 +166,7 @@ struct ProfileContentView: View {
                                 icon: "person.circle.fill",
                                 color: Color("BykAccent")
                             ) {
-                                // TODO: Показать редактирование профиля
+                                onShowProfileEdit()
                             }
                             
                             ProfileMenuItemView(
@@ -144,6 +191,38 @@ struct ProfileContentView: View {
                                 color: .purple
                             ) {
                                 onShowDeliveryHistory()
+                            }
+                            
+                            ProfileMenuItemView(
+                                title: "Программа лояльности",
+                                icon: "star.circle.fill",
+                                color: .orange
+                            ) {
+                                onShowLoyalty()
+                            }
+                            
+                            ProfileMenuItemView(
+                                title: "Уведомления",
+                                icon: "bell.badge.fill",
+                                color: .blue
+                            ) {
+                                onShowNotifications()
+                            }
+                            
+                            ProfileMenuItemView(
+                                title: "Настройки",
+                                icon: "gearshape.fill",
+                                color: .gray
+                            ) {
+                                onShowSettings()
+                            }
+                            
+                            ProfileMenuItemView(
+                                title: "Поддержка",
+                                icon: "questionmark.circle.fill",
+                                color: .cyan
+                            ) {
+                                onShowSupport()
                             }
                         }
                         .padding(.horizontal, 20)

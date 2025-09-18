@@ -286,9 +286,28 @@ struct ContactInfoSection: View {
                     .foregroundColor(.white)
             }
             VStack(spacing: 12) {
-                CustomTextField(text: $name, icon: "person", placeholder: "Ваше имя")
-                CustomTextField(text: $phone, icon: "phone", placeholder: "Номер телефона")
-                CustomTextField(text: $address, icon: "location", placeholder: "Адрес доставки")
+                CustomTextField(
+                    title: "Имя",
+                    text: $name,
+                    placeholder: "Ваше имя",
+                    icon: "person",
+                    brandColors: brandColors
+                )
+                CustomTextField(
+                    title: "Телефон",
+                    text: $phone,
+                    placeholder: "Номер телефона",
+                    icon: "phone",
+                    brandColors: brandColors,
+                    keyboardType: .phonePad
+                )
+                CustomTextField(
+                    title: "Адрес доставки",
+                    text: $address,
+                    placeholder: "Адрес доставки",
+                    icon: "location",
+                    brandColors: brandColors
+                )
             }
         }
         .padding(20)

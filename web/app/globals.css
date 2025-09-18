@@ -1,0 +1,212 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Премиальные шрифты для БЫК Холдинга */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  /* Премиальная цветовая палитра БЫК Холдинга */
+  --byk-primary: #1a1a1a;      /* Темно-серый */
+  --byk-secondary: #d4af37;     /* Золотой */
+  --byk-accent: #ff6b35;        /* Оранжевый */
+  --byk-surface: #2a2a2a;       /* Поверхность */
+  --byk-text: #ffffff;          /* Белый текст */
+  --byk-text-secondary: #a0a0a0; /* Вторичный текст */
+  --byk-border: #333333;        /* Границы */
+  --byk-glass: rgba(255, 255, 255, 0.1); /* Стеклянный эффект */
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background: var(--byk-primary);
+  color: var(--byk-text);
+}
+
+/* Премиальная типографика */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+}
+
+/* Стеклянные эффекты */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* Золотые градиенты */
+.gold-gradient {
+  background: linear-gradient(135deg, #d4af37 0%, #f4d03f 50%, #d4af37 100%);
+}
+
+.gold-text {
+  background: linear-gradient(135deg, #d4af37, #f4d03f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Премиальные кнопки */
+.btn-premium {
+  background: linear-gradient(135deg, var(--byk-secondary), #f4d03f);
+  border: none;
+  color: var(--byk-primary);
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
+}
+
+.btn-premium:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.4);
+}
+
+/* Анимированные границы */
+.animated-border {
+  position: relative;
+  background: var(--byk-surface);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.animated-border::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.animated-border:hover::before {
+  left: 100%;
+}
+
+/* Премиальные карточки */
+.premium-card {
+  background: var(--byk-surface);
+  border: 1px solid var(--byk-border);
+  border-radius: 20px;
+  padding: 24px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--byk-secondary), var(--byk-accent));
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.premium-card:hover::before {
+  transform: scaleX(1);
+}
+
+.premium-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border-color: var(--byk-secondary);
+}
+
+/* Брендинг ресторанов */
+.brand-byk {
+  background: linear-gradient(135deg, #8B4513, #A0522D);
+  color: white;
+}
+
+.brand-pivo {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #1a1a1a;
+}
+
+.brand-mosca {
+  background: linear-gradient(135deg, #DC143C, #B22222);
+  color: white;
+}
+
+/* Анимации */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Кастомные скроллбары */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--byk-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--byk-secondary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #f4d03f;
+}
+
+/* Улучшенные фокусы */
+*:focus {
+  outline: 2px solid var(--byk-secondary);
+  outline-offset: 2px;
+}
+
+/* Премиальные переходы */
+.premium-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Адаптивные размеры */
+@media (max-width: 768px) {
+  .glass-effect {
+    backdrop-filter: blur(10px);
+  }
+  
+  .premium-card {
+    padding: 16px;
+    border-radius: 16px;
+  }
+} 

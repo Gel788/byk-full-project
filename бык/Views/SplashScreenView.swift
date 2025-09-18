@@ -23,219 +23,38 @@ struct SplashScreenView: View {
     
     var body: some View {
         ZStack {
-            // Современный градиентный фон
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color.black,
-                    Color("BykPrimary").opacity(0.1),
-                    Color("BykAccent").opacity(0.05),
-                    Color.black.opacity(0.95)
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            .scaleEffect(backgroundPulse ? 1.1 : 1.0)
-            .opacity(backgroundPulse ? 0.8 : 1.0)
-            .animation(
-                Animation.easeInOut(duration: 4.0)
-                    .repeatForever(autoreverses: true),
-                value: backgroundPulse
-            )
+            // Минималистичный черный фон
+            Color.black
+                .ignoresSafeArea()
             
-            // Декоративные элементы фона
-            GeometryReader { geometry in
-                ZStack {
-                    // Плавающие круги
-                    ForEach(0..<3, id: \.self) { index in
-                        Circle()
-                            .fill(
-                                RadialGradient(
-                                    colors: [
-                                        Color("BykAccent").opacity(0.1 - Double(index) * 0.03),
-                                        Color.clear
-                                    ],
-                                    center: .center,
-                                    startRadius: 0,
-                                    endRadius: 100
-                                )
-                            )
-                            .frame(width: 200 + CGFloat(index * 50), height: 200 + CGFloat(index * 50))
-                            .offset(
-                                x: oilSurface ? CGFloat(index * 30) : -CGFloat(index * 30),
-                                y: mysteriousGlow ? -CGFloat(index * 20) : CGFloat(index * 20)
-                            )
-                            .animation(
-                                Animation.easeInOut(duration: 6.0)
-                                    .repeatForever(autoreverses: true)
-                                    .delay(Double(index) * 0.5),
-                                value: oilSurface
-                            )
-                    }
-                }
-            }
+
             
-            // Элегантная поверхность масла
-            ZStack {
-                // Основная поверхность масла
-                RoundedRectangle(cornerRadius: 0)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color("BykPrimary").opacity(0.2),
-                                Color.black.opacity(0.7),
-                                Color("BykAccent").opacity(0.1)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .scaleEffect(oilSurface ? 1.02 : 1.0)
-                    .opacity(0.6)
-                    .animation(
-                        Animation.easeInOut(duration: 5.0)
-                            .repeatForever(autoreverses: true),
-                        value: oilSurface
-                    )
-                
-                // Мистическое свечение
-                RoundedRectangle(cornerRadius: 0)
-                    .fill(
-                        RadialGradient(
-                            colors: [
-                                Color("BykAccent").opacity(0.3),
-                                Color.clear
-                            ],
-                            center: .center,
-                            startRadius: 0,
-                            endRadius: 400
-                        )
-                    )
-                    .scaleEffect(mysteriousGlow ? 1.1 : 0.9)
-                    .opacity(mysteriousGlow ? 0.4 : 0.2)
-                    .animation(
-                        Animation.easeInOut(duration: 4.0)
-                            .repeatForever(autoreverses: true),
-                        value: mysteriousGlow
-                    )
-                
-                // Утонченные пузырьки масла
-                ForEach(oilBubbles, id: \.id) { bubble in
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color("BykAccent").opacity(0.6),
-                                    Color("BykPrimary").opacity(0.4),
-                                    Color.black.opacity(0.8)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(
-                            width: max(1, bubble.size),
-                            height: max(1, bubble.size)
-                        )
-                        .position(bubble.position)
-                        .opacity(max(0, min(1, bubble.opacity)))
-                        .scaleEffect(max(0.1, min(2.0, bubble.scale)))
-                        .blur(radius: 0.5)
-                }
-                
-                // Таинственный пар
-                ForEach(steamParticles, id: \.id) { particle in
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [
-                                    Color.white.opacity(0.4),
-                                    Color("BykAccent").opacity(0.2),
-                                    Color.clear
-                                ],
-                                center: .center,
-                                startRadius: 0,
-                                endRadius: particle.size
-                            )
-                        )
-                        .frame(
-                            width: max(1, particle.size),
-                            height: max(1, particle.size)
-                        )
-                        .position(particle.position)
-                        .opacity(max(0, min(1, particle.opacity)))
-                        .blur(radius: 2)
-                }
-            }
-            .ignoresSafeArea()
+
             
-            // Эффект молнии
-            if lightningFlash {
-                ZStack {
-                    // Вспышка молнии
-                    Rectangle()
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color.white,
-                                    Color("BykAccent").opacity(0.8),
-                                    Color.white
-                                ],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                        .ignoresSafeArea()
-                        .opacity(lightningFlash ? 1.0 : 0)
-                        .animation(.easeInOut(duration: 0.1), value: lightningFlash)
-                    
-                    // Ветви молнии
-                    ForEach(lightningBranches, id: \.id) { branch in
-                        LightningBranchView(branch: branch)
-                    }
-                }
-            }
+
             
             // Контент
             VStack(spacing: 40) {
                 Spacer()
                 
-                // Заголовок с современным дизайном
-                VStack(spacing: 12) {
-                    Text("Бык")
-                        .font(.custom("Helvetica Neue", size: 72, relativeTo: .largeTitle))
-                        .fontWeight(.ultraLight)
-                        .tracking(12)
-                        .foregroundStyle(
-                            LinearGradient(
-                                gradient: Gradient(colors: [
-                                    Color.white,
-                                    Color("BykAccent"),
-                                    Color.white
-                                ]),
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .shadow(color: Color.black.opacity(0.9), radius: 6, x: 3, y: 3)
-                        .shadow(color: Color("BykAccent").opacity(glow ? 0.9 : 0.5), radius: glow ? 40 : 15, x: 0, y: 0)
-                        .opacity(titleOpacity)
-                        .scaleEffect(titleScale)
-                        .animation(
-                            Animation.easeInOut(duration: 2.0)
-                                .repeatForever(autoreverses: true),
-                            value: glow
-                        )
-                    
-                    Text("Holding")
-                        .font(.custom("Helvetica Neue", size: 32, relativeTo: .title2))
-                        .fontWeight(.light)
-                        .tracking(16)
-                        .foregroundColor(.white)
-                        .shadow(color: Color.black.opacity(0.9), radius: 3, x: 1.5, y: 1.5)
-                        .opacity(titleOpacity)
-                        .scaleEffect(titleScale)
-                        .animation(.easeInOut(duration: 2.5), value: titleOpacity)
+                // Минималистичный и элегантный дизайн
+                VStack(spacing: 24) {
+                    // Основной логотип
+                    VStack(spacing: 12) {
+                        Text("Бык")
+                            .font(.system(size: 72, weight: .ultraLight, design: .default))
+                            .tracking(8)
+                            .foregroundColor(.white)
+                            .opacity(titleOpacity)
+                            .scaleEffect(titleScale)
+                        
+                        Text("Holding")
+                            .font(.system(size: 20, weight: .light, design: .default))
+                            .tracking(12)
+                            .foregroundColor(.white.opacity(0.7))
+                            .opacity(titleOpacity)
+                            .scaleEffect(titleScale)
+                    }
                 }
                 .padding(.horizontal, 30)
                 .padding(.vertical, 25)
@@ -271,95 +90,38 @@ struct SplashScreenView: View {
                 
                 Spacer()
                 
-                // Автор с современным дизайном
-                Text("by Mekhak Galstyan")
-                    .font(.custom("Helvetica Neue", size: 18, relativeTo: .caption))
-                    .fontWeight(.ultraLight)
-                    .tracking(6)
-                    .foregroundColor(.white.opacity(0.9))
-                    .shadow(color: Color.black.opacity(0.9), radius: 2, x: 1, y: 1)
-                    .opacity(authorOpacity)
-                    .offset(y: authorOffset)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color.black.opacity(0.3),
-                                        Color("BykPrimary").opacity(0.05),
-                                        Color.black.opacity(0.2)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color("BykAccent").opacity(0.2), lineWidth: 0.5)
-                            )
-                    )
-                    .animation(.easeInOut(duration: 2.0).delay(1.0), value: authorOpacity)
-                    .animation(.easeInOut(duration: 2.0).delay(1.0), value: authorOffset)
+                // Минималистичный автор
+                VStack(spacing: 4) {
+                    Text("by Mekhak Galstyan")
+                        .font(.system(size: 16, weight: .light, design: .default))
+                        .tracking(2)
+                        .foregroundColor(.white.opacity(0.6))
+                        .opacity(authorOpacity)
+                        .offset(y: authorOffset)
+                }
                 
                 Spacer()
             }
             .padding(.horizontal, 40)
+            
+
         }
         .opacity(screenOpacity)
         .onAppear {
             startAnimations()
-            // Запускаем эффект молнии через 4.5 секунды
-            DispatchQueue.main.asyncAfter(deadline: .now() + 4.5) {
-                print("⚡ Молния запускается!")
-                startLightningEffect()
-            }
         }
     }
     
     private func startAnimations() {
-        // Запуск анимаций с длительностью 5 секунд
-        withAnimation(.easeInOut(duration: 5.0)) {
-                titleOpacity = 1
+        // Простые и элегантные анимации
+        withAnimation(.easeInOut(duration: 2.0)) {
+            titleOpacity = 1
             titleScale = 1.0
         }
         
-        withAnimation(.easeInOut(duration: 5.0).delay(0.5)) {
-            glow = true
-        }
-        
-        withAnimation(.easeInOut(duration: 5.0).delay(1.0)) {
+        withAnimation(.easeInOut(duration: 2.0).delay(0.5)) {
             authorOpacity = 1
             authorOffset = 0
-        }
-        
-        // Анимации масла с 5-секундной длительностью
-        withAnimation(.easeInOut(duration: 5.0).repeatForever(autoreverses: true)) {
-            oilSurface = true
-        }
-        
-        withAnimation(.easeInOut(duration: 4.0).repeatForever(autoreverses: true)) {
-            mysteriousGlow = true
-        }
-        
-        withAnimation(.easeInOut(duration: 4.0).repeatForever(autoreverses: true)) {
-            backgroundPulse = true
-        }
-        
-        // Создание пузырьков с интервалами
-        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            createOilBubble()
-        }
-        
-        // Создание пара с интервалами
-        Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true) { _ in
-            createSteamParticle()
-        }
-        
-        // Очистка старых элементов
-        Timer.scheduledTimer(withTimeInterval: 8.0, repeats: true) { _ in
-            cleanupOldElements()
         }
     }
     
