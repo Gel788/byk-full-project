@@ -9,7 +9,7 @@ const router = express.Router();
 // Настройка multer для загрузки файлов
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = process.env.NODE_ENV === 'production' ? '/var/www/uploads/' : './uploads/';
+    const uploadDir = process.env.NODE_ENV === 'production' ? './uploads/' : './uploads/';
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
