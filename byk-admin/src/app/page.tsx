@@ -163,6 +163,7 @@ export default function AdminDashboard() {
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null)
   const [files, setFiles] = useState<Array<{id: string, filename: string, url: string, originalName?: string, size?: number}>>([])
   const [uploading, setUploading] = useState(false)
+  const [selectedFiles, setSelectedFiles] = useState<Array<{id: string, filename: string, url: string, originalName?: string, size?: number}>>([])
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
@@ -648,6 +649,7 @@ export default function AdminDashboard() {
       const data = await response.json()
       if (data.success) {
         setFiles(files.filter(f => f.filename !== filename))
+        setSelectedFiles(selectedFiles.filter(f => f.filename !== filename))
         alert('Файл удален успешно!')
         // Обновляем список файлов
         fetchFiles()
@@ -658,6 +660,21 @@ export default function AdminDashboard() {
       console.error('Ошибка удаления файла:', error)
       alert('Ошибка удаления файла')
     }
+  }
+
+  const toggleFileSelection = (file: {id: string, filename: string, url: string, originalName?: string, size?: number}) => {
+    setSelectedFiles(prev => {
+      const isSelected = prev.some(f => f.filename === file.filename)
+      if (isSelected) {
+        return prev.filter(f => f.filename !== file.filename)
+      } else {
+        return [...prev, file]
+      }
+    })
+  }
+
+  const clearSelectedFiles = () => {
+    setSelectedFiles([])
   }
 
   const fetchReservations = async () => {
@@ -759,9 +776,10 @@ export default function AdminDashboard() {
 
   const handleSaveRestaurant = async (restaurantData: Partial<Restaurant>) => {
     try {
-      // Получаем загруженные фото и видео
-      const imageFiles = files.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif'))
-      const videoFiles = files.filter(f => f.filename.includes('.mp4') || f.filename.includes('.mov') || f.filename.includes('.avi'))
+      // Получаем выбранные фото и видео, если нет выбранных - берем все загруженные
+      const filesToUse = selectedFiles.length > 0 ? selectedFiles : files
+      const imageFiles = filesToUse.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp'))
+      const videoFiles = filesToUse.filter(f => f.filename.includes('.mp4') || f.filename.includes('.mov') || f.filename.includes('.avi'))
       
       const restaurantWithFiles = {
         ...restaurantData,
@@ -799,6 +817,7 @@ export default function AdminDashboard() {
         
         // Очищаем файлы после сохранения
         setFiles([])
+        setSelectedFiles([])
         
         setShowAddModal(false)
         setEditingRestaurant(null)
@@ -815,8 +834,9 @@ export default function AdminDashboard() {
 
   const handleSaveDish = async (dishData: Partial<Dish>) => {
     try {
-      // Получаем загруженные фото
-      const imageFiles = files.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif'))
+      // Получаем выбранные фото, если нет выбранных - берем последнее загруженное
+      const filesToUse = selectedFiles.length > 0 ? selectedFiles : files
+      const imageFiles = filesToUse.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp'))
       
       const dishWithFiles = {
         ...dishData,
@@ -841,6 +861,7 @@ export default function AdminDashboard() {
         
         // Очищаем файлы после сохранения
         setFiles([])
+        setSelectedFiles([])
         
         setShowAddModal(false)
         setEditingDish(null)
@@ -890,9 +911,10 @@ export default function AdminDashboard() {
 
   const handleSaveNews = async (newsData: Partial<News>) => {
     try {
-      // Получаем только изображения из загруженных файлов
-      const imageFiles = files.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif'))
-      const videoFiles = files.filter(f => f.filename.includes('.mp4') || f.filename.includes('.mov') || f.filename.includes('.avi'))
+      // Получаем выбранные файлы, если нет выбранных - берем все загруженные
+      const filesToUse = selectedFiles.length > 0 ? selectedFiles : files
+      const imageFiles = filesToUse.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp'))
+      const videoFiles = filesToUse.filter(f => f.filename.includes('.mp4') || f.filename.includes('.mov') || f.filename.includes('.avi'))
       
       const newsWithFile = {
         ...newsData,
@@ -918,6 +940,7 @@ export default function AdminDashboard() {
             
             // Очищаем список файлов после сохранения
             setFiles([])
+            setSelectedFiles([])
             
             setShowAddModal(false)
             setEditingNews(null)
@@ -948,7 +971,7 @@ export default function AdminDashboard() {
       }
     }
   }
-
+ 
   const handleSaveUser = async (userData: Partial<User>) => {
     try {
       console.log('Сохранение пользователя:', userData)
@@ -2916,6 +2939,56 @@ export default function AdminDashboard() {
                           <span className="text-sm font-medium text-gray-700">В наличии</span>
                         </label>
                       </div>
+                      
+                      {/* Секция выбора файлов для блюда */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Выбрать фото для блюда
+                        </label>
+                        <div className="mt-2 p-4 border rounded-lg bg-gray-50">
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-sm font-medium text-gray-700">
+                              Выбрано файлов: {selectedFiles.length}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={clearSelectedFiles}
+                              className="text-xs text-red-600 hover:text-red-800"
+                            >
+                              Очистить выбор
+                            </button>
+                          </div>
+                          
+                          {files.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.webp')).length > 0 ? (
+                            <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+                              {files.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.webp')).map((file, index) => {
+                                const isSelected = selectedFiles.some(f => f.filename === file.filename)
+                                return (
+                                  <div
+                                    key={index}
+                                    onClick={() => toggleFileSelection(file)}
+                                    className={`p-2 rounded border cursor-pointer transition-colors ${
+                                      isSelected 
+                                        ? 'bg-green-100 border-green-300' 
+                                        : 'bg-white border-gray-200 hover:bg-gray-50'
+                                    }`}
+                                  >
+                                    <div className="flex items-center space-x-2">
+                                      <span className="text-sm">🖼️</span>
+                                      <span className="text-xs truncate flex-1">
+                                        {file.originalName || file.filename}
+                                      </span>
+                                      {isSelected && <span className="text-green-600">✓</span>}
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-500">Нет загруженных изображений</p>
+                          )}
+                        </div>
+                      </div>
                     </>
                   )}
                   
@@ -3172,6 +3245,60 @@ export default function AdminDashboard() {
                           />
                           <span className="text-sm font-medium text-gray-700">Опубликовать сразу</span>
                         </label>
+                      </div>
+                      
+                      {/* Секция выбора файлов для новости */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Выбрать медиа для новости
+                        </label>
+                        <div className="mt-2 p-4 border rounded-lg bg-gray-50">
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-sm font-medium text-gray-700">
+                              Выбрано файлов: {selectedFiles.length}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={clearSelectedFiles}
+                              className="text-xs text-red-600 hover:text-red-800"
+                            >
+                              Очистить выбор
+                            </button>
+                          </div>
+                          
+                          {files.length > 0 ? (
+                            <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+                              {files.map((file, index) => {
+                                const isSelected = selectedFiles.some(f => f.filename === file.filename)
+                                return (
+                                  <div
+                                    key={index}
+                                    onClick={() => toggleFileSelection(file)}
+                                    className={`p-2 rounded border cursor-pointer transition-colors ${
+                                      isSelected 
+                                        ? 'bg-purple-100 border-purple-300' 
+                                        : 'bg-white border-gray-200 hover:bg-gray-50'
+                                    }`}
+                                  >
+                                    <div className="flex items-center space-x-2">
+                                      <span className="text-sm">
+                                        {file.filename.includes('.jpg') || file.filename.includes('.png') || file.filename.includes('.webp') ? '🖼️' :
+                                         file.filename.includes('.mp4') || file.filename.includes('.mov') ? '🎥' :
+                                         file.filename.includes('.pdf') ? '📄' : '📁'}
+                                      </span>
+                                      <span className="text-xs truncate flex-1">
+                                        {file.originalName || file.filename}
+                                      </span>
+                                      {isSelected && <span className="text-purple-600">✓</span>}
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-500">Нет загруженных файлов</p>
+                          )}
+                        </div>
                       </div>
                     </>
                   )}
@@ -3443,6 +3570,60 @@ export default function AdminDashboard() {
                             </div>
                           </div>
                         )}
+                      </div>
+                      
+                      {/* Секция выбора файлов */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Выбрать файлы для ресторана
+                        </label>
+                        <div className="mt-2 p-4 border rounded-lg bg-gray-50">
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-sm font-medium text-gray-700">
+                              Выбрано файлов: {selectedFiles.length}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={clearSelectedFiles}
+                              className="text-xs text-red-600 hover:text-red-800"
+                            >
+                              Очистить выбор
+                            </button>
+                          </div>
+                          
+                          {files.length > 0 ? (
+                            <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+                              {files.map((file, index) => {
+                                const isSelected = selectedFiles.some(f => f.filename === file.filename)
+                                return (
+                                  <div
+                                    key={index}
+                                    onClick={() => toggleFileSelection(file)}
+                                    className={`p-2 rounded border cursor-pointer transition-colors ${
+                                      isSelected 
+                                        ? 'bg-blue-100 border-blue-300' 
+                                        : 'bg-white border-gray-200 hover:bg-gray-50'
+                                    }`}
+                                  >
+                                    <div className="flex items-center space-x-2">
+                                      <span className="text-sm">
+                                        {file.filename.includes('.jpg') || file.filename.includes('.png') || file.filename.includes('.webp') ? '🖼️' :
+                                         file.filename.includes('.mp4') || file.filename.includes('.mov') ? '🎥' :
+                                         file.filename.includes('.pdf') ? '📄' : '📁'}
+                                      </span>
+                                      <span className="text-xs truncate flex-1">
+                                        {file.originalName || file.filename}
+                                      </span>
+                                      {isSelected && <span className="text-blue-600">✓</span>}
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-500">Нет загруженных файлов</p>
+                          )}
+                        </div>
                       </div>
                       
                       <div>
