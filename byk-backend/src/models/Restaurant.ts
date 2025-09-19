@@ -2,8 +2,8 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IRestaurant extends Document {
   name: string;
-  brand: string;
-  city: string;
+  brandId: mongoose.Types.ObjectId;
+  cityId: mongoose.Types.ObjectId;
   address: string;
   phone: string;
   email: string;
@@ -19,8 +19,16 @@ export interface IRestaurant extends Document {
 
 const RestaurantSchema = new Schema({
   name: { type: String, required: true },
-  brand: { type: String, required: false, default: '' },
-  city: { type: String, required: false, default: '' },
+  brandId: { 
+    type: Schema.Types.ObjectId, 
+    ref: 'Brand',
+    required: true
+  },
+  cityId: { 
+    type: Schema.Types.ObjectId, 
+    ref: 'City',
+    required: true
+  },
   address: { type: String, required: false, default: '' },
   phone: { type: String, required: false, default: '' },
   email: { type: String, required: false, default: '' },
@@ -29,9 +37,9 @@ const RestaurantSchema = new Schema({
   rating: { type: Number, default: 0 },
   photos: [{ type: String }],
   videos: [{ type: String }],
-  isActive: { type: Boolean, default: true },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+  isActive: { type: Boolean, default: true }
+}, {
+  timestamps: true
 });
 
 export default mongoose.model<IRestaurant>('Restaurant', RestaurantSchema);

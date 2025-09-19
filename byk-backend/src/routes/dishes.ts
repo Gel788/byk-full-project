@@ -7,7 +7,16 @@ const router = express.Router();
 // Get all dishes
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const dishes = await Dish.find().populate('restaurantId', 'name brand');
+    const dishes = await Dish.find()
+      .populate('categoryId', 'name')
+      .populate('restaurantId', 'name')
+      .populate({
+        path: 'restaurantId',
+        populate: {
+          path: 'brandId',
+          select: 'name'
+        }
+      });
     res.json(dishes);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -17,7 +26,16 @@ router.get('/', async (req: Request, res: Response) => {
 // Get single dish
 router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const dish = await Dish.findById(req.params.id).populate('restaurantId', 'name brand');
+    const dish = await Dish.findById(req.params.id)
+      .populate('categoryId', 'name')
+      .populate('restaurantId', 'name')
+      .populate({
+        path: 'restaurantId',
+        populate: {
+          path: 'brandId',
+          select: 'name'
+        }
+      });
     if (!dish) return res.status(404).json({ message: 'Dish not found' });
     res.json(dish);
   } catch (error: any) {

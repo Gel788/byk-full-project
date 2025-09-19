@@ -11,7 +11,7 @@ const router = express_1.default.Router();
 // Настройка multer для загрузки файлов
 const storage = multer_1.default.diskStorage({
     destination: (req, file, cb) => {
-        const uploadDir = 'uploads/';
+        const uploadDir = '/var/www/uploads/';
         if (!fs_1.default.existsSync(uploadDir)) {
             fs_1.default.mkdirSync(uploadDir, { recursive: true });
         }
@@ -31,7 +31,7 @@ const upload = (0, multer_1.default)({
 // Получить список файлов
 router.get('/files', async (req, res) => {
     try {
-        const uploadDir = 'uploads/';
+        const uploadDir = '/var/www/uploads/';
         if (!fs_1.default.existsSync(uploadDir)) {
             return res.json({
                 success: true,
@@ -45,7 +45,7 @@ router.get('/files', async (req, res) => {
             name: file,
             size: fs_1.default.statSync(path_1.default.join(uploadDir, file)).size,
             uploadDate: fs_1.default.statSync(path_1.default.join(uploadDir, file)).mtime,
-            url: `http://localhost:5001/uploads/${file}`
+            url: `https://bulladmin.ru/api/uploads/${file}`
         }));
         res.json({
             success: true,
@@ -78,7 +78,7 @@ router.post('/upload', upload.single('file'), (req, res) => {
                 originalName: req.file.originalname,
                 size: req.file.size,
                 path: req.file.path,
-                url: `http://localhost:5001/uploads/${req.file.filename}`
+                url: `https://bulladmin.ru/api/uploads/${req.file.filename}`
             }
         });
     }
@@ -104,7 +104,7 @@ router.post('/upload-multiple', upload.array('files', 10), (req, res) => {
             originalName: file.originalname,
             size: file.size,
             path: file.path,
-            url: `http://localhost:5001/uploads/${file.filename}`
+            url: `https://bulladmin.ru/api/uploads/${file.filename}`
         }));
         res.json({
             success: true,
@@ -125,7 +125,7 @@ router.post('/upload-multiple', upload.array('files', 10), (req, res) => {
 router.delete('/files/:filename', (req, res) => {
     try {
         const filename = req.params.filename;
-        const filePath = path_1.default.join('uploads', filename);
+        const filePath = path_1.default.join('/var/www/uploads', filename);
         if (!fs_1.default.existsSync(filePath)) {
             return res.status(404).json({
                 success: false,

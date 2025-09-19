@@ -7,7 +7,9 @@ const router = express.Router();
 // Get all restaurants
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const restaurants = await Restaurant.find();
+    const restaurants = await Restaurant.find()
+      .populate('brandId', 'name color logo')
+      .populate('cityId', 'name country');
     res.json(restaurants);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -17,7 +19,9 @@ router.get('/', async (req: Request, res: Response) => {
 // Get single restaurant
 router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const restaurant = await Restaurant.findById(req.params.id);
+    const restaurant = await Restaurant.findById(req.params.id)
+      .populate('brandId', 'name color logo')
+      .populate('cityId', 'name country');
     if (!restaurant) return res.status(404).json({ message: 'Restaurant not found' });
     res.json(restaurant);
   } catch (error: any) {

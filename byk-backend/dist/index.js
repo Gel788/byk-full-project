@@ -16,6 +16,9 @@ const news_1 = __importDefault(require("./routes/news"));
 const reservation_1 = __importDefault(require("./routes/reservation"));
 const orders_1 = __importDefault(require("./routes/orders"));
 const upload_1 = __importDefault(require("./routes/upload"));
+const brands_1 = __importDefault(require("./routes/brands"));
+const cities_1 = __importDefault(require("./routes/cities"));
+const categories_1 = __importDefault(require("./routes/categories"));
 // Admin Routes
 const adminRoutes_1 = __importDefault(require("./admin/routes/adminRoutes"));
 // Load environment variables
@@ -23,7 +26,13 @@ dotenv_1.default.config();
 const app = (0, express_1.default)();
 // CORS for all requests
 app.use((0, cors_1.default)({
-    origin: ["http://localhost:3000", "http://localhost:3001"],
+    origin: [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://bulladmin.ru",
+        "http://45.12.75.59:3000",
+        "http://45.12.75.59:3001"
+    ],
     credentials: true
 }));
 // Static files with CORS headers
@@ -52,6 +61,9 @@ app.use("/api/news", news_1.default);
 app.use("/api/reservations", reservation_1.default);
 app.use("/api/orders", orders_1.default);
 app.use("/api/upload", upload_1.default);
+app.use("/api/brands", brands_1.default);
+app.use("/api/cities", cities_1.default);
+app.use("/api/categories", categories_1.default);
 // Admin Routes
 app.use("/api/admin", adminRoutes_1.default);
 // Health check

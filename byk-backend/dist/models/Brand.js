@@ -34,26 +34,33 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-const DishSchema = new mongoose_1.Schema({
-    name: { type: String, required: true },
-    description: { type: String, required: true },
-    price: { type: Number, required: true },
-    categoryId: {
-        type: mongoose_1.Schema.Types.ObjectId,
-        ref: 'Category',
-        required: true
+const BrandSchema = new mongoose_1.Schema({
+    name: {
+        type: String,
+        required: true,
+        unique: true,
+        trim: true
     },
-    restaurantId: {
-        type: mongoose_1.Schema.Types.ObjectId,
-        ref: 'Restaurant',
-        required: true
+    description: {
+        type: String,
+        required: false
     },
-    imageURL: { type: String, required: false, default: '' },
-    preparationTime: { type: Number, default: 15 },
-    calories: { type: Number, default: 0 },
-    allergens: [{ type: String }],
-    isAvailable: { type: Boolean, default: true }
+    logo: {
+        type: String,
+        required: false,
+        default: ''
+    },
+    color: {
+        type: String,
+        required: false,
+        default: '#3B82F6'
+    },
+    isActive: {
+        type: Boolean,
+        required: true,
+        default: true
+    }
 }, {
     timestamps: true
 });
-exports.default = mongoose_1.default.model('Dish', DishSchema);
+exports.default = mongoose_1.default.model('Brand', BrandSchema);

@@ -36,8 +36,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
 const RestaurantSchema = new mongoose_1.Schema({
     name: { type: String, required: true },
-    brand: { type: String, required: false, default: '' },
-    city: { type: String, required: false, default: '' },
+    brandId: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: 'Brand',
+        required: true
+    },
+    cityId: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: 'City',
+        required: true
+    },
     address: { type: String, required: false, default: '' },
     phone: { type: String, required: false, default: '' },
     email: { type: String, required: false, default: '' },
@@ -46,8 +54,8 @@ const RestaurantSchema = new mongoose_1.Schema({
     rating: { type: Number, default: 0 },
     photos: [{ type: String }],
     videos: [{ type: String }],
-    isActive: { type: Boolean, default: true },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
+    isActive: { type: Boolean, default: true }
+}, {
+    timestamps: true
 });
 exports.default = mongoose_1.default.model('Restaurant', RestaurantSchema);

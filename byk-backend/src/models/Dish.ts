@@ -4,8 +4,8 @@ export interface IDish extends Document {
   name: string;
   description: string;
   price: number;
-  category: string;
-  restaurantId: string;
+  categoryId: mongoose.Types.ObjectId;
+  restaurantId: mongoose.Types.ObjectId;
   imageURL: string;
   preparationTime: number;
   calories: number;
@@ -19,15 +19,23 @@ const DishSchema = new Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
   price: { type: Number, required: true },
-  category: { type: String, required: true },
-  restaurantId: { type: Schema.Types.ObjectId, ref: 'Restaurant', required: true },
+  categoryId: { 
+    type: Schema.Types.ObjectId, 
+    ref: 'Category',
+    required: true 
+  },
+  restaurantId: { 
+    type: Schema.Types.ObjectId, 
+    ref: 'Restaurant', 
+    required: true 
+  },
   imageURL: { type: String, required: false, default: '' },
   preparationTime: { type: Number, default: 15 },
   calories: { type: Number, default: 0 },
   allergens: [{ type: String }],
-  isAvailable: { type: Boolean, default: true },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+  isAvailable: { type: Boolean, default: true }
+}, {
+  timestamps: true
 });
 
 export default mongoose.model<IDish>('Dish', DishSchema);

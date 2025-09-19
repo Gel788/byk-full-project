@@ -9,7 +9,9 @@ const router = express_1.default.Router();
 // Get all restaurants
 router.get('/', async (req, res) => {
     try {
-        const restaurants = await Restaurant_1.default.find();
+        const restaurants = await Restaurant_1.default.find()
+            .populate('brandId', 'name color logo')
+            .populate('cityId', 'name country');
         res.json(restaurants);
     }
     catch (error) {
@@ -19,7 +21,9 @@ router.get('/', async (req, res) => {
 // Get single restaurant
 router.get('/:id', async (req, res) => {
     try {
-        const restaurant = await Restaurant_1.default.findById(req.params.id);
+        const restaurant = await Restaurant_1.default.findById(req.params.id)
+            .populate('brandId', 'name color logo')
+            .populate('cityId', 'name country');
         if (!restaurant)
             return res.status(404).json({ message: 'Restaurant not found' });
         res.json(restaurant);

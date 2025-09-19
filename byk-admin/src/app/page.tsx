@@ -21,11 +21,46 @@ interface DashboardStats {
   activeOrders: number
 }
 
+interface Brand {
+  _id: string
+  name: string
+  description?: string
+  logo?: string
+  color?: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+interface City {
+  _id: string
+  name: string
+  country?: string
+  timezone?: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+interface Category {
+  _id: string
+  name: string
+  description?: string
+  brandId: string
+  brandName?: string
+  order: number
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
 interface Restaurant {
   _id: string
   name: string
-  brand: string
-  city: string
+  brandId: string
+  brandName?: string
+  cityId: string
+  cityName?: string
   rating: number
   createdAt: string
   description?: string
@@ -43,10 +78,11 @@ interface Dish {
   name: string
   description: string
   price: number
-  category: string
+  categoryId: string
+  categoryName?: string
   restaurantId: string
-  restaurantName: string
-  restaurantBrand: string
+  restaurantName?: string
+  restaurantBrand?: string
   imageURL: string
   isAvailable: boolean
   preparationTime: number
@@ -131,6 +167,9 @@ interface OrderItem {
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [brands, setBrands] = useState<Brand[]>([])
+  const [cities, setCities] = useState<City[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [dishes, setDishes] = useState<Dish[]>([])
   const [news, setNews] = useState<News[]>([])
@@ -151,6 +190,9 @@ export default function AdminDashboard() {
   // Предпросмотр блюд
   const [showDishPreviewModal, setShowDishPreviewModal] = useState(false)
   const [previewDish, setPreviewDish] = useState<Dish | null>(null)
+  const [editingBrand, setEditingBrand] = useState<Brand | null>(null)
+  const [editingCity, setEditingCity] = useState<City | null>(null)
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [editingRestaurant, setEditingRestaurant] = useState<Restaurant | null>(null)
   const [editingDish, setEditingDish] = useState<Dish | null>(null)
   const [editingNews, setEditingNews] = useState<News | null>(null)
@@ -168,7 +210,7 @@ export default function AdminDashboard() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedBrand, setSelectedBrand] = useState<string>('all')
-  const [categories, setCategories] = useState<string[]>([
+  const [dishCategories, setDishCategories] = useState<string[]>([
     'Мясо', 'Пицца', 'Паста', 'Салаты', 'Супы', 'Десерты', 'Напитки', 'Закуски'
   ])
   const [newCategory, setNewCategory] = useState('')
@@ -176,6 +218,9 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchStats()
+    fetchBrands()
+    fetchCities()
+    fetchCategories()
     fetchRestaurants()
     fetchDishes()
     fetchNews()
@@ -228,6 +273,39 @@ export default function AdminDashboard() {
     }
   }
 
+  const fetchBrands = async () => {
+    try {
+      const response = await fetch('https://bulladmin.ru/api/brands')
+      const data = await response.json()
+      console.log('Загружены бренды:', data)
+      setBrands(data)
+    } catch (error) {
+      console.error('Ошибка загрузки брендов:', error)
+    }
+  }
+
+  const fetchCities = async () => {
+    try {
+      const response = await fetch('https://bulladmin.ru/api/cities')
+      const data = await response.json()
+      console.log('Загружены города:', data)
+      setCities(data)
+    } catch (error) {
+      console.error('Ошибка загрузки городов:', error)
+    }
+  }
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('https://bulladmin.ru/api/categories')
+      const data = await response.json()
+      console.log('Загружены категории:', data)
+      setCategories(data)
+    } catch (error) {
+      console.error('Ошибка загрузки категорий:', error)
+    }
+  }
+
   const fetchRestaurants = async () => {
     try {
       const response = await fetch('https://bulladmin.ru/api/admin/restaurants')
@@ -249,8 +327,8 @@ export default function AdminDashboard() {
         {
           _id: '1',
           name: 'БЫК Steakhouse',
-          brand: 'БЫК',
-          city: 'Москва',
+          brandId: '1',
+          cityId: '1',
           rating: 4.8,
           createdAt: new Date().toISOString(),
           description: 'Премиальный стейкхаус с мраморным мясом и изысканной атмосферой',
@@ -267,8 +345,8 @@ export default function AdminDashboard() {
         {
           _id: '2',
           name: 'Пиво & Мясо',
-          brand: 'Пиво',
-          city: 'Санкт-Петербург',
+          brandId: '2',
+          cityId: '2',
           rating: 4.6,
           createdAt: new Date().toISOString(),
           description: 'Уютный ресторан с крафтовым пивом и мясными деликатесами',
@@ -284,8 +362,8 @@ export default function AdminDashboard() {
         {
           _id: '3',
           name: 'Моска',
-          brand: 'Моска',
-          city: 'Москва',
+          brandId: '3',
+          cityId: '1',
           rating: 4.7,
           createdAt: new Date().toISOString(),
           description: 'Современный ресторан с панорамным видом на город',
@@ -321,7 +399,7 @@ export default function AdminDashboard() {
           name: 'Стейк Рибай',
           description: 'Мраморное мясо высшего качества',
           price: 2500,
-          category: 'Мясо',
+          categoryId: '1',
           restaurantId: '1',
           restaurantName: 'БЫК Steakhouse',
           restaurantBrand: 'БЫК',
@@ -337,7 +415,7 @@ export default function AdminDashboard() {
           name: 'Пицца Маргарита',
           description: 'Классическая итальянская пицца',
           price: 1200,
-          category: 'Пицца',
+          categoryId: '2',
           restaurantId: '3',
           restaurantName: 'Моска',
           restaurantBrand: 'Моска',
@@ -353,7 +431,7 @@ export default function AdminDashboard() {
           name: 'Паста Карбонара',
           description: 'Спагетти с беконом и сливочным соусом',
           price: 800,
-          category: 'Паста',
+          categoryId: '3',
           restaurantId: '3',
           restaurantName: 'Моска',
           restaurantBrand: 'Моска',
@@ -369,7 +447,7 @@ export default function AdminDashboard() {
           name: 'Цезарь с курицей',
           description: 'Свежий салат с курицей и пармезаном',
           price: 600,
-          category: 'Салаты',
+          categoryId: '4',
           restaurantId: '1',
           restaurantName: 'БЫК Steakhouse',
           restaurantBrand: 'БЫК',
@@ -385,7 +463,7 @@ export default function AdminDashboard() {
           name: 'Томатный суп',
           description: 'Горячий томатный суп с базиликом',
           price: 400,
-          category: 'Супы',
+          categoryId: '5',
           restaurantId: '3',
           restaurantName: 'Моска',
           restaurantBrand: 'Моска',
@@ -401,7 +479,7 @@ export default function AdminDashboard() {
           name: 'Тирамису',
           description: 'Классический итальянский десерт',
           price: 500,
-          category: 'Десерты',
+          categoryId: '6',
           restaurantId: '3',
           restaurantName: 'Моска',
           restaurantBrand: 'Моска',
@@ -417,7 +495,7 @@ export default function AdminDashboard() {
           name: 'Крафтовое пиво',
           description: 'Свежее крафтовое пиво местного производства',
           price: 300,
-          category: 'Напитки',
+          categoryId: '7',
           restaurantId: '2',
           restaurantName: 'Пиво & Мясо',
           restaurantBrand: 'Пиво',
@@ -433,7 +511,7 @@ export default function AdminDashboard() {
           name: 'Сырная тарелка',
           description: 'Ассорти из сыров с орехами и медом',
           price: 900,
-          category: 'Закуски',
+          categoryId: '8',
           restaurantId: '1',
           restaurantName: 'БЫК Steakhouse',
           restaurantBrand: 'БЫК',
@@ -912,16 +990,16 @@ export default function AdminDashboard() {
   }
 
   const handleAddCategory = () => {
-    if (newCategory.trim() && !categories.includes(newCategory.trim())) {
-      setCategories([...categories, newCategory.trim()])
+    if (newCategory.trim() && !dishCategories.includes(newCategory.trim())) {
+      setDishCategories([...dishCategories, newCategory.trim()])
       setNewCategory('')
       setShowCategoryModal(false)
     }
   }
 
   const handleDeleteCategory = (category: string) => {
-    if (categories.length > 1) {
-      setCategories(categories.filter(cat => cat !== category))
+    if (dishCategories.length > 1) {
+      setDishCategories(dishCategories.filter(cat => cat !== category))
     }
   }
 
@@ -1288,6 +1366,9 @@ export default function AdminDashboard() {
           <div className="space-y-2">
             {[
               { id: 'dashboard', name: 'Дашборд', icon: '📊', color: 'from-blue-500 to-blue-600' },
+              { id: 'brands', name: 'Бренды', icon: '🏷️', color: 'from-red-500 to-red-600' },
+              { id: 'cities', name: 'Города', icon: '🏙️', color: 'from-cyan-500 to-cyan-600' },
+              { id: 'categories', name: 'Категории', icon: '📂', color: 'from-amber-500 to-amber-600' },
               { id: 'restaurants', name: 'Рестораны', icon: '🏢', color: 'from-green-500 to-green-600' },
               { id: 'dishes', name: 'Блюда', icon: '🍽️', color: 'from-orange-500 to-orange-600' },
               { id: 'news', name: 'Новости', icon: '📰', color: 'from-purple-500 to-purple-600' },
@@ -1452,7 +1533,7 @@ export default function AdminDashboard() {
                       <div key={restaurant._id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
                           <h4 className="font-medium text-gray-900">{restaurant.name}</h4>
-                          <p className="text-sm text-gray-500">{restaurant.brand} • {restaurant.city}</p>
+                          <p className="text-sm text-gray-500">Бренд • Город</p>
                         </div>
                         <div className="flex items-center space-x-2">
                           <span className="text-sm text-gray-500">⭐ {restaurant.rating}</span>
@@ -1538,7 +1619,7 @@ export default function AdminDashboard() {
                           {/* Бренд бейдж */}
                           <div className="absolute top-2 left-2">
                             <span className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                              {restaurant.brand}
+                              Бренд
                             </span>
                           </div>
                           {/* Рейтинг бейдж */}
@@ -1552,7 +1633,7 @@ export default function AdminDashboard() {
                         {/* Информация о ресторане */}
                         <div className="p-4">
                           <h3 className="font-medium text-gray-900 mb-1">{restaurant.name}</h3>
-                          <p className="text-sm text-gray-500 mb-2">{restaurant.city}</p>
+                          <p className="text-sm text-gray-500 mb-2">Город</p>
                           {restaurant.description && (
                             <p className="text-sm text-gray-600 mb-3 line-clamp-2">{restaurant.description}</p>
                           )}
@@ -1749,7 +1830,7 @@ export default function AdminDashboard() {
             {/* Статистика по категориям */}
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-6">
               {['Мясо', 'Пицца', 'Паста', 'Салаты', 'Супы', 'Десерты', 'Напитки', 'Закуски'].map(category => {
-                const count = dishes.filter(dish => dish.category === category).length
+                const count = dishes.filter(dish => dish.categoryId === category).length
                 return (
                   <div key={category} className="bg-white rounded-lg shadow p-3 text-center">
                     <div className="text-2xl font-bold text-gray-900">{count}</div>
@@ -1770,7 +1851,7 @@ export default function AdminDashboard() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {dishes
                       .filter(dish => {
-                        const categoryMatch = selectedCategory === 'all' || dish.category === selectedCategory
+                        const categoryMatch = selectedCategory === 'all' || dish.categoryId === selectedCategory
                         const brandMatch = selectedBrand === 'all' || dish.restaurantBrand === selectedBrand
                         return categoryMatch && brandMatch
                       })
@@ -1795,7 +1876,7 @@ export default function AdminDashboard() {
                           )}
                           <div className="absolute top-2 left-2">
                             <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                              {dish.category}
+                              Категория
                             </span>
                           </div>
                           <div className="absolute top-2 right-2">
@@ -2799,8 +2880,8 @@ export default function AdminDashboard() {
                           </label>
                         <select
                           name="dishCategory"
-                          value={editingDish?.category || ''}
-                          onChange={(e) => setEditingDish({...editingDish, category: e.target.value})}
+                          value={editingDish?.categoryId || ''}
+                          onChange={(e) => setEditingDish({...editingDish, categoryId: e.target.value})}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                           required
                         >
@@ -2830,7 +2911,7 @@ export default function AdminDashboard() {
                           <option value="">Выберите ресторан</option>
                           {restaurants.map(restaurant => (
                             <option key={restaurant._id} value={restaurant._id}>
-                              {restaurant.name} ({restaurant.brand})
+                              {restaurant.name} (Бренд)
                             </option>
                           ))}
                         </select>
@@ -3454,8 +3535,8 @@ export default function AdminDashboard() {
                         </label>
                         <select
                           name="brand"
-                          value={editingRestaurant?.brand || ''}
-                          onChange={(e) => setEditingRestaurant({...editingRestaurant, brand: e.target.value})}
+                          value={editingRestaurant?.brandId || ''}
+                          onChange={(e) => setEditingRestaurant({...editingRestaurant, brandId: e.target.value})}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           required
                         >
@@ -3473,7 +3554,7 @@ export default function AdminDashboard() {
                         <input
                           type="text"
                           name="city"
-                          defaultValue={editingRestaurant?.city || ''}
+                          defaultValue={editingRestaurant?.cityId || ''}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           required
                         />
@@ -3797,7 +3878,7 @@ export default function AdminDashboard() {
                           <option value="">Выберите ресторан</option>
                           {restaurants.map((restaurant) => (
                             <option key={restaurant._id} value={restaurant._id}>
-                              {restaurant.name} ({restaurant.brand})
+                              {restaurant.name} (Бренд)
                             </option>
                           ))}
                         </select>
@@ -4024,7 +4105,7 @@ export default function AdminDashboard() {
                           <option value="">Выберите ресторан</option>
                           {restaurants.map((restaurant) => (
                             <option key={restaurant._id} value={restaurant._id}>
-                              {restaurant.name} ({restaurant.brand})
+                              {restaurant.name} (Бренд)
                             </option>
                           ))}
                         </select>
@@ -4102,7 +4183,7 @@ export default function AdminDashboard() {
                         <option value="">Выберите ресторан для самовывоза</option>
                         {restaurants.map((restaurant) => (
                           <option key={restaurant._id} value={restaurant._id}>
-                            {restaurant.name} ({restaurant.brand})
+                             {restaurant.name} (Бренд)
                           </option>
                         ))}
                         </select>
@@ -4305,12 +4386,12 @@ export default function AdminDashboard() {
                     Существующие категории
                   </label>
                   <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {categories.map((category, index) => (
+                    {dishCategories.map((category, index) => (
                       <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-md">
                         <span className="text-gray-900">{category}</span>
                         <button
                           onClick={() => handleDeleteCategory(category)}
-                          disabled={categories.length <= 1}
+                          disabled={dishCategories.length <= 1}
                           className="text-red-500 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed"
                         >
                           <TrashIcon className="h-4 w-4" />
@@ -4477,7 +4558,7 @@ export default function AdminDashboard() {
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">{previewRestaurant.name}</h3>
                     <div className="flex items-center space-x-4 mb-4">
                       <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        {previewRestaurant.brand}
+                        Бренд
                       </span>
                       <span className="bg-yellow-400 text-black px-3 py-1 rounded-full text-sm font-medium flex items-center">
                         ⭐ {previewRestaurant.rating}
@@ -4536,10 +4617,10 @@ export default function AdminDashboard() {
                   <div>
                     <h4 className="text-lg font-semibold text-gray-900 mb-3">Контактная информация</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {previewRestaurant.city && (
+                      {previewRestaurant.cityId && (
                         <div>
                           <span className="font-medium text-gray-700">Город:</span>
-                          <p className="text-gray-600">{previewRestaurant.city}</p>
+                          <p className="text-gray-600">Город</p>
                         </div>
                       )}
                       {previewRestaurant.address && (
@@ -4635,7 +4716,7 @@ export default function AdminDashboard() {
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">{previewDish.name}</h3>
                     <div className="flex items-center space-x-4 mb-4">
                       <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        {previewDish.category}
+                        Категория
                       </span>
                       <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                         {previewDish.restaurantName}
@@ -5151,7 +5232,7 @@ export default function AdminDashboard() {
                     <option value="">Выберите ресторан</option>
                     {restaurants.map((restaurant) => (
                       <option key={restaurant._id} value={restaurant._id}>
-                        {restaurant.name} ({restaurant.brand})
+                             {restaurant.name} (Бренд)
                       </option>
                     ))}
                   </select>

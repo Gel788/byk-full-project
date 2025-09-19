@@ -14,6 +14,9 @@ import newsRouter from "./routes/news";
 import reservationRouter from "./routes/reservation";
 import ordersRouter from "./routes/orders";
 import uploadRouter from "./routes/upload";
+import brandsRouter from "./routes/brands";
+import citiesRouter from "./routes/cities";
+import categoriesRouter from "./routes/categories";
 
 // Admin Routes
 import adminRouter from "./admin/routes/adminRoutes";
@@ -64,6 +67,9 @@ app.use("/api/news", newsRouter);
 app.use("/api/reservations", reservationRouter);
 app.use("/api/orders", ordersRouter);
 app.use("/api/upload", uploadRouter);
+app.use("/api/brands", brandsRouter);
+app.use("/api/cities", citiesRouter);
+app.use("/api/categories", categoriesRouter);
 
 // Admin Routes
 app.use("/api/admin", adminRouter);
