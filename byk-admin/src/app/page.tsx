@@ -206,6 +206,11 @@ export default function AdminDashboard() {
   const [files, setFiles] = useState<Array<{id: string, filename: string, url: string, originalName?: string, size?: number}>>([])
   const [uploading, setUploading] = useState(false)
   const [selectedFiles, setSelectedFiles] = useState<Array<{id: string, filename: string, url: string, originalName?: string, size?: number}>>([])
+  
+  // Отдельные состояния для модальных окон
+  const [newsFiles, setNewsFiles] = useState<Array<{id: string, filename: string, url: string, originalName?: string, size?: number}>>([])
+  const [restaurantFiles, setRestaurantFiles] = useState<Array<{id: string, filename: string, url: string, originalName?: string, size?: number}>>([])
+  const [dishFiles, setDishFiles] = useState<Array<{id: string, filename: string, url: string, originalName?: string, size?: number}>>([])
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
@@ -682,6 +687,88 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Ошибка загрузки файла:', error)
+      alert('Ошибка загрузки файла')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  // Функции загрузки для модальных окон
+  const handleNewsFileUpload = async (file: File) => {
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      
+      const response = await fetch('https://bulladmin.ru/api/upload/upload', {
+        method: 'POST',
+        body: formData
+      })
+      
+      const data = await response.json()
+      if (data.success) {
+        setNewsFiles([...newsFiles, data.data])
+        console.log('Файл для новости загружен успешно:', file.name)
+      } else {
+        console.error('Ошибка загрузки файла для новости:', data.message)
+        alert('Ошибка загрузки файла: ' + data.message)
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки файла для новости:', error)
+      alert('Ошибка загрузки файла')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleRestaurantFileUpload = async (file: File) => {
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      
+      const response = await fetch('https://bulladmin.ru/api/upload/upload', {
+        method: 'POST',
+        body: formData
+      })
+      
+      const data = await response.json()
+      if (data.success) {
+        setRestaurantFiles([...restaurantFiles, data.data])
+        console.log('Файл для ресторана загружен успешно:', file.name)
+      } else {
+        console.error('Ошибка загрузки файла для ресторана:', data.message)
+        alert('Ошибка загрузки файла: ' + data.message)
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки файла для ресторана:', error)
+      alert('Ошибка загрузки файла')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleDishFileUpload = async (file: File) => {
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      
+      const response = await fetch('https://bulladmin.ru/api/upload/upload', {
+        method: 'POST',
+        body: formData
+      })
+      
+      const data = await response.json()
+      if (data.success) {
+        setDishFiles([...dishFiles, data.data])
+        console.log('Файл для блюда загружен успешно:', file.name)
+      } else {
+        console.error('Ошибка загрузки файла для блюда:', data.message)
+        alert('Ошибка загрузки файла: ' + data.message)
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки файла для блюда:', error)
       alert('Ошибка загрузки файла')
     } finally {
       setUploading(false)
@@ -3310,7 +3397,7 @@ export default function AdminDashboard() {
                           onChange={(e) => {
                             const file = e.target.files?.[0]
                             if (file) {
-                              handleFileUpload(file)
+                              handleDishFileUpload(file)
                             }
                           }}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -3321,11 +3408,11 @@ export default function AdminDashboard() {
                       </div>
                       
                       {/* Отображение загруженных фото для блюд */}
-                      {files.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif')).length > 0 && (
+                      {dishFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif')).length > 0 && (
                         <div className="mt-4">
                           <p className="text-sm font-medium text-gray-700 mb-2">Загруженные фото:</p>
                           <div className="grid grid-cols-2 gap-2">
-                            {files.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif')).map((file, index) => (
+                            {dishFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif')).map((file, index) => (
                               <div key={index} className="relative group">
                                 <img 
                                   src={file.url} 
@@ -3582,7 +3669,7 @@ export default function AdminDashboard() {
                                   onChange={async (e) => {
                                     const file = e.target.files?.[0]
                                     if (file) {
-                                      await handleFileUpload(file)
+                                      await handleNewsFileUpload(file)
                                     }
                                   }}
                                 />
@@ -3600,11 +3687,11 @@ export default function AdminDashboard() {
                         </div>
                         
                         {/* Показать загруженные изображения */}
-                        {files.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif')).length > 0 && (
+                        {newsFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif')).length > 0 && (
                           <div className="mt-4">
                             <p className="text-sm font-medium text-gray-700 mb-2">Загруженные изображения:</p>
                             <div className="grid grid-cols-2 gap-2">
-                              {files.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif')).map((file, index) => (
+                              {newsFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif')).map((file, index) => (
                                 <div key={index} className="relative group">
                                   <img 
                                     src={file.url} 
@@ -3667,7 +3754,7 @@ export default function AdminDashboard() {
                                   onChange={async (e) => {
                                     const file = e.target.files?.[0]
                                     if (file) {
-                                      await handleFileUpload(file)
+                                      await handleNewsFileUpload(file)
                                     }
                                   }}
                                 />
@@ -3685,11 +3772,11 @@ export default function AdminDashboard() {
                         </div>
                         
                         {/* Показать загруженные видео */}
-                        {files.filter(f => f.filename.includes('.mp4') || f.filename.includes('.mov') || f.filename.includes('.avi')).length > 0 && (
+                        {newsFiles.filter(f => f.filename.includes('.mp4') || f.filename.includes('.mov') || f.filename.includes('.avi')).length > 0 && (
                           <div className="mt-4">
                             <p className="text-sm font-medium text-gray-700 mb-2">Загруженные видео:</p>
                             <div className="space-y-2">
-                              {files.filter(f => f.filename.includes('.mp4') || f.filename.includes('.mov') || f.filename.includes('.avi')).map((file, index) => (
+                              {newsFiles.filter(f => f.filename.includes('.mp4') || f.filename.includes('.mov') || f.filename.includes('.avi')).map((file, index) => (
                                 <div key={index} className="flex items-center space-x-3 p-2 border rounded">
                                   <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
                                     <span className="text-lg">🎥</span>
@@ -4028,7 +4115,7 @@ export default function AdminDashboard() {
                                   onChange={(e) => {
                                     const file = e.target.files?.[0]
                                     if (file) {
-                                      handleFileUpload(file)
+                                      handleRestaurantFileUpload(file)
                                     }
                                   }}
                                 />
@@ -4046,11 +4133,11 @@ export default function AdminDashboard() {
                         </div>
                         
                         {/* Отображение загруженных фото для ресторана */}
-                        {files.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif')).length > 0 && (
+                        {restaurantFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif')).length > 0 && (
                           <div className="mt-4">
                             <p className="text-sm font-medium text-gray-700 mb-2">Загруженные фото ресторана:</p>
                             <div className="grid grid-cols-2 gap-2">
-                              {files.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif')).map((file, index) => (
+                              {restaurantFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif')).map((file, index) => (
                                 <div key={index} className="relative group">
                                   <img 
                                     src={file.url} 
@@ -4378,6 +4465,10 @@ export default function AdminDashboard() {
                       setEditingNews(null)
                       setEditingUser(null)
                       setEditingOrder(null)
+                      // Очищаем файлы при закрытии модальных окон
+                      setNewsFiles([])
+                      setRestaurantFiles([])
+                      setDishFiles([])
                     }}
                     className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
                   >
