@@ -952,11 +952,14 @@ export default function AdminDashboard() {
   const handleSaveUser = async (userData: Partial<User>) => {
     try {
       console.log('Сохранение пользователя:', userData)
+      console.log('JSON данные:', JSON.stringify(userData))
       
       const isEditing = editingUser && editingUser._id
       const url = isEditing 
         ? `https://bulladmin.ru/api/users/${editingUser._id}`
         : 'https://bulladmin.ru/api/users'
+      
+      console.log('URL:', url, 'Method:', isEditing ? 'PUT' : 'POST')
       
       // API вызов для сохранения
       const response = await fetch(url, {
@@ -2670,11 +2673,34 @@ export default function AdminDashboard() {
                   handleSaveNews(data)
                 } else if (editingUser) {
                   // Форма для пользователей
+                  const fullName = (formData.get('userName') as string) || ''
+                  const username = (formData.get('userUsername') as string) || ''
+                  const email = (formData.get('userEmail') as string) || ''
+                  const password = (formData.get('userPassword') as string) || ''
+                  
+                  // Проверяем обязательные поля
+                  if (!fullName.trim()) {
+                    alert('Полное имя обязательно для заполнения')
+                    return
+                  }
+                  if (!username.trim()) {
+                    alert('Логин обязателен для заполнения')
+                    return
+                  }
+                  if (!email.trim()) {
+                    alert('Email обязателен для заполнения')
+                    return
+                  }
+                  if (!password.trim()) {
+                    alert('Пароль обязателен для заполнения')
+                    return
+                  }
+                  
                   const data = {
-                    fullName: (formData.get('userName') as string) || '',
-                    username: (formData.get('userUsername') as string) || '',
-                    email: (formData.get('userEmail') as string) || '',
-                    password: (formData.get('userPassword') as string) || '',
+                    fullName: fullName.trim(),
+                    username: username.trim(),
+                    email: email.trim(),
+                    password: password.trim(),
                     phone: (formData.get('userPhone') as string) || '',
                     role: 'user' as const,
                     isActive: formData.get('userActive') === 'true'
