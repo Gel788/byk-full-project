@@ -949,10 +949,9 @@ export default function AdminDashboard() {
         return
       }
       
-      // Получаем выбранные фото и видео, если нет выбранных - берем все загруженные
-      const filesToUse = selectedFiles.length > 0 ? selectedFiles : files
-      const imageFiles = filesToUse.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp'))
-      const videoFiles = filesToUse.filter(f => f.filename.includes('.mp4') || f.filename.includes('.mov') || f.filename.includes('.avi'))
+      // Получаем выбранные фото из restaurantFiles
+      const imageFiles = restaurantFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.jpeg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp'))
+      const videoFiles = restaurantFiles.filter(f => f.filename.includes('.mp4') || f.filename.includes('.mov') || f.filename.includes('.avi'))
       
       const restaurantWithFiles = {
         ...restaurantData,
@@ -991,6 +990,7 @@ export default function AdminDashboard() {
         // Очищаем файлы после сохранения
         setFiles([])
         setSelectedFiles([])
+        setRestaurantFiles([])
         
         setShowAddModal(false)
         setEditingRestaurant(null)
@@ -1014,7 +1014,7 @@ export default function AdminDashboard() {
       }
       
       // Получаем выбранные фото из dishFiles
-      const imageFiles = dishFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp'))
+      const imageFiles = dishFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.jpeg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp'))
       
       const dishWithFiles = {
         ...dishData,
@@ -1099,10 +1099,9 @@ export default function AdminDashboard() {
 
   const handleSaveNews = async (newsData: Partial<News>) => {
     try {
-      // Получаем выбранные файлы, если нет выбранных - берем все загруженные
-      const filesToUse = selectedFiles.length > 0 ? selectedFiles : files
-      const imageFiles = filesToUse.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp'))
-      const videoFiles = filesToUse.filter(f => f.filename.includes('.mp4') || f.filename.includes('.mov') || f.filename.includes('.avi'))
+      // Получаем выбранные файлы из newsFiles
+      const imageFiles = newsFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.jpeg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp'))
+      const videoFiles = newsFiles.filter(f => f.filename.includes('.mp4') || f.filename.includes('.mov') || f.filename.includes('.avi'))
       
       const newsWithFile = {
         ...newsData,
@@ -1129,6 +1128,7 @@ export default function AdminDashboard() {
             // Очищаем список файлов после сохранения
             setFiles([])
             setSelectedFiles([])
+            setNewsFiles([])
             
             setShowAddModal(false)
             setEditingNews(null)
@@ -3406,11 +3406,11 @@ export default function AdminDashboard() {
                       </div>
                       
                       {/* Отображение загруженных фото для блюд */}
-                      {dishFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif')).length > 0 && (
+                      {dishFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.jpeg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp')).length > 0 && (
                         <div className="mt-4">
                           <p className="text-sm font-medium text-gray-700 mb-2">Загруженные фото:</p>
                           <div className="grid grid-cols-2 gap-2">
-                            {dishFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif')).map((file, index) => (
+                            {dishFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.jpeg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp')).map((file, index) => (
                               <div key={index} className="relative group">
                                 <img 
                                   src={file.url} 
@@ -3685,11 +3685,11 @@ export default function AdminDashboard() {
                         </div>
                         
                         {/* Показать загруженные изображения */}
-                        {newsFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif')).length > 0 && (
+                        {newsFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.jpeg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp')).length > 0 && (
                           <div className="mt-4">
                             <p className="text-sm font-medium text-gray-700 mb-2">Загруженные изображения:</p>
                             <div className="grid grid-cols-2 gap-2">
-                              {newsFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif')).map((file, index) => (
+                              {newsFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.jpeg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp')).map((file, index) => (
                                 <div key={index} className="relative group">
                                   <img 
                                     src={file.url} 
@@ -4131,11 +4131,11 @@ export default function AdminDashboard() {
                         </div>
                         
                         {/* Отображение загруженных фото для ресторана */}
-                        {restaurantFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif')).length > 0 && (
+                        {restaurantFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.jpeg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp')).length > 0 && (
                           <div className="mt-4">
                             <p className="text-sm font-medium text-gray-700 mb-2">Загруженные фото ресторана:</p>
                             <div className="grid grid-cols-2 gap-2">
-                              {restaurantFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif')).map((file, index) => (
+                              {restaurantFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.jpeg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp')).map((file, index) => (
                                 <div key={index} className="relative group">
                                   <img 
                                     src={file.url} 
