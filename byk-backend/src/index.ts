@@ -25,7 +25,13 @@ const app = express();
 
 // CORS for all requests
 app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:3001"],
+  origin: [
+    "http://localhost:3000", 
+    "http://localhost:3001",
+    "https://bulladmin.ru",
+    "http://45.12.75.59:3000",
+    "http://45.12.75.59:3001"
+  ],
   credentials: true
 }));
 
