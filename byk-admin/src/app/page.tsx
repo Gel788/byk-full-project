@@ -254,7 +254,7 @@ export default function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/admin/dashboard')
+      const response = await fetch('http://localhost:5001/api/admin/dashboard')
       const data = await response.json()
       if (data.success) {
         setStats(data.data)
@@ -275,7 +275,7 @@ export default function AdminDashboard() {
 
   const fetchBrands = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/brands')
+      const response = await fetch('http://localhost:5001/api/brands')
       const data = await response.json()
       console.log('Загружены бренды:', data)
       setBrands(data)
@@ -286,7 +286,7 @@ export default function AdminDashboard() {
 
   const fetchCities = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/cities')
+      const response = await fetch('http://localhost:5001/api/cities')
       const data = await response.json()
       console.log('Загружены города:', data)
       setCities(data)
@@ -297,7 +297,7 @@ export default function AdminDashboard() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/categories')
+      const response = await fetch('http://localhost:5001/api/categories')
       const data = await response.json()
       console.log('Загружены категории:', data)
       setCategories(data)
@@ -308,14 +308,14 @@ export default function AdminDashboard() {
 
   const fetchRestaurants = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/admin/restaurants')
+      const response = await fetch('http://localhost:5001/api/admin/restaurants')
       const data = await response.json()
       console.log('Загружены рестораны:', data)
       if (data.success) {
         setRestaurants(data.data)
       } else {
         // Fallback на обычный API
-        const fallbackResponse = await fetch('https://bulladmin.ru/api/restaurants')
+        const fallbackResponse = await fetch('http://localhost:5001/api/restaurants')
         const fallbackData = await fallbackResponse.json()
         console.log('Загружены рестораны (fallback):', fallbackData)
         setRestaurants(fallbackData)
@@ -386,7 +386,7 @@ export default function AdminDashboard() {
 
   const fetchDishes = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/dishes')
+      const response = await fetch('http://localhost:5001/api/dishes')
       const data = await response.json()
       console.log('Загружены блюда:', data)
       setDishes(data)
@@ -528,7 +528,7 @@ export default function AdminDashboard() {
 
   const fetchNews = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/admin/news')
+      const response = await fetch('http://localhost:5001/api/admin/news')
       const data = await response.json()
       if (data.success) {
         setNews(data.data)
@@ -557,7 +557,7 @@ export default function AdminDashboard() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/admin/users')
+      const response = await fetch('http://localhost:5001/api/admin/users')
       const data = await response.json()
       if (data.success) {
         setUsers(data.data)
@@ -586,7 +586,7 @@ export default function AdminDashboard() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/admin/orders')
+      const response = await fetch('http://localhost:5001/api/admin/orders')
       const data = await response.json()
       if (data.success) {
         setOrders(data.data)
@@ -646,7 +646,7 @@ export default function AdminDashboard() {
   const fetchFiles = async () => {
     try {
       console.log('Загружаем файлы...')
-      const response = await fetch('https://bulladmin.ru/api/upload/files')
+      const response = await fetch('http://localhost:5001/api/upload/files')
       const data = await response.json()
       console.log('Получены файлы:', data)
       if (data.success) {
@@ -665,7 +665,7 @@ export default function AdminDashboard() {
       const formData = new FormData()
       formData.append('file', file)
       
-      const response = await fetch('https://bulladmin.ru/api/upload/upload', {
+      const response = await fetch('http://localhost:5001/api/upload/upload', {
         method: 'POST',
         body: formData
       })
@@ -696,7 +696,7 @@ export default function AdminDashboard() {
         formData.append('files', file)
       })
       
-      const response = await fetch('https://bulladmin.ru/api/upload/upload-multiple', {
+      const response = await fetch('http://localhost:5001/api/upload/upload-multiple', {
         method: 'POST',
         body: formData
       })
@@ -720,7 +720,7 @@ export default function AdminDashboard() {
 
   const deleteFile = async (filename: string) => {
     try {
-      const response = await fetch(`https://bulladmin.ru/api/upload/files/${filename}`, {
+      const response = await fetch(`http://localhost:5001/api/upload/files/${filename}`, {
         method: 'DELETE'
       })
       
@@ -757,7 +757,7 @@ export default function AdminDashboard() {
 
   const fetchReservations = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/admin/reservations')
+      const response = await fetch('http://localhost:5001/api/admin/reservations')
       const data = await response.json()
       if (data.success) {
         setReservations(data.data)
@@ -835,7 +835,7 @@ export default function AdminDashboard() {
   const handleDeleteRestaurant = async (id: string) => {
     if (confirm('Удалить ресторан?')) {
       try {
-        const response = await fetch(`https://bulladmin.ru/api/restaurants/${id}`, {
+        const response = await fetch(`http://localhost:5001/api/restaurants/${id}`, {
           method: 'DELETE'
         })
         
@@ -854,6 +854,12 @@ export default function AdminDashboard() {
 
   const handleSaveRestaurant = async (restaurantData: Partial<Restaurant>) => {
     try {
+      // Валидация обязательных полей
+      if (!restaurantData.brandId || !restaurantData.cityId) {
+        alert('Пожалуйста, выберите бренд и город')
+        return
+      }
+      
       // Получаем выбранные фото и видео, если нет выбранных - берем все загруженные
       const filesToUse = selectedFiles.length > 0 ? selectedFiles : files
       const imageFiles = filesToUse.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp'))
@@ -870,8 +876,8 @@ export default function AdminDashboard() {
       // Определяем метод и URL в зависимости от того, редактируем ли существующий ресторан
       const isEditing = editingRestaurant && editingRestaurant._id
       const url = isEditing 
-        ? `https://bulladmin.ru/api/restaurants/${editingRestaurant._id}`
-        : 'https://bulladmin.ru/api/restaurants'
+        ? `http://localhost:5001/api/restaurants/${editingRestaurant._id}`
+        : 'http://localhost:5001/api/restaurants'
       const method = isEditing ? 'PUT' : 'POST'
       
       // API вызов для сохранения
@@ -912,6 +918,12 @@ export default function AdminDashboard() {
 
   const handleSaveDish = async (dishData: Partial<Dish>) => {
     try {
+      // Валидация обязательных полей
+      if (!dishData.categoryId || !dishData.restaurantId) {
+        alert('Пожалуйста, выберите категорию и ресторан')
+        return
+      }
+      
       // Получаем выбранные фото, если нет выбранных - берем последнее загруженное
       const filesToUse = selectedFiles.length > 0 ? selectedFiles : files
       const imageFiles = filesToUse.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp'))
@@ -930,8 +942,8 @@ export default function AdminDashboard() {
       // Определяем метод и URL в зависимости от того, редактируем ли существующее блюдо
       const isEditing = editingDish && editingDish._id
       const url = isEditing 
-        ? `https://bulladmin.ru/api/dishes/${editingDish._id}`
-        : 'https://bulladmin.ru/api/dishes'
+        ? `http://localhost:5001/api/dishes/${editingDish._id}`
+        : 'http://localhost:5001/api/dishes'
       const method = isEditing ? 'PUT' : 'POST'
       
       // API вызов для сохранения
@@ -949,8 +961,8 @@ export default function AdminDashboard() {
           // Обновляем существующее блюдо в списке
           setDishes(dishes.map(d => d._id === editingDish._id ? savedDish : d))
         } else {
-          // Добавляем новое блюдо в список
-          setDishes([savedDish, ...dishes])
+        // Добавляем новое блюдо в список
+        setDishes([savedDish, ...dishes])
         }
         
         // Очищаем файлы после сохранения
@@ -972,7 +984,7 @@ export default function AdminDashboard() {
   const handleDeleteDish = async (id: string) => {
     if (confirm('Удалить блюдо?')) {
       try {
-        const response = await fetch(`https://bulladmin.ru/api/dishes/${id}`, {
+        const response = await fetch(`http://localhost:5001/api/dishes/${id}`, {
           method: 'DELETE'
         })
         
@@ -997,11 +1009,6 @@ export default function AdminDashboard() {
     }
   }
 
-  const handleDeleteCategory = (category: string) => {
-    if (dishCategories.length > 1) {
-      setDishCategories(dishCategories.filter(cat => cat !== category))
-    }
-  }
 
   const handleSaveNews = async (newsData: Partial<News>) => {
     try {
@@ -1019,7 +1026,7 @@ export default function AdminDashboard() {
       console.log('Сохранение новости:', newsWithFile)
       
       // API вызов для сохранения
-      const response = await fetch('https://bulladmin.ru/api/news', {
+      const response = await fetch('http://localhost:5001/api/news', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newsWithFile)
@@ -1049,7 +1056,7 @@ export default function AdminDashboard() {
   const handleDeleteNews = async (id: string) => {
     if (confirm('Удалить новость?')) {
       try {
-        const response = await fetch(`https://bulladmin.ru/api/news/${id}`, {
+        const response = await fetch(`http://localhost:5001/api/news/${id}`, {
           method: 'DELETE'
         })
         
@@ -1065,6 +1072,165 @@ export default function AdminDashboard() {
       }
     }
   }
+
+  // Brand functions
+  const handleSaveBrand = async (brandData: Partial<Brand>) => {
+    try {
+      const isEditing = editingBrand?._id
+      const url = isEditing 
+        ? `http://localhost:5001/api/brands/${editingBrand._id}`
+        : 'http://localhost:5001/api/brands'
+      const method = isEditing ? 'PUT' : 'POST'
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(brandData)
+      })
+
+      if (response.ok) {
+        const savedBrand = await response.json()
+        if (isEditing) {
+          setBrands(brands.map(b => b._id === savedBrand._id ? savedBrand : b))
+        } else {
+          setBrands([...brands, savedBrand])
+        }
+        setEditingBrand(null)
+        alert('Бренд сохранен')
+      } else {
+        alert('Ошибка сохранения бренда')
+      }
+    } catch (error) {
+      console.error('Ошибка сохранения бренда:', error)
+      alert('Ошибка сохранения бренда')
+    }
+  }
+
+  const handleDeleteBrand = async (id: string) => {
+    if (confirm('Удалить бренд?')) {
+      try {
+        const response = await fetch(`http://localhost:5001/api/brands/${id}`, {
+          method: 'DELETE'
+        })
+        
+        if (response.ok) {
+          setBrands(brands.filter(b => b._id !== id))
+          alert('Бренд удален')
+        } else {
+          alert('Ошибка удаления бренда')
+        }
+      } catch (error) {
+        console.error('Ошибка удаления бренда:', error)
+        alert('Ошибка удаления бренда')
+      }
+    }
+  }
+
+  // City functions
+  const handleSaveCity = async (cityData: Partial<City>) => {
+    try {
+      const isEditing = editingCity?._id
+      const url = isEditing 
+        ? `http://localhost:5001/api/cities/${editingCity._id}`
+        : 'http://localhost:5001/api/cities'
+      const method = isEditing ? 'PUT' : 'POST'
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cityData)
+      })
+
+      if (response.ok) {
+        const savedCity = await response.json()
+        if (isEditing) {
+          setCities(cities.map(c => c._id === savedCity._id ? savedCity : c))
+        } else {
+          setCities([...cities, savedCity])
+        }
+        setEditingCity(null)
+        alert('Город сохранен')
+      } else {
+        alert('Ошибка сохранения города')
+      }
+    } catch (error) {
+      console.error('Ошибка сохранения города:', error)
+      alert('Ошибка сохранения города')
+    }
+  }
+
+  const handleDeleteCity = async (id: string) => {
+    if (confirm('Удалить город?')) {
+      try {
+        const response = await fetch(`http://localhost:5001/api/cities/${id}`, {
+          method: 'DELETE'
+        })
+        
+        if (response.ok) {
+          setCities(cities.filter(c => c._id !== id))
+          alert('Город удален')
+        } else {
+          alert('Ошибка удаления города')
+        }
+      } catch (error) {
+        console.error('Ошибка удаления города:', error)
+        alert('Ошибка удаления города')
+      }
+    }
+  }
+
+  // Category functions
+  const handleSaveCategory = async (categoryData: Partial<Category>) => {
+    try {
+      const isEditing = editingCategory?._id
+      const url = isEditing 
+        ? `http://localhost:5001/api/categories/${editingCategory._id}`
+        : 'http://localhost:5001/api/categories'
+      const method = isEditing ? 'PUT' : 'POST'
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(categoryData)
+      })
+
+      if (response.ok) {
+        const savedCategory = await response.json()
+        if (isEditing) {
+          setCategories(categories.map(c => c._id === savedCategory._id ? savedCategory : c))
+        } else {
+          setCategories([...categories, savedCategory])
+        }
+        setEditingCategory(null)
+        alert('Категория сохранена')
+      } else {
+        alert('Ошибка сохранения категории')
+      }
+    } catch (error) {
+      console.error('Ошибка сохранения категории:', error)
+      alert('Ошибка сохранения категории')
+    }
+  }
+
+  const handleDeleteCategory = async (id: string) => {
+    if (confirm('Удалить категорию?')) {
+      try {
+        const response = await fetch(`http://localhost:5001/api/categories/${id}`, {
+          method: 'DELETE'
+        })
+        
+        if (response.ok) {
+          setCategories(categories.filter(c => c._id !== id))
+          alert('Категория удалена')
+        } else {
+          alert('Ошибка удаления категории')
+        }
+      } catch (error) {
+        console.error('Ошибка удаления категории:', error)
+        alert('Ошибка удаления категории')
+      }
+    }
+  }
  
   const handleSaveUser = async (userData: Partial<User>) => {
     try {
@@ -1073,8 +1239,8 @@ export default function AdminDashboard() {
       
       const isEditing = editingUser && editingUser._id
       const url = isEditing 
-        ? `https://bulladmin.ru/api/users/${editingUser._id}`
-        : 'https://bulladmin.ru/api/users'
+        ? `http://localhost:5001/api/users/${editingUser._id}`
+        : 'http://localhost:5001/api/users'
       
       console.log('URL:', url, 'Method:', isEditing ? 'PUT' : 'POST')
       
@@ -1113,7 +1279,7 @@ export default function AdminDashboard() {
   const handleDeleteUser = async (id: string) => {
     if (confirm('Удалить пользователя?')) {
       try {
-        const response = await fetch(`https://bulladmin.ru/api/users/${id}`, {
+        const response = await fetch(`http://localhost:5001/api/users/${id}`, {
           method: 'DELETE'
         })
         
@@ -1175,8 +1341,8 @@ export default function AdminDashboard() {
       
       const isEditing = editingOrder && editingOrder._id
       const url = isEditing 
-        ? `https://bulladmin.ru/api/orders/${editingOrder._id}`
-        : 'https://bulladmin.ru/api/orders'
+        ? `http://localhost:5001/api/orders/${editingOrder._id}`
+        : 'http://localhost:5001/api/orders'
       
       const response = await fetch(url, {
         method: isEditing ? 'PUT' : 'POST',
@@ -1210,7 +1376,7 @@ export default function AdminDashboard() {
   const handleDeleteOrder = async (id: string) => {
     if (confirm('Удалить заказ?')) {
       try {
-        const response = await fetch(`https://bulladmin.ru/api/orders/${id}`, {
+        const response = await fetch(`http://localhost:5001/api/orders/${id}`, {
           method: 'DELETE'
         })
         
@@ -1233,8 +1399,8 @@ export default function AdminDashboard() {
 
       const isEditing = editingReservation && editingReservation._id
       const url = isEditing
-        ? `https://bulladmin.ru/api/reservations/${editingReservation._id}`
-        : 'https://bulladmin.ru/api/reservations'
+        ? `http://localhost:5001/api/reservations/${editingReservation._id}`
+        : 'http://localhost:5001/api/reservations'
 
       const response = await fetch(url, {
         method: isEditing ? 'PUT' : 'POST',
@@ -1272,7 +1438,7 @@ export default function AdminDashboard() {
   const handleDeleteReservation = async (id: string) => {
     if (confirm('Удалить бронирование?')) {
       try {
-        const response = await fetch(`https://bulladmin.ru/api/reservations/${id}`, {
+        const response = await fetch(`http://localhost:5001/api/reservations/${id}`, {
           method: 'DELETE'
         })
         
@@ -1738,6 +1904,218 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {/* Brands Tab */}
+        {activeTab === 'brands' && (
+          <div>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                🏷️ Бренды
+              </h2>
+              <button 
+                onClick={() => setEditingBrand({} as Brand)}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center"
+              >
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Добавить бренд
+              </button>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow">
+              <div className="p-6">
+                {brands.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="text-gray-400 mb-4">
+                      <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Нет брендов</h3>
+                    <p className="text-gray-500 mb-4">Добавьте первый бренд для начала работы</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {brands.map((brand) => (
+                      <div key={brand._id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="font-medium text-gray-900">{brand.name}</h3>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => setEditingBrand(brand)}
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              onClick={() => handleDeleteBrand(brand._id)}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+                        {brand.description && (
+                          <p className="text-sm text-gray-600 mb-2">{brand.description}</p>
+                        )}
+                        <div className="flex items-center space-x-2">
+                          {brand.color && (
+                            <div 
+                              className="w-4 h-4 rounded-full" 
+                              style={{ backgroundColor: brand.color }}
+                            ></div>
+                          )}
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            brand.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                            {brand.isActive ? 'Активен' : 'Неактивен'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Cities Tab */}
+        {activeTab === 'cities' && (
+          <div>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                🏙️ Города
+              </h2>
+              <button 
+                onClick={() => setEditingCity({} as City)}
+                className="bg-cyan-600 text-white px-4 py-2 rounded-lg hover:bg-cyan-700 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center"
+              >
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Добавить город
+              </button>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow">
+              <div className="p-6">
+                {cities.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="text-gray-400 mb-4">
+                      <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Нет городов</h3>
+                    <p className="text-gray-500 mb-4">Добавьте первый город для начала работы</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {cities.map((city) => (
+                      <div key={city._id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="font-medium text-gray-900">{city.name}</h3>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => setEditingCity(city)}
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              onClick={() => handleDeleteCity(city._id)}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-600 mb-2">
+                          <p>Страна: {city.country || 'Россия'}</p>
+                          <p>Часовой пояс: {city.timezone || 'Europe/Moscow'}</p>
+                        </div>
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          city.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {city.isActive ? 'Активен' : 'Неактивен'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Categories Tab */}
+        {activeTab === 'categories' && (
+          <div>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                📂 Категории
+              </h2>
+              <button 
+                onClick={() => setEditingCategory({} as Category)}
+                className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center"
+              >
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Добавить категорию
+              </button>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow">
+              <div className="p-6">
+                {categories.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="text-gray-400 mb-4">
+                      <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Нет категорий</h3>
+                    <p className="text-gray-500 mb-4">Добавьте первую категорию для начала работы</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {categories.map((category) => (
+                      <div key={category._id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="font-medium text-gray-900">{category.name}</h3>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => setEditingCategory(category)}
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              onClick={() => handleDeleteCategory(category._id)}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+                        {category.description && (
+                          <p className="text-sm text-gray-600 mb-2">{category.description}</p>
+                        )}
+                        <div className="text-sm text-gray-600 mb-2">
+                          <p>Бренд: {category.brandName || 'Не указан'}</p>
+                          <p>Порядок: {category.order}</p>
+                        </div>
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          category.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {category.isActive ? 'Активна' : 'Неактивна'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Dishes Tab */}
         {activeTab === 'dishes' && (
           <div>
@@ -2065,7 +2443,7 @@ export default function AdminDashboard() {
                                   onClick={async () => {
                                     if (confirm('Удалить новость?')) {
                                       try {
-                                        const response = await fetch(`https://bulladmin.ru/api/news/${article._id}`, {
+                                        const response = await fetch(`http://localhost:5001/api/news/${article._id}`, {
                                           method: 'DELETE'
                                         })
                                         
@@ -2729,7 +3107,7 @@ export default function AdminDashboard() {
                     name: formData.get('dishName') as string || '',
                     description: formData.get('dishDescription') as string || '',
                     price: parseFloat(formData.get('dishPrice') as string || '0'),
-                    category: formData.get('dishCategory') as string || '',
+                    categoryId: formData.get('dishCategory') as string || '',
                     restaurantId: formData.get('dishRestaurant') as string || '',
                     imageURL: formData.get('dishImage') as string || '',
                     isAvailable: formData.get('dishAvailable') === 'true',
@@ -2770,8 +3148,8 @@ export default function AdminDashboard() {
                   // Форма для ресторанов
                   const data = {
                     name: (formData.get('name') as string) || '',
-                    brand: (formData.get('brand') as string) || '',
-                    city: (formData.get('city') as string) || '',
+                    brandId: (formData.get('brand') as string) || '',
+                    cityId: (formData.get('city') as string) || '',
                     rating: parseFloat(formData.get('rating') as string || '0'),
                     description: (formData.get('description') as string) || '',
                     address: (formData.get('address') as string) || '',
@@ -2886,14 +3264,11 @@ export default function AdminDashboard() {
                           required
                         >
                             <option value="">Выберите категорию</option>
-                            <option value="Мясо">Мясо</option>
-                            <option value="Пицца">Пицца</option>
-                            <option value="Паста">Паста</option>
-                            <option value="Салаты">Салаты</option>
-                            <option value="Супы">Супы</option>
-                            <option value="Десерты">Десерты</option>
-                            <option value="Напитки">Напитки</option>
-                            <option value="Закуски">Закуски</option>
+                          {categories.map(category => (
+                            <option key={category._id} value={category._id}>
+                              {category.name}
+                            </option>
+                          ))}
                           </select>
                         </div>
                       </div>
@@ -3541,9 +3916,11 @@ export default function AdminDashboard() {
                           required
                         >
                           <option value="">Выберите бренд</option>
-                          <option value="БЫК">БЫК</option>
-                          <option value="Пиво">Пиво</option>
-                          <option value="Моска">Моска</option>
+                          {brands.map(brand => (
+                            <option key={brand._id} value={brand._id}>
+                              {brand.name}
+                            </option>
+                          ))}
                         </select>
                       </div>
                       
@@ -3551,13 +3928,20 @@ export default function AdminDashboard() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Город
                         </label>
-                        <input
-                          type="text"
+                        <select
                           name="city"
-                          defaultValue={editingRestaurant?.cityId || ''}
+                          value={editingRestaurant?.cityId || ''}
+                          onChange={(e) => setEditingRestaurant({...editingRestaurant, cityId: e.target.value})}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           required
-                        />
+                        >
+                          <option value="">Выберите город</option>
+                          {cities.map(city => (
+                            <option key={city._id} value={city._id}>
+                              {city.name}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                       
                       <div>
@@ -4390,7 +4774,11 @@ export default function AdminDashboard() {
                       <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-md">
                         <span className="text-gray-900">{category}</span>
                         <button
-                          onClick={() => handleDeleteCategory(category)}
+                          onClick={() => {
+                            if (dishCategories.length > 1) {
+                              setDishCategories(dishCategories.filter(cat => cat !== category))
+                            }
+                          }}
                           disabled={dishCategories.length <= 1}
                           className="text-red-500 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed"
                         >
@@ -5328,6 +5716,367 @@ export default function AdminDashboard() {
                     className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
                   >
                     {editingReservation && editingReservation._id ? 'Обновить' : 'Создать'} бронирование
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal for Brands */}
+        {editingBrand && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setEditingBrand(null)
+              }
+            }}
+          >
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">
+                  {editingBrand._id ? 'Редактировать бренд' : 'Добавить бренд'}
+                </h3>
+                <button
+                  onClick={() => setEditingBrand(null)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <form onSubmit={async (e) => {
+                e.preventDefault()
+                const formData = new FormData(e.currentTarget)
+                
+                const brandData = {
+                  name: formData.get('brandName') as string,
+                  description: formData.get('brandDescription') as string,
+                  color: formData.get('brandColor') as string,
+                  isActive: formData.get('brandActive') === 'on'
+                }
+                
+                await handleSaveBrand(brandData)
+              }}>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Название бренда
+                    </label>
+                    <input
+                      type="text"
+                      name="brandName"
+                      defaultValue={editingBrand?.name || ''}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Описание
+                    </label>
+                    <textarea
+                      name="brandDescription"
+                      rows={3}
+                      defaultValue={editingBrand?.description || ''}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                      placeholder="Описание бренда..."
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Цвет бренда
+                    </label>
+                    <input
+                      type="color"
+                      name="brandColor"
+                      defaultValue={editingBrand?.color || '#000000'}
+                      className="w-full h-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="brandActive"
+                        defaultChecked={editingBrand?.isActive ?? true}
+                        className="mr-2"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Активный бренд</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end space-x-3 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => setEditingBrand(null)}
+                    className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+                  >
+                    Отмена
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                  >
+                    {editingBrand._id ? 'Сохранить' : 'Добавить'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal for Cities */}
+        {editingCity && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setEditingCity(null)
+              }
+            }}
+          >
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">
+                  {editingCity._id ? 'Редактировать город' : 'Добавить город'}
+                </h3>
+                <button
+                  onClick={() => setEditingCity(null)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <form onSubmit={async (e) => {
+                e.preventDefault()
+                const formData = new FormData(e.currentTarget)
+                
+                const cityData = {
+                  name: formData.get('cityName') as string,
+                  country: formData.get('cityCountry') as string,
+                  timezone: formData.get('cityTimezone') as string,
+                  isActive: formData.get('cityActive') === 'on'
+                }
+                
+                await handleSaveCity(cityData)
+              }}>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Название города
+                    </label>
+                    <input
+                      type="text"
+                      name="cityName"
+                      defaultValue={editingCity?.name || ''}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Страна
+                    </label>
+                    <input
+                      type="text"
+                      name="cityCountry"
+                      defaultValue={editingCity?.country || 'Россия'}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Часовой пояс
+                    </label>
+                    <select
+                      name="cityTimezone"
+                      defaultValue={editingCity?.timezone || 'Europe/Moscow'}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    >
+                      <option value="Europe/Moscow">Europe/Moscow</option>
+                      <option value="Europe/Kaliningrad">Europe/Kaliningrad</option>
+                      <option value="Asia/Yekaterinburg">Asia/Yekaterinburg</option>
+                      <option value="Asia/Omsk">Asia/Omsk</option>
+                      <option value="Asia/Krasnoyarsk">Asia/Krasnoyarsk</option>
+                      <option value="Asia/Irkutsk">Asia/Irkutsk</option>
+                      <option value="Asia/Yakutsk">Asia/Yakutsk</option>
+                      <option value="Asia/Vladivostok">Asia/Vladivostok</option>
+                      <option value="Asia/Magadan">Asia/Magadan</option>
+                      <option value="Asia/Kamchatka">Asia/Kamchatka</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="cityActive"
+                        defaultChecked={editingCity?.isActive ?? true}
+                        className="mr-2"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Активный город</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end space-x-3 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => setEditingCity(null)}
+                    className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+                  >
+                    Отмена
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 transition-colors"
+                  >
+                    {editingCity._id ? 'Сохранить' : 'Добавить'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal for Categories */}
+        {editingCategory && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setEditingCategory(null)
+              }
+            }}
+          >
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">
+                  {editingCategory._id ? 'Редактировать категорию' : 'Добавить категорию'}
+                </h3>
+                <button
+                  onClick={() => setEditingCategory(null)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <form onSubmit={async (e) => {
+                e.preventDefault()
+                const formData = new FormData(e.currentTarget)
+                
+                const categoryData = {
+                  name: formData.get('categoryName') as string,
+                  description: formData.get('categoryDescription') as string,
+                  brandId: formData.get('categoryBrand') as string,
+                  order: parseInt(formData.get('categoryOrder') as string) || 0,
+                  isActive: formData.get('categoryActive') === 'on'
+                }
+                
+                await handleSaveCategory(categoryData)
+              }}>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Название категории
+                    </label>
+                    <input
+                      type="text"
+                      name="categoryName"
+                      defaultValue={editingCategory?.name || ''}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Описание
+                    </label>
+                    <textarea
+                      name="categoryDescription"
+                      rows={3}
+                      defaultValue={editingCategory?.description || ''}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      placeholder="Описание категории..."
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Бренд
+                    </label>
+                    <select
+                      name="categoryBrand"
+                      defaultValue={editingCategory?.brandId || ''}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      required
+                    >
+                      <option value="">Выберите бренд</option>
+                      {brands.map(brand => (
+                        <option key={brand._id} value={brand._id}>
+                          {brand.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Порядок сортировки
+                    </label>
+                    <input
+                      type="number"
+                      name="categoryOrder"
+                      defaultValue={editingCategory?.order || 0}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      min="0"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        name="categoryActive"
+                        defaultChecked={editingCategory?.isActive ?? true}
+                        className="mr-2"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Активная категория</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end space-x-3 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => setEditingCategory(null)}
+                    className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+                  >
+                    Отмена
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors"
+                  >
+                    {editingCategory._id ? 'Сохранить' : 'Добавить'}
                   </button>
                 </div>
               </form>

@@ -9,7 +9,7 @@ const router = express.Router();
 // Настройка multer для загрузки файлов
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = '/var/www/uploads/';
+    const uploadDir = process.env.NODE_ENV === 'production' ? '/var/www/uploads/' : './uploads/';
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -31,7 +31,7 @@ const upload = multer({
 // Получить список файлов
 router.get('/files', async (req: Request, res: Response) => {
   try {
-    const uploadDir = '/var/www/uploads/';
+    const uploadDir = process.env.NODE_ENV === 'production' ? '/var/www/uploads/' : './uploads/';
     if (!fs.existsSync(uploadDir)) {
       return res.json({
         success: true,
@@ -46,7 +46,7 @@ router.get('/files', async (req: Request, res: Response) => {
       name: file,
       size: fs.statSync(path.join(uploadDir, file)).size,
       uploadDate: fs.statSync(path.join(uploadDir, file)).mtime,
-        url: `https://bulladmin.ru/api/uploads/${file}`
+        url: process.env.NODE_ENV === 'production' ? `https://bulladmin.ru/api/uploads/${file}` : `http://localhost:5001/api/uploads/${file}`
     }));
 
     res.json({
@@ -81,7 +81,7 @@ router.post('/upload', upload.single('file'), (req: Request, res: Response) => {
         originalName: req.file.originalname,
         size: req.file.size,
         path: req.file.path,
-        url: `https://bulladmin.ru/api/uploads/${req.file.filename}`
+        url: process.env.NODE_ENV === 'production' ? `https://bulladmin.ru/api/uploads/${req.file.filename}` : `http://localhost:5001/api/uploads/${req.file.filename}`
       }
     });
   } catch (error: any) {
