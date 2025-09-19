@@ -95,7 +95,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   res.status(500).send('Что-то пошло не так!');
 });
 
-const PORT = process.env.PORT || 5001;
+const PORT = parseInt(process.env.PORT || '5001');
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
