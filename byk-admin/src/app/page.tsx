@@ -844,6 +844,10 @@ export default function AdminDashboard() {
       }
       
       console.log('Сохранение блюда:', dishWithFiles)
+      console.log('Выбранные файлы:', selectedFiles)
+      console.log('Все файлы:', files)
+      console.log('Файлы для использования:', filesToUse)
+      console.log('Изображения:', imageFiles)
       
       // Определяем метод и URL в зависимости от того, редактируем ли существующее блюдо
       const isEditing = editingDish && editingDish._id
