@@ -2676,7 +2676,7 @@ export default function AdminDashboard() {
                     email: (formData.get('userEmail') as string) || '',
                     password: (formData.get('userPassword') as string) || '',
                     phone: (formData.get('userPhone') as string) || '',
-                    role: 'user',
+                    role: 'user' as const,
                     isActive: formData.get('userActive') === 'true'
                   }
                   handleSaveUser(data)
