@@ -845,9 +845,16 @@ export default function AdminDashboard() {
       
       console.log('Сохранение блюда:', dishWithFiles)
       
+      // Определяем метод и URL в зависимости от того, редактируем ли существующее блюдо
+      const isEditing = editingDish && editingDish._id
+      const url = isEditing 
+        ? `https://bulladmin.ru/api/dishes/${editingDish._id}`
+        : 'https://bulladmin.ru/api/dishes'
+      const method = isEditing ? 'PUT' : 'POST'
+      
       // API вызов для сохранения
-      const response = await fetch('https://bulladmin.ru/api/dishes', {
-        method: 'POST',
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dishWithFiles)
       })
@@ -856,8 +863,13 @@ export default function AdminDashboard() {
         const savedDish = await response.json()
         console.log('Блюдо сохранено:', savedDish)
         
-        // Добавляем новое блюдо в список
-        setDishes([savedDish, ...dishes])
+        if (isEditing) {
+          // Обновляем существующее блюдо в списке
+          setDishes(dishes.map(d => d._id === editingDish._id ? savedDish : d))
+        } else {
+          // Добавляем новое блюдо в список
+          setDishes([savedDish, ...dishes])
+        }
         
         // Очищаем файлы после сохранения
         setFiles([])
