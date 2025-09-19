@@ -46,7 +46,7 @@ router.get('/files', async (req: Request, res: Response) => {
       name: file,
       size: fs.statSync(path.join(uploadDir, file)).size,
       uploadDate: fs.statSync(path.join(uploadDir, file)).mtime,
-        url: process.env.NODE_ENV === 'production' ? `https://bulladmin.ru/uploads/${file}` : `http://localhost:5001/uploads/${file}`
+        url: process.env.NODE_ENV === 'production' ? `https://bulladmin.ru/api/uploads/${file}` : `http://localhost:5001/api/uploads/${file}`
     }));
 
     res.json({
@@ -81,7 +81,7 @@ router.post('/upload', upload.single('file'), (req: Request, res: Response) => {
         originalName: req.file.originalname,
         size: req.file.size,
         path: req.file.path,
-        url: process.env.NODE_ENV === 'production' ? `https://bulladmin.ru/uploads/${req.file.filename}` : `http://localhost:5001/uploads/${req.file.filename}`
+        url: process.env.NODE_ENV === 'production' ? `https://bulladmin.ru/api/uploads/${req.file.filename}` : `http://localhost:5001/api/uploads/${req.file.filename}`
       }
     });
   } catch (error: any) {
@@ -108,7 +108,7 @@ router.post('/upload-multiple', upload.array('files', 10), (req: Request, res: R
       originalName: file.originalname,
       size: file.size,
       path: file.path,
-      url: `https://bulladmin.ru/uploads/${file.filename}`
+      url: `https://bulladmin.ru/api/uploads/${file.filename}`
     }));
 
     res.json({
@@ -149,6 +149,32 @@ router.delete('/files/:filename', (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: 'Ошибка удаления файла',
+      error: error.message
+    });
+  }
+});
+
+// Маршрут для обслуживания файлов
+router.get('/uploads/:filename', (req: Request, res: Response) => {
+  try {
+    const filename = req.params.filename;
+    const uploadDir = process.env.NODE_ENV === 'production' ? './uploads/' : './uploads/';
+    const filePath = path.join(uploadDir, filename);
+    
+    // Проверяем, существует ли файл
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({
+        success: false,
+        message: 'Файл не найден'
+      });
+    }
+    
+    // Отправляем файл
+    res.sendFile(path.resolve(filePath));
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: 'Ошибка при получении файла',
       error: error.message
     });
   }
