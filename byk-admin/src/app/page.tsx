@@ -953,9 +953,14 @@ export default function AdminDashboard() {
     try {
       console.log('Сохранение пользователя:', userData)
       
+      const isEditing = editingUser && editingUser._id
+      const url = isEditing 
+        ? `https://bulladmin.ru/api/users/${editingUser._id}`
+        : 'https://bulladmin.ru/api/users'
+      
       // API вызов для сохранения
-      const response = await fetch('https://bulladmin.ru/api/users', {
-        method: 'POST',
+      const response = await fetch(url, {
+        method: isEditing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
       })
@@ -964,14 +969,20 @@ export default function AdminDashboard() {
         const savedUser = await response.json()
         console.log('Пользователь сохранен:', savedUser)
         
+        if (isEditing) {
+          // Обновляем существующего пользователя
+          setUsers(users.map(u => u._id === editingUser._id ? savedUser : u))
+        } else {
         // Добавляем нового пользователя в список
         setUsers([savedUser, ...users])
+        }
         
         setShowAddModal(false)
         setEditingUser(null)
       } else {
-        console.error('Ошибка сохранения пользователя:', response.statusText)
-        alert('Ошибка сохранения пользователя')
+        const errorData = await response.json()
+        console.error('Ошибка сохранения пользователя:', errorData)
+        alert(`Ошибка сохранения пользователя: ${errorData.message || response.statusText}`)
       }
     } catch (error) {
       console.error('Ошибка сохранения пользователя:', error)
@@ -2661,10 +2672,11 @@ export default function AdminDashboard() {
                   // Форма для пользователей
                   const data = {
                     fullName: (formData.get('userName') as string) || '',
+                    username: (formData.get('userUsername') as string) || '',
                     email: (formData.get('userEmail') as string) || '',
+                    password: (formData.get('userPassword') as string) || '',
                     phone: (formData.get('userPhone') as string) || '',
-                    membershipLevel: (formData.get('userMembershipLevel') as string) || 'bronze',
-                    loyaltyPoints: parseInt(formData.get('userLoyaltyPoints') as string || '0'),
+                    role: 'user',
                     isActive: formData.get('userActive') === 'true'
                   }
                   handleSaveUser(data)
@@ -3143,12 +3155,25 @@ export default function AdminDashboard() {
                     <>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Имя пользователя
+                          Полное имя
                         </label>
                         <input
                           type="text"
                           name="userName"
                           defaultValue={editingUser?.fullName || ''}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Логин
+                        </label>
+                        <input
+                          type="text"
+                          name="userUsername"
+                          defaultValue={editingUser?.username || ''}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
                           required
                         />
@@ -3162,6 +3187,19 @@ export default function AdminDashboard() {
                           type="email"
                           name="userEmail"
                           defaultValue={editingUser?.email || ''}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Пароль
+                        </label>
+                        <input
+                          type="password"
+                          name="userPassword"
+                          defaultValue=""
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
                           required
                         />
@@ -3615,7 +3653,7 @@ export default function AdminDashboard() {
                       </div>
                     </>
                   )}
-                
+                  
                 <div className="flex justify-end space-x-3 mt-6">
                   <button
                     type="button"
@@ -3696,10 +3734,10 @@ export default function AdminDashboard() {
                 await handleSaveOrder(orderData)
               }}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
                       Выберите пользователя
-                    </label>
+                        </label>
                     <select
                       name="userId"
                       defaultValue={editingOrder?.userId || ''}
@@ -3715,7 +3753,7 @@ export default function AdminDashboard() {
                         }
                       }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      required
+                          required
                     >
                       <option value="">Выберите пользователя</option>
                       {users.map((user) => (
@@ -3724,28 +3762,28 @@ export default function AdminDashboard() {
                         </option>
                       ))}
                     </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Имя клиента
-                    </label>
-                    <input
-                      type="text"
-                      name="userName"
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Имя клиента
+                        </label>
+                        <input
+                          type="text"
+                          name="userName"
                       value={editingOrder?.userName || ''}
                       readOnly
                       className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       placeholder="Автоматически заполнится при выборе пользователя"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Ресторан
-                    </label>
-                    <select
-                      name="restaurantId"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Ресторан
+                        </label>
+                        <select
+                          name="restaurantId"
                       value={editingOrder?.restaurantId || ''}
                       onChange={(e) => {
                         if (editingOrder) {
@@ -3758,22 +3796,22 @@ export default function AdminDashboard() {
                         }
                       }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      required
-                    >
-                      <option value="">Выберите ресторан</option>
-                      {restaurants.map((restaurant) => (
-                        <option key={restaurant._id} value={restaurant._id}>
-                          {restaurant.name} ({restaurant.brand})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
+                          required
+                        >
+                          <option value="">Выберите ресторан</option>
+                          {restaurants.map((restaurant) => (
+                            <option key={restaurant._id} value={restaurant._id}>
+                              {restaurant.name} ({restaurant.brand})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
                         Способ доставки
-                      </label>
+                          </label>
                       <select
                         name="deliveryMethod"
                         value={selectedDeliveryMethod}
@@ -3788,51 +3826,51 @@ export default function AdminDashboard() {
                           }
                         }}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        required
+                            required
                       >
                         <option value="delivery">🚚 Доставка</option>
                         <option value="pickup">🏪 Самовывоз</option>
                       </select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
                         Способ оплаты
-                      </label>
+                          </label>
                       <select
                         name="paymentMethod"
                         defaultValue={editingOrder?.paymentMethod || 'card'}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        required
+                            required
                       >
                         <option value="card">💳 Карта</option>
                         <option value="cash">💵 Наличные</option>
                       </select>
-                    </div>
-                  </div>
-                  
+                        </div>
+                      </div>
+                      
                   {selectedDeliveryMethod === 'delivery' && (
                     <div className="col-span-full">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
                         Адрес доставки
-                      </label>
-                      <input
+                        </label>
+                        <input
                         type="text"
                         name="deliveryAddress"
                         defaultValue={editingOrder?.deliveryAddress || ''}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         placeholder="Улица, дом, квартира"
                         required={selectedDeliveryMethod === 'delivery'}
-                      />
-                    </div>
+                        />
+                      </div>
                   )}
-                  
+                      
                   {selectedDeliveryMethod === 'pickup' && (
                     <div className="col-span-full">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
                         Ресторан для самовывоза
-                      </label>
-                      <select
+                        </label>
+                        <select
                         name="pickupRestaurantId"
                         defaultValue={editingOrder?.pickupRestaurantId || ''}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -3844,7 +3882,7 @@ export default function AdminDashboard() {
                             {restaurant.name} ({restaurant.brand})
                           </option>
                         ))}
-                      </select>
+                        </select>
                     </div>
                   )}
 
@@ -3955,12 +3993,12 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                     )}
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
                       Статус заказа
-                    </label>
+                        </label>
                     <select
                       name="status"
                       defaultValue={editingOrder?.status || 'pending'}
@@ -3974,14 +4012,14 @@ export default function AdminDashboard() {
                       <option value="delivered">Доставлен</option>
                       <option value="cancelled">Отменен</option>
                     </select>
-                  </div>
+                      </div>
                 </div>
-
+                
                 <div className="flex justify-end space-x-3 mt-6">
                   <button
                     type="button"
                     onClick={() => {
-                      setEditingOrder(null)
+                    setEditingOrder(null)
                       setSelectedDeliveryMethod('delivery')
                       setSelectedDishes([])
                     }}
@@ -4993,7 +5031,7 @@ export default function AdminDashboard() {
           </div>
         )}
       </div>
-    </div>
+      </div>
     </div>
   );
 }
