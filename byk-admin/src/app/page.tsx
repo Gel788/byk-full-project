@@ -673,10 +673,11 @@ export default function AdminDashboard() {
       const data = await response.json()
       if (data.success) {
         setFiles([...files, data.data])
-        alert('Файл загружен успешно!')
         // Обновляем список файлов
         fetchFiles()
+        console.log('Файл загружен успешно:', file.name)
       } else {
+        console.error('Ошибка загрузки файла:', data.message)
         alert('Ошибка загрузки файла: ' + data.message)
       }
     } catch (error) {
@@ -704,10 +705,11 @@ export default function AdminDashboard() {
       const data = await response.json()
       if (data.success) {
         setFiles([...files, ...data.data])
-        alert('Файлы загружены успешно!')
         // Обновляем список файлов
         fetchFiles()
+        console.log('Файлы загружены успешно:', Array.from(files).map(f => f.name))
       } else {
+        console.error('Ошибка загрузки файлов:', data.message)
         alert('Ошибка загрузки файлов: ' + data.message)
       }
     } catch (error) {
@@ -2831,6 +2833,12 @@ export default function AdminDashboard() {
                   <PlusIcon className="h-4 w-4 mr-2" />
                   Загрузить несколько
                 </label>
+                {uploading && (
+                  <div className="flex items-center text-blue-600">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
+                    <span className="text-sm">Загрузка...</span>
+                  </div>
+                )}
               </div>
             </div>
             
@@ -3582,6 +3590,12 @@ export default function AdminDashboard() {
                               <p className="pl-1">или перетащите сюда</p>
                             </div>
                             <p className="text-xs text-gray-500">PNG, JPG, GIF до 10MB</p>
+                            {uploading && (
+                              <div className="mt-2 flex items-center justify-center">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
+                                <span className="text-sm text-blue-600">Загрузка фото...</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                         
@@ -3661,6 +3675,12 @@ export default function AdminDashboard() {
                               <p className="pl-1">или перетащите сюда</p>
                             </div>
                             <p className="text-xs text-gray-500">MP4, MOV, AVI до 100MB</p>
+                            {uploading && (
+                              <div className="mt-2 flex items-center justify-center">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
+                                <span className="text-sm text-blue-600">Загрузка видео...</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                         
@@ -4016,6 +4036,12 @@ export default function AdminDashboard() {
                               <p className="pl-1">или перетащите сюда</p>
                             </div>
                             <p className="text-xs text-gray-500">PNG, JPG, GIF до 10MB</p>
+                            {uploading && (
+                              <div className="mt-2 flex items-center justify-center">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
+                                <span className="text-sm text-blue-600">Загрузка фото...</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                         
