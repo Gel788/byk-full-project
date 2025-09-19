@@ -208,7 +208,7 @@ export default function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/admin/dashboard')
+      const response = await fetch('http://45.12.75.59:5001/api/admin/dashboard')
       const data = await response.json()
       if (data.success) {
         setStats(data.data)
@@ -229,14 +229,14 @@ export default function AdminDashboard() {
 
   const fetchRestaurants = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/admin/restaurants')
+      const response = await fetch('http://45.12.75.59:5001/api/admin/restaurants')
       const data = await response.json()
       console.log('Загружены рестораны:', data)
       if (data.success) {
         setRestaurants(data.data)
       } else {
         // Fallback на обычный API
-        const fallbackResponse = await fetch('http://localhost:5001/api/restaurants')
+        const fallbackResponse = await fetch('http://45.12.75.59:5001/api/restaurants')
         const fallbackData = await fallbackResponse.json()
         console.log('Загружены рестораны (fallback):', fallbackData)
         setRestaurants(fallbackData)
@@ -307,7 +307,7 @@ export default function AdminDashboard() {
 
   const fetchDishes = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/dishes')
+      const response = await fetch('http://45.12.75.59:5001/api/dishes')
       const data = await response.json()
       console.log('Загружены блюда:', data)
       setDishes(data)
@@ -449,7 +449,7 @@ export default function AdminDashboard() {
 
   const fetchNews = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/admin/news')
+      const response = await fetch('http://45.12.75.59:5001/api/admin/news')
       const data = await response.json()
       if (data.success) {
         setNews(data.data)
@@ -478,7 +478,7 @@ export default function AdminDashboard() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/admin/users')
+      const response = await fetch('http://45.12.75.59:5001/api/admin/users')
       const data = await response.json()
       if (data.success) {
         setUsers(data.data)
@@ -507,7 +507,7 @@ export default function AdminDashboard() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/admin/orders')
+      const response = await fetch('http://45.12.75.59:5001/api/admin/orders')
       const data = await response.json()
       if (data.success) {
         setOrders(data.data)
@@ -567,7 +567,7 @@ export default function AdminDashboard() {
   const fetchFiles = async () => {
     try {
       console.log('Загружаем файлы...')
-      const response = await fetch('http://localhost:5001/api/upload/files')
+      const response = await fetch('http://45.12.75.59:5001/api/upload/files')
       const data = await response.json()
       console.log('Получены файлы:', data)
       if (data.success) {
@@ -586,7 +586,7 @@ export default function AdminDashboard() {
       const formData = new FormData()
       formData.append('file', file)
       
-      const response = await fetch('http://localhost:5001/api/upload/upload', {
+      const response = await fetch('http://45.12.75.59:5001/api/upload/upload', {
         method: 'POST',
         body: formData
       })
@@ -617,7 +617,7 @@ export default function AdminDashboard() {
         formData.append('files', file)
       })
       
-      const response = await fetch('http://localhost:5001/api/upload/upload-multiple', {
+      const response = await fetch('http://45.12.75.59:5001/api/upload/upload-multiple', {
         method: 'POST',
         body: formData
       })
@@ -641,7 +641,7 @@ export default function AdminDashboard() {
 
   const deleteFile = async (filename: string) => {
     try {
-      const response = await fetch(`http://localhost:5001/api/upload/files/${filename}`, {
+      const response = await fetch(`http://45.12.75.59:5001/api/upload/files/${filename}`, {
         method: 'DELETE'
       })
       
@@ -662,7 +662,7 @@ export default function AdminDashboard() {
 
   const fetchReservations = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/admin/reservations')
+      const response = await fetch('http://45.12.75.59:5001/api/admin/reservations')
       const data = await response.json()
       if (data.success) {
         setReservations(data.data)
@@ -740,7 +740,7 @@ export default function AdminDashboard() {
   const handleDeleteRestaurant = async (id: string) => {
     if (confirm('Удалить ресторан?')) {
       try {
-        const response = await fetch(`http://localhost:5001/api/restaurants/${id}`, {
+        const response = await fetch(`http://45.12.75.59:5001/api/restaurants/${id}`, {
           method: 'DELETE'
         })
         
@@ -774,8 +774,8 @@ export default function AdminDashboard() {
       // Определяем метод и URL в зависимости от того, редактируем ли существующий ресторан
       const isEditing = editingRestaurant && editingRestaurant._id
       const url = isEditing 
-        ? `http://localhost:5001/api/restaurants/${editingRestaurant._id}`
-        : 'http://localhost:5001/api/restaurants'
+        ? `http://45.12.75.59:5001/api/restaurants/${editingRestaurant._id}`
+        : 'http://45.12.75.59:5001/api/restaurants'
       const method = isEditing ? 'PUT' : 'POST'
       
       // API вызов для сохранения
@@ -826,7 +826,7 @@ export default function AdminDashboard() {
       console.log('Сохранение блюда:', dishWithFiles)
       
       // API вызов для сохранения
-      const response = await fetch('http://localhost:5001/api/dishes', {
+      const response = await fetch('http://45.12.75.59:5001/api/dishes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dishWithFiles)
@@ -857,7 +857,7 @@ export default function AdminDashboard() {
   const handleDeleteDish = async (id: string) => {
     if (confirm('Удалить блюдо?')) {
       try {
-        const response = await fetch(`http://localhost:5001/api/dishes/${id}`, {
+        const response = await fetch(`http://45.12.75.59:5001/api/dishes/${id}`, {
           method: 'DELETE'
         })
         
@@ -896,14 +896,14 @@ export default function AdminDashboard() {
       
       const newsWithFile = {
         ...newsData,
-        imageURL: imageFiles.length > 0 ? imageFiles[imageFiles.length - 1].url : (newsData.imageURL || 'http://localhost:5001/uploads/default.jpg'),
+        imageURL: imageFiles.length > 0 ? imageFiles[imageFiles.length - 1].url : (newsData.imageURL || 'http://45.12.75.59:5001/uploads/default.jpg'),
         videoURL: videoFiles.length > 0 ? videoFiles[videoFiles.length - 1].url : (newsData.videoURL || '')
       }
       
       console.log('Сохранение новости:', newsWithFile)
       
       // API вызов для сохранения
-      const response = await fetch('http://localhost:5001/api/news', {
+      const response = await fetch('http://45.12.75.59:5001/api/news', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newsWithFile)
@@ -932,7 +932,7 @@ export default function AdminDashboard() {
   const handleDeleteNews = async (id: string) => {
     if (confirm('Удалить новость?')) {
       try {
-        const response = await fetch(`http://localhost:5001/api/news/${id}`, {
+        const response = await fetch(`http://45.12.75.59:5001/api/news/${id}`, {
           method: 'DELETE'
         })
         
@@ -954,7 +954,7 @@ export default function AdminDashboard() {
       console.log('Сохранение пользователя:', userData)
       
       // API вызов для сохранения
-      const response = await fetch('http://localhost:5001/api/users', {
+      const response = await fetch('http://45.12.75.59:5001/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
@@ -982,7 +982,7 @@ export default function AdminDashboard() {
   const handleDeleteUser = async (id: string) => {
     if (confirm('Удалить пользователя?')) {
       try {
-        const response = await fetch(`http://localhost:5001/api/users/${id}`, {
+        const response = await fetch(`http://45.12.75.59:5001/api/users/${id}`, {
           method: 'DELETE'
         })
         
@@ -1044,8 +1044,8 @@ export default function AdminDashboard() {
       
       const isEditing = editingOrder && editingOrder._id
       const url = isEditing 
-        ? `http://localhost:5001/api/orders/${editingOrder._id}`
-        : 'http://localhost:5001/api/orders'
+        ? `http://45.12.75.59:5001/api/orders/${editingOrder._id}`
+        : 'http://45.12.75.59:5001/api/orders'
       
       const response = await fetch(url, {
         method: isEditing ? 'PUT' : 'POST',
@@ -1079,7 +1079,7 @@ export default function AdminDashboard() {
   const handleDeleteOrder = async (id: string) => {
     if (confirm('Удалить заказ?')) {
       try {
-        const response = await fetch(`http://localhost:5001/api/orders/${id}`, {
+        const response = await fetch(`http://45.12.75.59:5001/api/orders/${id}`, {
           method: 'DELETE'
         })
         
@@ -1102,8 +1102,8 @@ export default function AdminDashboard() {
 
       const isEditing = editingReservation && editingReservation._id
       const url = isEditing
-        ? `http://localhost:5001/api/reservations/${editingReservation._id}`
-        : 'http://localhost:5001/api/reservations'
+        ? `http://45.12.75.59:5001/api/reservations/${editingReservation._id}`
+        : 'http://45.12.75.59:5001/api/reservations'
 
       const response = await fetch(url, {
         method: isEditing ? 'PUT' : 'POST',
@@ -1141,7 +1141,7 @@ export default function AdminDashboard() {
   const handleDeleteReservation = async (id: string) => {
     if (confirm('Удалить бронирование?')) {
       try {
-        const response = await fetch(`http://localhost:5001/api/reservations/${id}`, {
+        const response = await fetch(`http://45.12.75.59:5001/api/reservations/${id}`, {
           method: 'DELETE'
         })
         
@@ -1931,7 +1931,7 @@ export default function AdminDashboard() {
                                   onClick={async () => {
                                     if (confirm('Удалить новость?')) {
                                       try {
-                                        const response = await fetch(`http://localhost:5001/api/news/${article._id}`, {
+                                        const response = await fetch(`http://45.12.75.59:5001/api/news/${article._id}`, {
                                           method: 'DELETE'
                                         })
                                         
