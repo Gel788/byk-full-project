@@ -1013,9 +1013,8 @@ export default function AdminDashboard() {
         return
       }
       
-      // Получаем выбранные фото, если нет выбранных - берем последнее загруженное
-      const filesToUse = selectedFiles.length > 0 ? selectedFiles : files
-      const imageFiles = filesToUse.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp'))
+      // Получаем выбранные фото из dishFiles
+      const imageFiles = dishFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp'))
       
       const dishWithFiles = {
         ...dishData,
@@ -1023,9 +1022,7 @@ export default function AdminDashboard() {
       }
       
       console.log('Сохранение блюда:', dishWithFiles)
-      console.log('Выбранные файлы:', selectedFiles)
-      console.log('Все файлы:', files)
-      console.log('Файлы для использования:', filesToUse)
+      console.log('Файлы блюда:', dishFiles)
       console.log('Изображения:', imageFiles)
       
       // Определяем метод и URL в зависимости от того, редактируем ли существующее блюдо
@@ -1057,6 +1054,7 @@ export default function AdminDashboard() {
         // Очищаем файлы после сохранения
         setFiles([])
         setSelectedFiles([])
+        setDishFiles([])
         
         setShowAddModal(false)
         setEditingDish(null)
