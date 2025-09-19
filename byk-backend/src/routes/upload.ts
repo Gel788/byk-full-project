@@ -9,7 +9,7 @@ const router = express.Router();
 // Настройка multer для загрузки файлов
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = 'uploads/';
+    const uploadDir = '/var/www/uploads/';
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -31,7 +31,7 @@ const upload = multer({
 // Получить список файлов
 router.get('/files', async (req: Request, res: Response) => {
   try {
-    const uploadDir = 'uploads/';
+    const uploadDir = '/var/www/uploads/';
     if (!fs.existsSync(uploadDir)) {
       return res.json({
         success: true,
@@ -130,7 +130,7 @@ router.post('/upload-multiple', upload.array('files', 10), (req: Request, res: R
 router.delete('/files/:filename', (req: Request, res: Response) => {
   try {
     const filename = req.params.filename;
-    const filePath = path.join('uploads', filename);
+    const filePath = path.join('/var/www/uploads', filename);
 
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({
