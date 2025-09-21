@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, Star, Clock, MapPin, Sparkles, ChefHat, Truck, Zap, Crown } from 'lucide-react';
+import { ArrowRight, Star, Clock, MapPin, Sparkles, ChefHat, Truck, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
@@ -21,93 +21,93 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#1a1a1a] via-[#2a2a2a] to-[#1a1a1a]">
-      {/* Премиальный фон */}
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Анимированный фон */}
       <div className="absolute inset-0">
-        {/* Золотые частицы */}
-        {[...Array(30)].map((_, i) => (
+        {/* Градиентный фон */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black"></div>
+        
+        {/* Анимированные круги */}
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.6, 0.3],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute top-1/4 left-1/4 w-48 h-48 sm:w-64 sm:h-64 md:w-96 md:h-96 bg-orange-500/10 rounded-full blur-3xl"
+        />
+        
+        <motion.div
+          animate={{
+            scale: [1.2, 1, 1.2],
+            opacity: [0.4, 0.7, 0.4],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2
+          }}
+          className="absolute bottom-1/4 right-1/4 w-40 h-40 sm:w-56 sm:h-56 md:w-80 md:h-80 bg-blue-500/10 rounded-full blur-3xl"
+        />
+
+        {/* Сетка */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1) 1px, transparent 0)`,
+            backgroundSize: '30px 30px'
+          }} />
+        </div>
+
+        {/* Плавающие частицы */}
+        {[...Array(20)].map((_, i) => (
           <motion.div
             key={i}
             animate={{
-              y: [0, -100, 0],
-              x: [0, Math.random() * 50 - 25, 0],
+              y: [0, -30, 0],
+              x: [0, Math.random() * 20 - 10, 0],
               opacity: [0, 1, 0],
-              scale: [0, 1, 0],
             }}
             transition={{
-              duration: 4 + Math.random() * 3,
+              duration: 3 + Math.random() * 2,
               repeat: Infinity,
               delay: Math.random() * 2,
             }}
-            className="absolute w-1 h-1 bg-gradient-to-r from-[#d4af37] to-[#f4d03f] rounded-full"
+            className="absolute w-1 h-1 bg-orange-400 rounded-full"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
             }}
           />
         ))}
-
-        {/* Анимированные круги */}
-        <motion.div
-          animate={{
-            scale: [1, 1.3, 1],
-            opacity: [0.1, 0.3, 0.1],
-            rotate: [0, 360],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-[#d4af37]/20 to-[#f4d03f]/20 rounded-full blur-3xl"
-        />
-        
-        <motion.div
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.2, 0.4, 0.2],
-            rotate: [360, 0],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "linear",
-            delay: 5
-          }}
-          className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-[#ff6b35]/20 to-[#d4af37]/20 rounded-full blur-3xl"
-        />
-
-        {/* Сетка */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(212, 175, 55, 0.3) 1px, transparent 0)`,
-            backgroundSize: '40px 40px'
-          }} />
-        </div>
       </div>
 
-      {/* Интерактивный курсор эффект */}
+      {/* Интерактивный курсор эффект - только для десктопа */}
       <motion.div
-        className="fixed w-6 h-6 bg-gradient-to-r from-[#d4af37] to-[#f4d03f] rounded-full pointer-events-none z-50 mix-blend-difference hidden lg:block"
+        className="fixed w-4 h-4 bg-orange-500 rounded-full pointer-events-none z-50 mix-blend-difference hidden lg:block"
         animate={{
-          x: mousePosition.x - 12,
-          y: mousePosition.y - 12,
+          x: mousePosition.x - 8,
+          y: mousePosition.y - 8,
         }}
         transition={{ type: "spring", stiffness: 500, damping: 28 }}
       />
 
       {/* Контент */}
       <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        {/* Премиальный бейдж */}
+        {/* Бейдж */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1 }}
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         >
-          <span className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#d4af37]/20 to-[#f4d03f]/20 text-[#d4af37] rounded-full text-sm font-semibold border border-[#d4af37]/30 backdrop-blur-sm glass-effect">
-            <Crown className="w-5 h-5 mr-2" />
-            БЫК ХОЛДИНГ • Премиум рестораны
+          <span className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-orange-600/20 text-orange-400 rounded-full text-xs sm:text-sm font-semibold border border-orange-600/30 backdrop-blur-sm">
+            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+            Премиум доставка еды
           </span>
         </motion.div>
 
@@ -116,10 +116,10 @@ export default function Hero() {
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2, delay: 0.3 }}
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         >
           <motion.h1 
-            className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black mb-6 leading-none"
+            className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-black text-white mb-4 sm:mb-6 leading-none"
             animate={{
               backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
             }}
@@ -129,7 +129,7 @@ export default function Hero() {
               ease: "linear"
             }}
             style={{
-              background: 'linear-gradient(90deg, #ffffff, #d4af37, #f4d03f, #d4af37, #ffffff)',
+              background: 'linear-gradient(90deg, #ffffff, #ff6b35, #ffffff, #ff6b35)',
               backgroundSize: '300% 100%',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
@@ -143,24 +143,24 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.6 }}
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-white/90 mb-4 font-medium"
+            className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-white/90 mb-3 sm:mb-4 font-medium"
           >
-            Холдинг премиум ресторанов
+            Доставка еды
           </motion.p>
           
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.8 }}
-            className="flex justify-center items-center space-x-2 mb-8"
+            className="flex justify-center items-center space-x-1 sm:space-x-2 mb-6 sm:mb-8"
           >
             {[...Array(5)].map((_, i) => (
               <motion.div
                 key={i}
                 animate={{ rotate: [0, 360] }}
-                transition={{ duration: 3, delay: i * 0.2, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 2, delay: i * 0.1, repeat: Infinity, ease: "linear" }}
               >
-                <Star className="w-6 h-6 sm:w-8 sm:h-8 text-[#d4af37] fill-current" />
+                <Star className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-yellow-400 fill-current" />
               </motion.div>
             ))}
           </motion.div>
@@ -171,18 +171,18 @@ export default function Hero() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.9 }}
-          className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-white/80 mb-12 max-w-5xl mx-auto leading-relaxed px-4"
+          className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/80 mb-8 sm:mb-12 max-w-4xl mx-auto leading-relaxed px-4"
         >
-          Откройте для себя мир премиальной кухни: <span className="text-[#d4af37] font-semibold">THE БЫК</span>, <span className="text-[#d4af37] font-semibold">THE ПИВО</span>, <span className="text-[#d4af37] font-semibold">MOSCA</span>. 
-          <br />Изысканные блюда, безупречный сервис, незабываемые впечатления.
+          Заказывайте еду из лучших ресторанов: <span className="text-orange-400 font-semibold">THE БЫК</span>, <span className="text-orange-400 font-semibold">THE ПИВО</span>, <span className="text-orange-400 font-semibold">MOSCA</span>. 
+          Быстрая доставка по Москве с гарантией качества.
         </motion.p>
 
-        {/* Премиальная статистика */}
+        {/* Интерактивная статистика */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 1.1 }}
-          className="grid grid-cols-3 gap-6 sm:gap-8 md:gap-12 mb-16 max-w-3xl mx-auto"
+          className="grid grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-12 sm:mb-16 max-w-2xl mx-auto"
         >
           <motion.div 
             className="text-center group cursor-pointer"
@@ -190,12 +190,12 @@ export default function Hero() {
             whileTap={{ scale: 0.95 }}
           >
             <motion.div 
-              className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-br from-[#d4af37] to-[#f4d03f] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:rotate-12 transition-transform shadow-lg"
+              className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4 group-hover:rotate-12 transition-transform"
             >
-              <Crown className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-[#1a1a1a]" />
+              <Star className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" />
             </motion.div>
-            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#d4af37] mb-2 group-hover:text-[#f4d03f] transition-colors">4.9</div>
-            <span className="text-white/70 text-sm sm:text-base">Рейтинг</span>
+            <div className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1 sm:mb-2 group-hover:text-yellow-400 transition-colors">4.9</div>
+            <span className="text-white/70 text-xs sm:text-sm">Рейтинг</span>
           </motion.div>
           
           <motion.div 
@@ -204,12 +204,12 @@ export default function Hero() {
             whileTap={{ scale: 0.95 }}
           >
             <motion.div 
-              className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-br from-[#ff6b35] to-[#d4af37] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:rotate-12 transition-transform shadow-lg"
+              className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4 group-hover:rotate-12 transition-transform"
             >
-              <Clock className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white" />
+              <Clock className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" />
             </motion.div>
-            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#ff6b35] mb-2 group-hover:text-[#d4af37] transition-colors">30</div>
-            <span className="text-white/70 text-sm sm:text-base">Минут</span>
+            <div className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1 sm:mb-2 group-hover:text-green-400 transition-colors">30</div>
+            <span className="text-white/70 text-xs sm:text-sm">Минут</span>
           </motion.div>
           
           <motion.div 
@@ -218,70 +218,70 @@ export default function Hero() {
             whileTap={{ scale: 0.95 }}
           >
             <motion.div 
-              className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gradient-to-br from-[#8B4513] to-[#A0522D] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:rotate-12 transition-transform shadow-lg"
+              className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-4 group-hover:rotate-12 transition-transform"
             >
-              <MapPin className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white" />
+              <MapPin className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" />
             </motion.div>
-            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#8B4513] mb-2 group-hover:text-[#A0522D] transition-colors">3</div>
-            <span className="text-white/70 text-sm sm:text-base">Ресторана</span>
+            <div className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1 sm:mb-2 group-hover:text-blue-400 transition-colors">3</div>
+            <span className="text-white/70 text-xs sm:text-sm">Ресторана</span>
           </motion.div>
         </motion.div>
 
-        {/* Премиальные кнопки */}
+        {/* Кнопки действий */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 1.3 }}
-          className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16"
+          className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mb-12 sm:mb-16"
         >
           <motion.button
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95 }}
-            className="group bg-gradient-to-r from-[#d4af37] to-[#f4d03f] text-[#1a1a1a] font-bold py-4 sm:py-5 px-8 sm:px-10 rounded-2xl text-lg sm:text-xl transition-all duration-300 shadow-2xl hover:shadow-[#d4af37]/25 flex items-center space-x-3"
+            className="group bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-xl sm:rounded-2xl text-base sm:text-lg transition-all duration-300 shadow-2xl hover:shadow-orange-500/25 flex items-center space-x-2 sm:space-x-3"
           >
             <span>Заказать еду</span>
-            <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
           </motion.button>
           
           <motion.button
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95 }}
-            className="group border-2 border-[#d4af37]/50 text-[#d4af37] font-bold py-4 sm:py-5 px-8 sm:px-10 rounded-2xl hover:border-[#d4af37] hover:bg-[#d4af37]/10 transition-all duration-300 backdrop-blur-sm text-lg sm:text-xl flex items-center space-x-3"
+            className="group border-2 border-white/30 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-xl sm:rounded-2xl hover:border-white/50 transition-all duration-300 backdrop-blur-sm text-base sm:text-lg flex items-center space-x-2 sm:space-x-3"
           >
-            <ChefHat className="w-5 h-5 sm:w-6 sm:h-6 group-hover:scale-110 transition-transform" />
+            <ChefHat className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
             <span>Посмотреть меню</span>
           </motion.button>
         </motion.div>
 
-        {/* Премиальные преимущества */}
+        {/* Дополнительные преимущества */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 1.5 }}
-          className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-5xl mx-auto"
+          className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto"
         >
           <motion.div 
-            className="flex items-center justify-center space-x-4 p-6 glass-card rounded-2xl"
+            className="flex items-center justify-center space-x-3 p-3 sm:p-4 bg-white/5 rounded-xl backdrop-blur-sm border border-white/10"
             whileHover={{ scale: 1.02, y: -2 }}
           >
-            <Truck className="w-6 h-6 sm:w-8 sm:h-8 text-[#d4af37]" />
-            <span className="text-white/90 text-base sm:text-lg font-medium">Бесплатная доставка</span>
+            <Truck className="w-5 h-5 sm:w-6 sm:h-6 text-orange-400" />
+            <span className="text-white/80 text-sm sm:text-base">Бесплатная доставка</span>
           </motion.div>
           
           <motion.div 
-            className="flex items-center justify-center space-x-4 p-6 glass-card rounded-2xl"
+            className="flex items-center justify-center space-x-3 p-3 sm:p-4 bg-white/5 rounded-xl backdrop-blur-sm border border-white/10"
             whileHover={{ scale: 1.02, y: -2 }}
           >
-            <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-[#ff6b35]" />
-            <span className="text-white/90 text-base sm:text-lg font-medium">Мгновенная оплата</span>
+            <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400" />
+            <span className="text-white/80 text-sm sm:text-base">Мгновенная оплата</span>
           </motion.div>
           
           <motion.div 
-            className="flex items-center justify-center space-x-4 p-6 glass-card rounded-2xl"
+            className="flex items-center justify-center space-x-3 p-3 sm:p-4 bg-white/5 rounded-xl backdrop-blur-sm border border-white/10"
             whileHover={{ scale: 1.02, y: -2 }}
           >
-            <Crown className="w-6 h-6 sm:w-8 sm:h-8 text-[#d4af37]" />
-            <span className="text-white/90 text-base sm:text-lg font-medium">Премиум качество</span>
+            <Star className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" />
+            <span className="text-white/80 text-sm sm:text-base">Гарантия качества</span>
           </motion.div>
         </motion.div>
 
@@ -295,12 +295,12 @@ export default function Hero() {
           <motion.div
             animate={{ y: [0, 10, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
-            className="w-8 h-12 border-2 border-[#d4af37]/30 rounded-full flex justify-center"
+            className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center"
           >
             <motion.div
-              animate={{ y: [0, 16, 0] }}
+              animate={{ y: [0, 12, 0] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="w-2 h-4 bg-[#d4af37] rounded-full mt-2"
+              className="w-1 h-3 bg-white/60 rounded-full mt-2"
             />
           </motion.div>
         </motion.div>

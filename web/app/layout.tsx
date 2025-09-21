@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { CartProvider } from '../lib/contexts/CartContext'
 import { RestaurantProvider } from '../lib/contexts/RestaurantContext'
+import { AuthProvider } from '../contexts/AuthContext'
 import Navigation from '../components/Navigation'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -21,14 +22,16 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body className={inter.className}>
-        <RestaurantProvider>
-          <CartProvider>
-            <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
-              <Navigation />
-              {children}
-            </div>
-          </CartProvider>
-        </RestaurantProvider>
+        <AuthProvider>
+          <RestaurantProvider>
+            <CartProvider>
+              <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
+                <Navigation />
+                {children}
+              </div>
+            </CartProvider>
+          </RestaurantProvider>
+        </AuthProvider>
       </body>
     </html>
   )

@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, MapPin, Clock, Star, Phone, Plus, Minus, ShoppingCart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useRestaurants } from '../../../lib/contexts/RestaurantContext';
+import { useRestaurant } from '../../../lib/hooks/useRestaurants';
 import { useCart } from '../../../lib/contexts/CartContext';
-import { dishes } from '../../../lib/data';
+import { dishesApi } from '../../../lib/api';
 
 const categories = [
   { id: 'all', name: 'Все' },
@@ -21,25 +21,66 @@ const categories = [
 
 export default function RestaurantDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const { restaurants } = useRestaurants();
+  const { restaurant, isLoading: restaurantLoading, error: restaurantError } = useRestaurant(params.id);
   const { addToCart, removeFromCart, getItemQuantity } = useCart();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [dishes, setDishes] = useState<any[]>([]);
+  const [dishesLoading, setDishesLoading] = useState(true);
+  const [dishesError, setDishesError] = useState<string | null>(null);
 
-  const restaurant = restaurants.find(r => r.id === params.id);
-  const restaurantDishes = dishes.filter(dish => dish.restaurantId === params.id);
+  // Загружаем блюда ресторана
+  useEffect(() => {
+    const fetchDishes = async () => {
+      try {
+        setDishesLoading(true);
+        setDishesError(null);
+        const data = await dishesApi.getByRestaurant(params.id);
+        setDishes(data);
+      } catch (error) {
+        console.error('Error fetching dishes:', error);
+        setDishesError(error instanceof Error ? error.message : 'Ошибка загрузки блюд');
+      } finally {
+        setDishesLoading(false);
+      }
+    };
 
-  // Проверяем, что данные загружены и ресторан найден
-  if (!restaurants.length || !restaurant) {
+    if (params.id) {
+      fetchDishes();
+    }
+  }, [params.id]);
+
+  // Проверяем состояние загрузки
+  if (restaurantLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center">
         <div className="text-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            className="w-16 h-16 border-4 border-orange-500/30 border-t-orange-500 rounded-full mb-6 mx-auto"
+          />
+          <h1 className="text-2xl font-bold text-white mb-4">Загрузка ресторана...</h1>
+          <p className="text-white/60">Пожалуйста, подождите</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Проверяем ошибку загрузки ресторана
+  if (restaurantError || !restaurant) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-24 h-24 mx-auto mb-8 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-2xl">
+            <span className="text-3xl">⚠️</span>
+          </div>
           <h1 className="text-2xl font-bold text-white mb-4">
-            {!restaurants.length ? 'Загрузка...' : 'Ресторан не найден'}
+            {restaurantError || 'Ресторан не найден'}
           </h1>
           <button
             onClick={() => router.back()}
-            className="px-6 py-3 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-full"
+            className="px-6 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-full hover:shadow-lg transition-all duration-300"
           >
             Назад
           </button>
@@ -48,7 +89,7 @@ export default function RestaurantDetailPage({ params }: { params: { id: string 
     );
   }
 
-  const filteredDishes = restaurantDishes.filter(dish => {
+  const filteredDishes = dishes.filter(dish => {
     const matchesCategory = selectedCategory === 'all' || dish.category === selectedCategory;
     const matchesSearch = dish.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          dish.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -190,12 +231,48 @@ export default function RestaurantDetailPage({ params }: { params: { id: string 
       {/* Menu */}
       <div className="px-4 sm:px-6 lg:px-8 pb-32">
         <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          >
+          {/* Состояние загрузки блюд */}
+          {dishesLoading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-col items-center justify-center py-20"
+            >
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                className="w-16 h-16 border-4 border-orange-500/30 border-t-orange-500 rounded-full mb-6"
+              />
+              <h3 className="text-2xl font-bold text-white mb-4">Загружаем меню...</h3>
+              <p className="text-white/60">Пожалуйста, подождите</p>
+            </motion.div>
+          )}
+
+          {/* Состояние ошибки загрузки блюд */}
+          {dishesError && (
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center py-20"
+            >
+              <div className="w-24 h-24 mx-auto mb-8 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-2xl">
+                <span className="text-3xl">⚠️</span>
+              </div>
+              <h3 className="text-3xl font-bold text-white mb-6">Ошибка загрузки меню</h3>
+              <p className="text-white/60 mb-8 text-lg max-w-md mx-auto">
+                {dishesError}
+              </p>
+            </motion.div>
+          )}
+
+          {/* Успешная загрузка блюд */}
+          {!dishesLoading && !dishesError && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
             {filteredDishes.map((dish, index) => (
               <motion.div
                 key={dish.id}
@@ -335,15 +412,34 @@ export default function RestaurantDetailPage({ params }: { params: { id: string 
                 ></div>
               </motion.div>
             ))}
-          </motion.div>
+            </motion.div>
+          )}
 
-          {filteredDishes.length === 0 && (
+          {/* Пустое состояние блюд */}
+          {!dishesLoading && !dishesError && filteredDishes.length === 0 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="text-center py-20"
             >
-              <p className="text-white/50 text-lg">Блюда не найдены</p>
+              <div className="w-24 h-24 mx-auto mb-8 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center shadow-2xl">
+                <span className="text-3xl">🍽️</span>
+              </div>
+              <h3 className="text-3xl font-bold text-white mb-6">Блюда не найдены</h3>
+              <p className="text-white/60 mb-8 text-lg">
+                Попробуйте изменить параметры поиска или фильтры
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedCategory('all');
+                }}
+                className="px-8 py-4 bg-gradient-to-r from-orange-600 to-red-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300 text-lg"
+              >
+                Сбросить фильтры
+              </motion.button>
             </motion.div>
           )}
         </div>

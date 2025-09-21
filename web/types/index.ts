@@ -45,6 +45,34 @@ export interface User {
   phone: string;
   address: string;
   avatar?: string;
+  password?: string;
+  isVerified?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  token: string;
+  avatar?: string;
+}
+
+export interface LoginForm {
+  email?: string;
+  phone?: string;
+  password: string;
+}
+
+export interface RegisterForm {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  confirmPassword: string;
+  address?: string;
 }
 
 export interface Order {

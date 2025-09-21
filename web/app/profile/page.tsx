@@ -29,6 +29,7 @@ import {
   Eye
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface UserProfile {
   id: string;
@@ -69,12 +70,34 @@ const tierInfo = {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [user, setUser] = useState<UserProfile>(mockUser);
+  const { user: authUser, logout } = useAuth();
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const { scrollYProgress } = useScroll();
   const y = useTransform(scrollYProgress, [0, 1], [0, -50]);
+
+  // Преобразование данных пользователя
+  useEffect(() => {
+    if (authUser) {
+      const userProfile: UserProfile = {
+        id: authUser.id,
+        name: authUser.name,
+        email: authUser.email,
+        phone: authUser.phone,
+        address: 'Адрес не указан', // Пока нет в API
+        avatar: authUser.avatar || '',
+        joinDate: new Date().toISOString().split('T')[0], // Текущая дата как заглушка
+        totalOrders: 0, // Пока нет данных
+        totalSpent: 0, // Пока нет данных
+        favoriteRestaurants: [], // Пока нет данных
+        loyaltyPoints: 0, // Пока нет данных
+        tier: 'bronze' // По умолчанию бронза
+      };
+      setUser(userProfile);
+    }
+  }, [authUser]);
 
   // Отслеживание позиции мыши
   useEffect(() => {
@@ -86,8 +109,8 @@ export default function ProfilePage() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  const handleLogout = () => {
-    // Здесь будет логика выхода
+  const handleLogout = async () => {
+    await logout();
     router.push('/');
   };
 
@@ -110,6 +133,44 @@ export default function ProfilePage() {
       day: 'numeric'
     }).format(new Date(date));
   };
+
+  // Проверка авторизации
+  if (!authUser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-24 h-24 mx-auto mb-8 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-2xl">
+            <span className="text-3xl">🔒</span>
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-4">Необходима авторизация</h1>
+          <p className="text-white/60 mb-8">Войдите в систему для доступа к личному кабинету</p>
+          <button
+            onClick={() => router.push('/login')}
+            className="px-6 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-full hover:shadow-lg transition-all duration-300"
+          >
+            Войти
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Загрузка
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center">
+        <div className="text-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            className="w-16 h-16 border-4 border-orange-500/30 border-t-orange-500 rounded-full mb-6 mx-auto"
+          />
+          <h1 className="text-2xl font-bold text-white mb-4">Загрузка профиля...</h1>
+          <p className="text-white/60">Пожалуйста, подождите</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-black relative overflow-hidden">
