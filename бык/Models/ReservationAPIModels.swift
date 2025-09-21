@@ -6,6 +6,7 @@ struct CreateReservationRequest: Codable {
     let restaurantId: String
     let restaurantName: String // Добавили обязательное поле
     let date: String // ISO 8601 format
+    let time: String // Time format (HH:mm)
     let guestCount: Int
     let tableNumber: Int
     let specialRequests: String?

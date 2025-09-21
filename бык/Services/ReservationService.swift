@@ -93,11 +93,16 @@ class ReservationService: ObservableObject {
         let userId = currentUser?.id.uuidString ?? "guest"
         
         // Создаем запрос для API
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH:mm"
+        let timeString = dateFormatter.string(from: date)
+        
         let request = CreateReservationRequest(
             userId: userId,
             restaurantId: restaurant.id.uuidString,
             restaurantName: restaurant.name, // Добавили обязательное поле
             date: ISO8601DateFormatter().string(from: date),
+            time: timeString,
             guestCount: guestCount,
             tableNumber: tableNumber,
             specialRequests: specialRequests,
