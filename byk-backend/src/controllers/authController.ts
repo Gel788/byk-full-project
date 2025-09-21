@@ -155,7 +155,7 @@ export const register = async (req: Request, res: Response) => {
       username: savedUser.username,
       email: savedUser.email,
       fullName: savedUser.fullName,
-      phone: savedUser.phone,
+      phone: savedUser.phone || savedUser.phoneNumber,
       role: savedUser.role,
       isActive: savedUser.isActive
     };

@@ -411,7 +411,7 @@ class APIService: ObservableObject {
         print("  - Телефон: \(loginRequest.phoneNumber)")
         print("  - Пароль: [СКРЫТ]")
         
-        // Логируем данные перед отправкой
+        // Создаем данные в правильном формате для сервера
         let loginData: [String: Any] = [
             "phone": loginRequest.phoneNumber, // Сервер ожидает "phone"
             "password": loginRequest.password
@@ -422,13 +422,7 @@ class APIService: ObservableObject {
             print(jsonString)
         }
         
-        // Создаем данные в правильном формате для сервера
-        let loginDataDict: [String: Any] = [
-            "phone": loginRequest.phoneNumber, // Сервер ожидает "phone"
-            "password": loginRequest.password
-        ]
-        
-        guard let data = try? JSONSerialization.data(withJSONObject: loginDataDict) else {
+        guard let data = try? JSONSerialization.data(withJSONObject: loginData) else {
             print("🌐 APIService: Ошибка кодирования данных входа")
             return Fail(error: APIError.encodingError)
                 .eraseToAnyPublisher()
