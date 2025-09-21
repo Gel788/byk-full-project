@@ -357,7 +357,7 @@ class AuthService: ObservableObject {
             phoneNumber: user.username,
             fullName: user.fullName,
             email: user.email.isEmpty ? nil : user.email,
-            avatar: user.avatar.isEmpty ? nil : user.avatar,
+            avatar: user.avatar?.isEmpty == true ? nil : user.avatar,
             isVerified: user.isVerified,
             followersCount: user.followersCount,
             followingCount: user.followingCount,
