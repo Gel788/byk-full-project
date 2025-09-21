@@ -11,6 +11,21 @@
   to = "/index.html"
   status = 200
 
+[[redirects]]
+  from = "/restaurant/:id"
+  to = "/restaurant/detail"
+  status = 200
+
+[[redirects]]
+  from = "/news/:id"
+  to = "/news/detail"
+  status = 200
+
+[[redirects]]
+  from = "/reservation/:id"
+  to = "/reservation/detail"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
