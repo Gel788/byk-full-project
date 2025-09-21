@@ -11,7 +11,9 @@ router.get('/', async (req: Request, res: Response) => {
     res.json({
       success: true,
       data: reservations,
-      count: reservations.length
+      total: reservations.length,
+      page: 1,
+      limit: 100
     });
   } catch (error: any) {
     res.status(500).json({ 
@@ -38,7 +40,9 @@ router.get('/my', async (req: Request, res: Response) => {
     res.json({
       success: true,
       data: reservations,
-      count: reservations.length
+      total: reservations.length,
+      page: 1,
+      limit: 100
     });
   } catch (error: any) {
     res.status(500).json({ 
@@ -79,6 +83,8 @@ router.post('/', async (req: Request, res: Response) => {
     const reservationData = {
       ...req.body,
       reservationNumber: reservationNumber,
+      // Преобразуем guests в guestCount если нужно
+      guestCount: req.body.guestCount || req.body.guests,
       createdAt: new Date(),
       updatedAt: new Date()
     };

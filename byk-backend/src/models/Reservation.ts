@@ -3,9 +3,10 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IReservation extends Document {
   userId: string;
   restaurantId: string;
+  restaurantName?: string;
   date: Date;
   time: string;
-  guests: number;
+  guestCount: number;
   status: 'pending' | 'confirmed' | 'cancelled';
   specialRequests?: string;
   reservationNumber: string;
@@ -19,9 +20,10 @@ export interface IReservation extends Document {
 const ReservationSchema = new Schema({
   userId: { type: String, required: true },
   restaurantId: { type: String, required: true },
+  restaurantName: { type: String },
   date: { type: Date, required: true },
   time: { type: String, required: true },
-  guests: { type: Number, required: true },
+  guestCount: { type: Number, required: true },
   status: { type: String, enum: ['pending', 'confirmed', 'cancelled'], default: 'pending' },
   specialRequests: { type: String },
   reservationNumber: { type: String, unique: true, required: true },
