@@ -18,7 +18,8 @@ router.get('/', async (req: Request, res: Response) => {
   } catch (error: any) {
     res.status(500).json({ 
       success: false,
-      message: error.message 
+      message: error.message,
+      data: null
     });
   }
 });
@@ -32,7 +33,8 @@ router.get('/my', async (req: Request, res: Response) => {
     if (!userId) {
       return res.status(400).json({
         success: false,
-        message: 'User ID is required'
+        message: 'User ID is required',
+        data: null
       });
     }
     
@@ -47,7 +49,8 @@ router.get('/my', async (req: Request, res: Response) => {
   } catch (error: any) {
     res.status(500).json({ 
       success: false,
-      message: error.message 
+      message: error.message,
+      data: null
     });
   }
 });
@@ -58,7 +61,8 @@ router.get('/:id', async (req: Request, res: Response) => {
     const reservation = await Reservation.findById(req.params.id);
     if (!reservation) return res.status(404).json({ 
       success: false,
-      message: 'Reservation not found' 
+      message: 'Reservation not found',
+      data: null
     });
     res.json({
       success: true,
@@ -67,7 +71,8 @@ router.get('/:id', async (req: Request, res: Response) => {
   } catch (error: any) {
     res.status(500).json({ 
       success: false,
-      message: error.message 
+      message: error.message,
+      data: null
     });
   }
 });
@@ -100,7 +105,8 @@ router.post('/', async (req: Request, res: Response) => {
   } catch (error: any) {
     res.status(400).json({
       success: false,
-      message: error.message
+      message: error.message,
+      data: null
     });
   }
 });
@@ -116,7 +122,8 @@ router.put('/:id', async (req: Request, res: Response) => {
     const updatedReservation = await Reservation.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!updatedReservation) return res.status(404).json({
       success: false,
-      message: 'Бронирование не найдено'
+      message: 'Бронирование не найдено',
+      data: null
     });
     
     res.json({
@@ -138,16 +145,19 @@ router.delete('/:id', async (req: Request, res: Response) => {
     const deletedReservation = await Reservation.findByIdAndDelete(req.params.id);
     if (!deletedReservation) return res.status(404).json({ 
       success: false,
-      message: 'Reservation not found' 
+      message: 'Reservation not found',
+      data: null
     });
     res.json({ 
       success: true,
-      message: 'Reservation deleted' 
+      message: 'Reservation deleted',
+      data: null
     });
   } catch (error: any) {
     res.status(500).json({ 
       success: false,
-      message: error.message 
+      message: error.message,
+      data: null
     });
   }
 });
