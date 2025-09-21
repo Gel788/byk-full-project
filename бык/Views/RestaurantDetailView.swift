@@ -420,21 +420,6 @@ struct RestaurantReservationCard: View {
     }
 }
 
-// MARK: - Status Badge
-struct StatusBadge: View {
-    let status: Reservation.Status
-    
-    var body: some View {
-        Text(status.rawValue)
-            .font(.caption)
-            .fontWeight(.medium)
-            .foregroundColor(.white)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(status.color.opacity(0.8))
-            .cornerRadius(8)
-    }
-}
 
 struct RestaurantDetailView_Previews: PreviewProvider {
     static var previews: some View {
