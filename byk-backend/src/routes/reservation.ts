@@ -71,9 +71,10 @@ router.get('/:id', async (req: Request, res: Response) => {
 // Create a reservation
 router.post('/', async (req: Request, res: Response) => {
   try {
-    // Генерируем номер бронирования автоматически
-    const count = await Reservation.countDocuments();
-    const reservationNumber = `RES-${String(count + 1).padStart(3, '0')}`;
+    // Генерируем уникальный номер бронирования
+    const timestamp = Date.now();
+    const randomStr = Math.random().toString(36).substring(2, 12).toUpperCase();
+    const reservationNumber = `RES-${timestamp}-${randomStr}`;
     
     const reservationData = {
       ...req.body,

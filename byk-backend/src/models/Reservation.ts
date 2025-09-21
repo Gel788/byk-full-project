@@ -8,6 +8,10 @@ export interface IReservation extends Document {
   guests: number;
   status: 'pending' | 'confirmed' | 'cancelled';
   specialRequests?: string;
+  reservationNumber: string;
+  contactName?: string;
+  contactPhone?: string;
+  tableNumber?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -20,6 +24,10 @@ const ReservationSchema = new Schema({
   guests: { type: Number, required: true },
   status: { type: String, enum: ['pending', 'confirmed', 'cancelled'], default: 'pending' },
   specialRequests: { type: String },
+  reservationNumber: { type: String, unique: true, required: true },
+  contactName: { type: String },
+  contactPhone: { type: String },
+  tableNumber: { type: Number },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
