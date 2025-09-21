@@ -401,24 +401,26 @@ class APIService: ObservableObject {
         }
         
         return request<AuthResponse>(endpoint: "/auth/login", method: .POST, body: data)
-            .map { response in
-                print("🌐 APIService: Получен ответ от сервера входа")
-                print("  - Success: \(response.success)")
-                print("  - Message: \(response.message)")
-                if let user = response.user {
-                    print("  - User ID: \(user.id)")
-                    print("  - User Name: \(user.fullName)")
-                    print("  - User Phone: \(user.phoneNumber)")
+            .handleEvents(
+                receiveOutput: { response in
+                    print("🌐 APIService: Получен ответ от сервера входа")
+                    print("  - Success: \(response.success)")
+                    print("  - Message: \(response.message)")
+                    if let user = response.user {
+                        print("  - User ID: \(user.id)")
+                        print("  - User Name: \(user.fullName)")
+                        print("  - User Phone: \(user.phoneNumber)")
+                    }
+                    if let token = response.token {
+                        print("  - Token: \(String(token.prefix(20)))...")
+                    }
+                },
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        print("🌐 APIService: Ошибка входа - \(error)")
+                    }
                 }
-                if let token = response.token {
-                    print("  - Token: \(String(token.prefix(20)))...")
-                }
-                return response
-            }
-            .mapError { error in
-                print("🌐 APIService: Ошибка входа - \(error)")
-                return error
-            }
+            )
             .eraseToAnyPublisher()
     }
     
@@ -435,16 +437,18 @@ class APIService: ObservableObject {
         }
         
         return request<AuthResponse>(endpoint: "/auth/logout", method: .POST, body: data)
-            .map { response in
-                print("🌐 APIService: Получен ответ от сервера выхода")
-                print("  - Success: \(response.success)")
-                print("  - Message: \(response.message)")
-                return response
-            }
-            .mapError { error in
-                print("🌐 APIService: Ошибка выхода - \(error)")
-                return error
-            }
+            .handleEvents(
+                receiveOutput: { response in
+                    print("🌐 APIService: Получен ответ от сервера выхода")
+                    print("  - Success: \(response.success)")
+                    print("  - Message: \(response.message)")
+                },
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        print("🌐 APIService: Ошибка выхода - \(error)")
+                    }
+                }
+            )
             .eraseToAnyPublisher()
     }
     
