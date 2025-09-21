@@ -357,13 +357,15 @@ class AuthService: ObservableObject {
             phoneNumber: user.username,
             fullName: user.fullName,
             email: user.email.isEmpty ? nil : user.email,
-            avatar: user.avatar,
+            avatar: user.avatar.isEmpty ? nil : user.avatar,
             isVerified: user.isVerified,
             followersCount: user.followersCount,
             followingCount: user.followingCount,
             postsCount: user.postsCount,
             createdAt: ISO8601DateFormatter().string(from: user.createdAt),
-            updatedAt: ISO8601DateFormatter().string(from: Date())
+            updatedAt: ISO8601DateFormatter().string(from: Date()),
+            role: "user",
+            isActive: true
         )
         
         do {
