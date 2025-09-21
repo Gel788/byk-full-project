@@ -69,7 +69,7 @@ class AuthService: ObservableObject {
             }
             
             await MainActor.run {
-                if response.success, let userAPI = response.user, let token = response.token, let refreshToken = response.refreshToken {
+                if response.success, let userAPI = response.user, let token = response.token {
                     // Логируем данные с сервера
                     print("AuthService: Получены данные с сервера:")
                     print("  - ID: \(userAPI.id)")
@@ -90,12 +90,12 @@ class AuthService: ObservableObject {
                     // Сохраняем данные
                     self.currentUser = newUser
                     self.accessToken = token
-                    self.refreshToken = refreshToken
+                    self.refreshToken = nil // Сервер не возвращает refresh token
                     self.isAuthenticated = true
                     
                     // Сохраняем в локальное хранилище
                     self.saveCurrentUser(newUser)
-                    self.saveTokens(token: token, refreshToken: refreshToken)
+                    self.saveTokens(token: token, refreshToken: nil)
                     
                     print("AuthService: Регистрация завершена успешно через API")
                 } else {
@@ -148,19 +148,19 @@ class AuthService: ObservableObject {
             }
             
             await MainActor.run {
-                if response.success, let userAPI = response.user, let token = response.token, let refreshToken = response.refreshToken {
+                if response.success, let userAPI = response.user, let token = response.token {
                     // Преобразуем API модель в локальную
                     let user = userAPI.toLocalUser()
                     
                     // Сохраняем данные
                     self.currentUser = user
                     self.accessToken = token
-                    self.refreshToken = refreshToken
+                    self.refreshToken = nil // Сервер не возвращает refresh token
                     self.isAuthenticated = true
                     
                     // Сохраняем в локальное хранилище
                     self.saveCurrentUser(user)
-                    self.saveTokens(token: token, refreshToken: refreshToken)
+                    self.saveTokens(token: token, refreshToken: nil)
                     
                     print("AuthService: Вход выполнен успешно через API - \(user.fullName)")
                 } else {
@@ -292,15 +292,19 @@ class AuthService: ObservableObject {
         accessToken = userDefaults.string(forKey: accessTokenKey)
         refreshToken = userDefaults.string(forKey: refreshTokenKey)
         
-        // Если есть токены, считаем пользователя авторизованным
-        if accessToken != nil && refreshToken != nil && currentUser != nil {
+        // Если есть токен и пользователь, считаем авторизованным
+        if accessToken != nil && currentUser != nil {
             isAuthenticated = true
         }
     }
     
-    private func saveTokens(token: String, refreshToken: String) {
+    private func saveTokens(token: String, refreshToken: String?) {
         userDefaults.set(token, forKey: accessTokenKey)
-        userDefaults.set(refreshToken, forKey: refreshTokenKey)
+        if let refreshToken = refreshToken {
+            userDefaults.set(refreshToken, forKey: refreshTokenKey)
+        } else {
+            userDefaults.removeObject(forKey: refreshTokenKey)
+        }
     }
     
     // MARK: - Token Refresh
