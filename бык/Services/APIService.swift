@@ -345,10 +345,18 @@ class APIService: ObservableObject {
             "phoneNumber": registerRequest.phoneNumber,
             "password": registerRequest.password,
             "fullName": registerRequest.fullName,
-            "email": registerRequest.email
+            "username": registerRequest.fullName, // Добавляем username для совместимости
+            "email": registerRequest.email ?? "" // Убеждаемся что email не nil
         ]
         
+        // Логируем данные перед отправкой
+        if let jsonString = String(data: try! JSONSerialization.data(withJSONObject: registerData), encoding: .utf8) {
+            print("🌐 APIService: JSON данные для регистрации:")
+            print(jsonString)
+        }
+        
         guard let jsonData = try? JSONSerialization.data(withJSONObject: registerData) else {
+            print("🌐 APIService: Ошибка сериализации JSON")
             return Fail(error: APIError.encodingError)
                 .eraseToAnyPublisher()
         }
@@ -392,6 +400,17 @@ class APIService: ObservableObject {
         print("  - URL: \(baseURL)/auth/login")
         print("  - Телефон: \(loginRequest.phoneNumber)")
         print("  - Пароль: [СКРЫТ]")
+        
+        // Логируем данные перед отправкой
+        let loginData: [String: Any] = [
+            "phoneNumber": loginRequest.phoneNumber,
+            "password": loginRequest.password
+        ]
+        
+        if let jsonString = String(data: try! JSONSerialization.data(withJSONObject: loginData), encoding: .utf8) {
+            print("🌐 APIService: JSON данные для входа:")
+            print(jsonString)
+        }
         
         let encoder = JSONEncoder()
         guard let data = try? encoder.encode(loginRequest) else {
