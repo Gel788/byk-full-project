@@ -100,7 +100,8 @@ struct UserAPI: Codable, Identifiable {
     
     enum CodingKeys: String, CodingKey {
         case id
-        case phoneNumber, fullName, email, avatar, isVerified
+        case phoneNumber = "phone" // Сервер возвращает "phone"
+        case fullName, email, avatar, isVerified
         case followersCount, followingCount, postsCount
         case createdAt, updatedAt
     }
@@ -373,6 +374,13 @@ class APIService: ObservableObject {
         
         return session.dataTaskPublisher(for: request)
             .map(\.data)
+            .handleEvents(receiveOutput: { data in
+                // Логируем сырой ответ от сервера
+                if let responseString = String(data: data, encoding: .utf8) {
+                    print("🌐 APIService: Сырой ответ от сервера регистрации:")
+                    print(responseString)
+                }
+            })
             .decode(type: AuthResponse.self, decoder: JSONDecoder())
             .map { response in
                 print("🌐 APIService: Получен ответ от сервера регистрации")
@@ -419,7 +427,27 @@ class APIService: ObservableObject {
                 .eraseToAnyPublisher()
         }
         
-        return request<AuthResponse>(endpoint: "/auth/login", method: .POST, body: data)
+        // Создаем запрос напрямую для логирования сырого ответа
+        guard let url = URL(string: "\(baseURL)/auth/login") else {
+            return Fail(error: APIError.invalidURL)
+                .eraseToAnyPublisher()
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = data
+        
+        return session.dataTaskPublisher(for: request)
+            .map(\.data)
+            .handleEvents(receiveOutput: { data in
+                // Логируем сырой ответ от сервера
+                if let responseString = String(data: data, encoding: .utf8) {
+                    print("🌐 APIService: Сырой ответ от сервера входа:")
+                    print(responseString)
+                }
+            })
+            .decode(type: AuthResponse.self, decoder: JSONDecoder())
             .handleEvents(
                 receiveOutput: { response in
                     print("🌐 APIService: Получен ответ от сервера входа")
