@@ -139,13 +139,20 @@ struct LoginFormView: View {
             
             // Кнопка входа
             Button(action: {
+                print("📱 LoginFormView: Пользователь нажал кнопку входа")
+                print("  - Телефон: \(phoneNumber)")
+                print("  - Пароль: [СКРЫТ]")
+                
                 Task {
                     await authService.login(with: AuthCredentials(
                         phoneNumber: phoneNumber,
                         password: password
                     ))
                     if authService.isAuthenticated {
+                        print("📱 LoginFormView: Вход успешен, закрываем форму")
                         onSuccess()
+                    } else {
+                        print("📱 LoginFormView: Вход не удался")
                     }
                 }
             }) {
@@ -287,6 +294,12 @@ struct RegistrationFormView: View {
             
             // Кнопка регистрации
             Button(action: {
+                print("📱 RegistrationFormView: Пользователь нажал кнопку регистрации")
+                print("  - Имя: \(name)")
+                print("  - Телефон: \(phoneNumber)")
+                print("  - Email: \(email.isEmpty ? "не указан" : email)")
+                print("  - Пароль: [СКРЫТ]")
+                
                 Task {
                     await authService.register(with: RegistrationData(
                         phoneNumber: phoneNumber,
@@ -295,7 +308,10 @@ struct RegistrationFormView: View {
                         email: email.isEmpty ? nil : email
                     ))
                     if authService.isAuthenticated {
+                        print("📱 RegistrationFormView: Регистрация успешна, закрываем форму")
                         onSuccess()
+                    } else {
+                        print("📱 RegistrationFormView: Регистрация не удалась")
                     }
                 }
             }) {

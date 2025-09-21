@@ -334,6 +334,12 @@ class APIService: ObservableObject {
     
     // MARK: - Authentication
     func register(_ registerRequest: RegisterRequest) -> AnyPublisher<AuthResponse, Error> {
+        print("🌐 APIService: Подготовка запроса регистрации")
+        print("  - URL: \(baseURL)/auth/register")
+        print("  - Имя: \(registerRequest.fullName)")
+        print("  - Телефон: \(registerRequest.phoneNumber)")
+        print("  - Email: \(registerRequest.email ?? "не указан")")
+        
         // Отправляем данные на сервер через /auth/register API
         let registerData: [String: Any] = [
             "phoneNumber": registerRequest.phoneNumber,
@@ -361,7 +367,17 @@ class APIService: ObservableObject {
             .map(\.data)
             .decode(type: AuthResponse.self, decoder: JSONDecoder())
             .map { response in
-                print("APIService: Регистрация на сервере - \(registerRequest.fullName), \(registerRequest.phoneNumber)")
+                print("🌐 APIService: Получен ответ от сервера регистрации")
+                print("  - Success: \(response.success)")
+                print("  - Message: \(response.message)")
+                if let user = response.user {
+                    print("  - User ID: \(user.id)")
+                    print("  - User Name: \(user.fullName)")
+                    print("  - User Phone: \(user.phoneNumber)")
+                }
+                if let token = response.token {
+                    print("  - Token: \(String(token.prefix(20)))...")
+                }
                 return response
             }
             .mapError { error in
@@ -372,21 +388,64 @@ class APIService: ObservableObject {
     }
     
     func login(_ loginRequest: LoginRequest) -> AnyPublisher<AuthResponse, Error> {
+        print("🌐 APIService: Подготовка запроса входа")
+        print("  - URL: \(baseURL)/auth/login")
+        print("  - Телефон: \(loginRequest.phoneNumber)")
+        print("  - Пароль: [СКРЫТ]")
+        
         let encoder = JSONEncoder()
         guard let data = try? encoder.encode(loginRequest) else {
+            print("🌐 APIService: Ошибка кодирования данных входа")
             return Fail(error: APIError.encodingError)
                 .eraseToAnyPublisher()
         }
+        
         return request<AuthResponse>(endpoint: "/auth/login", method: .POST, body: data)
+            .map { response in
+                print("🌐 APIService: Получен ответ от сервера входа")
+                print("  - Success: \(response.success)")
+                print("  - Message: \(response.message)")
+                if let user = response.user {
+                    print("  - User ID: \(user.id)")
+                    print("  - User Name: \(user.fullName)")
+                    print("  - User Phone: \(user.phoneNumber)")
+                }
+                if let token = response.token {
+                    print("  - Token: \(String(token.prefix(20)))...")
+                }
+                return response
+            }
+            .mapError { error in
+                print("🌐 APIService: Ошибка входа - \(error)")
+                return error
+            }
+            .eraseToAnyPublisher()
     }
     
     func logout(_ logoutRequest: LogoutRequest) -> AnyPublisher<AuthResponse, Error> {
+        print("🌐 APIService: Подготовка запроса выхода")
+        print("  - URL: \(baseURL)/auth/logout")
+        print("  - Token: \(String(logoutRequest.token.prefix(20)))...")
+        
         let encoder = JSONEncoder()
         guard let data = try? encoder.encode(logoutRequest) else {
+            print("🌐 APIService: Ошибка кодирования данных выхода")
             return Fail(error: APIError.encodingError)
                 .eraseToAnyPublisher()
         }
+        
         return request<AuthResponse>(endpoint: "/auth/logout", method: .POST, body: data)
+            .map { response in
+                print("🌐 APIService: Получен ответ от сервера выхода")
+                print("  - Success: \(response.success)")
+                print("  - Message: \(response.message)")
+                return response
+            }
+            .mapError { error in
+                print("🌐 APIService: Ошибка выхода - \(error)")
+                return error
+            }
+            .eraseToAnyPublisher()
     }
     
     func refreshToken(_ refreshToken: String) -> AnyPublisher<AuthResponse, Error> {

@@ -30,6 +30,12 @@ class AuthService: ObservableObject {
     // MARK: - Authentication Methods
     
     func register(with data: RegistrationData) async {
+        print("🔐 AuthService: Начинаем регистрацию пользователя")
+        print("  - Имя: \(data.name)")
+        print("  - Телефон: \(data.phoneNumber)")
+        print("  - Email: \(data.email ?? "не указан")")
+        print("  - Пароль: [СКРЫТ]")
+        
         await MainActor.run {
             isLoading = true
             errorMessage = nil
@@ -42,6 +48,8 @@ class AuthService: ObservableObject {
             fullName: data.name,
             email: data.email
         )
+        
+        print("🔐 AuthService: Отправляем запрос регистрации на сервер...")
         
         do {
             // Отправляем запрос на сервер
@@ -105,6 +113,10 @@ class AuthService: ObservableObject {
     }
     
     func login(with credentials: AuthCredentials) async {
+        print("🔐 AuthService: Начинаем вход пользователя")
+        print("  - Телефон: \(credentials.phoneNumber)")
+        print("  - Пароль: [СКРЫТ]")
+        
         await MainActor.run {
             isLoading = true
             errorMessage = nil
@@ -115,6 +127,8 @@ class AuthService: ObservableObject {
             phoneNumber: credentials.phoneNumber,
             password: credentials.password
         )
+        
+        print("🔐 AuthService: Отправляем запрос входа на сервер...")
         
         do {
             // Отправляем запрос на сервер
@@ -164,8 +178,13 @@ class AuthService: ObservableObject {
     }
     
     func logout() async {
+        print("🔐 AuthService: Начинаем выход пользователя")
+        print("  - Текущий пользователь: \(currentUser?.fullName ?? "неизвестен")")
+        print("  - Есть токен: \(accessToken != nil)")
+        
         // Если есть токен, отправляем запрос на сервер
         if let token = accessToken {
+            print("🔐 AuthService: Отправляем запрос выхода на сервер...")
             let logoutRequest = LogoutRequest(token: token)
             
             do {
@@ -184,14 +203,17 @@ class AuthService: ObservableObject {
                         .store(in: &cancellables)
                 }
                 
-                print("AuthService: Выход выполнен через API - \(response.message)")
+                print("🔐 AuthService: Выход выполнен через API - \(response.message)")
             } catch {
-                print("AuthService: Ошибка выхода через API - \(error)")
+                print("🔐 AuthService: Ошибка выхода через API - \(error)")
             }
+        } else {
+            print("🔐 AuthService: Нет токена, пропускаем API запрос")
         }
         
         // Очищаем локальные данные
         await MainActor.run {
+            print("🔐 AuthService: Очищаем локальные данные пользователя")
             currentUser = nil
             isAuthenticated = false
             accessToken = nil
@@ -202,7 +224,9 @@ class AuthService: ObservableObject {
             userDefaults.removeObject(forKey: accessTokenKey)
             userDefaults.removeObject(forKey: refreshTokenKey)
             
-            print("AuthService: Локальные данные очищены")
+            print("🔐 AuthService: Локальные данные и хранилище очищены")
+            print("  - isAuthenticated: \(isAuthenticated)")
+            print("  - currentUser: \(currentUser?.fullName ?? "nil")")
         }
     }
     
