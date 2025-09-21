@@ -1,7 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'export',
+  trailingSlash: true,
   images: {
-    domains: ['localhost'],
+    unoptimized: true,
+    domains: ['localhost', 'bulladmin.ru'],
   },
   productionBrowserSourceMaps: false,
   webpack: (config, { dev, isServer }) => {
