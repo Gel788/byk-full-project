@@ -38,7 +38,16 @@ router.get('/my', async (req: Request, res: Response) => {
       });
     }
     
-    const reservations = await Reservation.find({ userId: userId });
+    // Получаем restaurantId из query параметров (опционально)
+    const restaurantId = req.query.restaurantId;
+    
+    // Строим фильтр запроса
+    const filter: any = { userId: userId };
+    if (restaurantId) {
+      filter.restaurantId = restaurantId;
+    }
+    
+    const reservations = await Reservation.find(filter);
     res.json({
       success: true,
       data: reservations,

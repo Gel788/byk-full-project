@@ -48,6 +48,35 @@ class ReservationService: ObservableObject {
             .store(in: &cancellables)
     }
     
+    func fetchReservationsForRestaurant(_ restaurant: Restaurant) async {
+        isLoading = true
+        defer { isLoading = false }
+        
+        print("ReservationService: Загружаем резервации для ресторана \(restaurant.name)")
+        
+        // Получаем текущего пользователя
+        let currentUser = AuthService.shared.getCurrentUser()
+        let userId = currentUser?.id.uuidString ?? "guest"
+        
+        // Загружаем резервации конкретного ресторана через API
+        apiService.fetchUserReservations(userId: userId, restaurantId: restaurant.id.uuidString)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    if case .failure(let error) = completion {
+                        print("ReservationService: Ошибка загрузки резерваций ресторана - \(error)")
+                        self?.error = error
+                    }
+                },
+                receiveValue: { [weak self] response in
+                    print("ReservationService: Загружено резерваций для ресторана \(restaurant.name): \(response.data.count)")
+                    self?.reservations = response.data.map { $0.toLocalReservation() }
+                    self?.error = nil
+                }
+            )
+            .store(in: &cancellables)
+    }
+    
     private func loadMockData() async {
         // Загружаем тестовые данные если API недоступен
         reservations = [
@@ -63,7 +92,7 @@ class ReservationService: ObservableObject {
                 date: Date().addingTimeInterval(3600 * 48),
                 guestCount: 4,
                 status: .pending,
-                tableNumber: 8,
+                 tableNumber: 8,
                 specialRequests: "Столик у окна"
             ),
             Reservation(
@@ -72,10 +101,10 @@ class ReservationService: ObservableObject {
                 guestCount: 3,
                 status: .completed,
                 tableNumber: 15
-            )
+            )                              
         ]
     }
-    
+             
     func createReservation(
         restaurant: Restaurant,
         date: Date,

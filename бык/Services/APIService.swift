@@ -296,6 +296,10 @@ class APIService: ObservableObject {
         return request<ReservationsListResponse>(endpoint: "/reservations/my?userId=\(userId)", method: .GET, body: nil)
     }
     
+    func fetchUserReservations(userId: String, restaurantId: String) -> AnyPublisher<ReservationsListResponse, Error> {
+        return request<ReservationsListResponse>(endpoint: "/reservations/my?userId=\(userId)&restaurantId=\(restaurantId)", method: .GET, body: nil)
+    }
+    
     func createReservation(_ reservationRequest: CreateReservationRequest) -> AnyPublisher<CreateReservationResponse, Error> {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
