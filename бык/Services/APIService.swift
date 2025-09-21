@@ -91,19 +91,21 @@ struct UserAPI: Codable, Identifiable {
     let fullName: String
     let email: String?
     let avatar: String?
-    let isVerified: Bool
-    let followersCount: Int
-    let followingCount: Int
-    let postsCount: Int
-    let createdAt: String
-    let updatedAt: String
+    let isVerified: Bool?
+    let followersCount: Int?
+    let followingCount: Int?
+    let postsCount: Int?
+    let createdAt: String?
+    let updatedAt: String?
+    let role: String?
+    let isActive: Bool?
     
     enum CodingKeys: String, CodingKey {
         case id
         case phoneNumber = "phone" // Сервер возвращает "phone"
         case fullName, email, avatar, isVerified
         case followersCount, followingCount, postsCount
-        case createdAt, updatedAt
+        case createdAt, updatedAt, role, isActive
     }
 }
 

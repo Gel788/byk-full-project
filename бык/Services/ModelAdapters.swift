@@ -55,13 +55,13 @@ extension UserAPI {
             id: UUID(uuidString: id) ?? UUID(),
             username: phoneNumber,
             fullName: fullName,
-            avatar: avatar,
+            avatar: avatar ?? "",
             email: email ?? "",
-            isVerified: isVerified,
-            followersCount: followersCount,
-            followingCount: followingCount,
-            postsCount: postsCount,
-            createdAt: DateFormatter.iso8601.date(from: createdAt) ?? Date()
+            isVerified: isVerified ?? false,
+            followersCount: followersCount ?? 0,
+            followingCount: followingCount ?? 0,
+            postsCount: postsCount ?? 0,
+            createdAt: DateFormatter.iso8601.date(from: createdAt ?? "") ?? Date()
         )
     }
 }
