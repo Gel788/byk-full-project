@@ -236,7 +236,24 @@ extension OrderAPI {
 // MARK: - Reservation Adapters
 extension ReservationAPI {
     func toLocalReservation() -> Reservation {
-        let restaurant = Restaurant.mock // Временно используем mock
+        // Создаем объект ресторана из данных API
+        let restaurant = Restaurant(
+            id: UUID(uuidString: restaurantId) ?? UUID(),
+            name: restaurantName ?? "Ресторан",
+            description: "", // Нет в API
+            address: "", // Нет в API
+            city: "", // Нет в API
+            imageURL: "", // Нет в API
+            rating: 0, // Нет в API
+            cuisine: "", // Нет в API
+            deliveryTime: 0, // Нет в API
+            brand: .theByk, // По умолчанию
+            menu: [], // Нет в API
+            features: [], // Нет в API
+            workingHours: WorkingHours.default,
+            location: Location(latitude: 0, longitude: 0), // Нет в API
+            tables: [] // Нет в API
+        )
         
         return Reservation(
             restaurant: restaurant,
@@ -349,8 +366,27 @@ extension ReservationResponse {
         let dateFormatter = ISO8601DateFormatter()
         let date = dateFormatter.date(from: self.date) ?? Date()
         
+        // Создаем объект ресторана из данных API
+        let restaurant = Restaurant(
+            id: UUID(uuidString: restaurantId) ?? UUID(),
+            name: restaurantName,
+            description: "", // Нет в API
+            address: "", // Нет в API
+            city: "", // Нет в API
+            imageURL: "", // Нет в API
+            rating: 0, // Нет в API
+            cuisine: "", // Нет в API
+            deliveryTime: 0, // Нет в API
+            brand: .theByk, // По умолчанию
+            menu: [], // Нет в API
+            features: [], // Нет в API
+            workingHours: WorkingHours.default,
+            location: Location(latitude: 0, longitude: 0), // Нет в API
+            tables: [] // Нет в API
+        )
+        
         return Reservation(
-            restaurant: Restaurant.mock, // TODO: Загружать реальный ресторан по ID
+            restaurant: restaurant,
             date: date,
             guestCount: guestCount,
             status: Reservation.Status(rawValue: status) ?? .pending,

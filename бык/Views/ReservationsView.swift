@@ -49,7 +49,14 @@ struct ReservationsView: View {
             ReservationDetailView(reservation: reservation)
         }
         .onAppear {
-            // Данные уже загружаются автоматически в ReservationService
+            // Обновляем данные при появлении экрана
+            Task {
+                await reservationService.fetchReservations()
+            }
+        }
+        .refreshable {
+            // Pull-to-refresh функциональность
+            await reservationService.fetchReservations()
         }
     }
 }
