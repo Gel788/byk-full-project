@@ -3,6 +3,7 @@ import SwiftUI
 struct RestaurantDetailView: View {
     let restaurant: Restaurant
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var restaurantReservationService = ReservationService()
     @State private var showingReservation = false
     @State private var showingMenu = false
     @State private var showingPhotoGallery = false
@@ -278,6 +279,34 @@ struct RestaurantDetailView: View {
                             .cornerRadius(12)
                     }
                     .padding(.horizontal, 20)
+                    
+                    // Секция с резервациями для этого ресторана
+                    if !restaurantReservationService.reservations.isEmpty {
+                        VStack(alignment: .leading, spacing: 16) {
+                            HStack {
+                                Text("Мои резервации")
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.white)
+                                
+                                Spacer()
+                                
+                                Text("\(restaurantReservationService.reservations.count)")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.gray.opacity(0.2))
+                                    .cornerRadius(8)
+                            }
+                            
+                            ForEach(restaurantReservationService.reservations) { reservation in
+                                RestaurantReservationCard(reservation: reservation)
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 16)
+                    }
                 }
                 .padding(.bottom, 20)
             }
@@ -336,6 +365,11 @@ struct RestaurantDetailView: View {
             }
             .onAppear {
                 isFavorite = UserDefaults.standard.bool(forKey: "favorite_\(restaurant.id)")
+                
+                // Загружаем резервации для конкретного ресторана
+                Task {
+                    await restaurantReservationService.fetchReservationsForRestaurant(restaurant)
+                }
             }
         }
     }
@@ -348,6 +382,57 @@ struct RestaurantDetailView: View {
            let window = windowScene.windows.first {
             window.rootViewController?.present(activityVC, animated: true)
         }
+    }
+}
+
+// MARK: - Restaurant Reservation Card
+struct RestaurantReservationCard: View {
+    let reservation: Reservation
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(reservation.formattedDate)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                    
+                    Text("Стол №\(reservation.tableNumber) • \(reservation.guestCount) чел.")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
+                
+                Spacer()
+                
+                StatusBadge(status: reservation.status)
+            }
+            
+            if let specialRequests = reservation.specialRequests, !specialRequests.isEmpty {
+                Text(specialRequests)
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                    .padding(.top, 4)
+            }
+        }
+        .padding(16)
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(12)
+    }
+}
+
+// MARK: - Status Badge
+struct StatusBadge: View {
+    let status: Reservation.Status
+    
+    var body: some View {
+        Text(status.rawValue)
+            .font(.caption)
+            .fontWeight(.medium)
+            .foregroundColor(.white)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(status.color.opacity(0.8))
+            .cornerRadius(8)
     }
 }
 
