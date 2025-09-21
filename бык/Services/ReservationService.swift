@@ -24,8 +24,12 @@ class ReservationService: ObservableObject {
         
         print("ReservationService: Загружаем резервации через API")
         
+        // Получаем текущего пользователя
+        let currentUser = AuthService.shared.getCurrentUser()
+        let userId = currentUser?.id.uuidString ?? "guest"
+        
         // Загружаем резервации через API
-        apiService.fetchUserReservations(userId: "current") // userId будет заменен на сервере
+        apiService.fetchUserReservations(userId: userId)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { [weak self] completion in
@@ -84,8 +88,13 @@ class ReservationService: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
+        // Получаем текущего пользователя
+        let currentUser = AuthService.shared.getCurrentUser()
+        let userId = currentUser?.id.uuidString ?? "guest"
+        
         // Создаем запрос для API
         let request = CreateReservationRequest(
+            userId: userId,
             restaurantId: restaurant.id.uuidString,
             restaurantName: restaurant.name, // Добавили обязательное поле
             date: ISO8601DateFormatter().string(from: date),

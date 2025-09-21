@@ -293,7 +293,7 @@ class APIService: ObservableObject {
     
     // MARK: - Reservations
     func fetchUserReservations(userId: String) -> AnyPublisher<ReservationsListResponse, Error> {
-        return request<ReservationsListResponse>(endpoint: "/reservations/my", method: .GET, body: nil)
+        return request<ReservationsListResponse>(endpoint: "/reservations/my?userId=\(userId)", method: .GET, body: nil)
     }
     
     func createReservation(_ reservationRequest: CreateReservationRequest) -> AnyPublisher<CreateReservationResponse, Error> {

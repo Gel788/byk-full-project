@@ -2,6 +2,7 @@ import Foundation
 
 // MARK: - API Request Models
 struct CreateReservationRequest: Codable {
+    let userId: String
     let restaurantId: String
     let restaurantName: String // Добавили обязательное поле
     let date: String // ISO 8601 format
