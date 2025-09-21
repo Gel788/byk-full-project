@@ -201,15 +201,16 @@ struct ReservationFormView_Improved: View {
         
         Task {
             do {
-                // Создаем локальную резервацию с автоматическим назначением стола
-                let randomTableNumber = Int.random(in: 1...20) // Случайный стол от 1 до 20
-                let reservation = Reservation(
+                // Создаем резервацию через API с автоматическим назначением стола
+                let randomTableNumber = Int.random(in: 1...20)
+                let reservation = try await reservationService.createReservation(
                     restaurant: restaurant,
                     date: combinedDateTime,
                     guestCount: selectedGuests,
-                    status: .pending,
                     tableNumber: randomTableNumber,
-                    specialRequests: specialRequests.isEmpty ? nil : specialRequests
+                    specialRequests: specialRequests.isEmpty ? nil : specialRequests,
+                    contactName: contactName,
+                    contactPhone: contactPhone
                 )
                 
                 await MainActor.run {
@@ -217,19 +218,6 @@ struct ReservationFormView_Improved: View {
                     showingSuccess = true
                     isLoading = false
                 }
-                
-                // В будущем можно будет включить API:
-                /*
-                newReservation = try await reservationService.createReservation(
-                    restaurant: restaurant,
-                    date: combinedDateTime,
-                    guestCount: selectedGuests,
-                    tableNumber: table.tableNumber,
-                    specialRequests: specialRequests.isEmpty ? nil : specialRequests,
-                    contactName: contactName,
-                    contactPhone: contactPhone
-                )
-                */
             } catch {
                 print("ReservationFormView: Ошибка создания резервации - \(error)")
                 await MainActor.run {

@@ -217,6 +217,8 @@ struct ReservationsEmptyState: View {
 // MARK: - Restaurant Picker
 struct ReservationsRestaurantPicker: View {
     @Environment(\.dismiss) private var dismiss
+    @State private var selectedRestaurant: Restaurant?
+    @State private var showingReservationForm = false
     
     var body: some View {
         NavigationView {
@@ -235,7 +237,8 @@ struct ReservationsRestaurantPicker: View {
                             ForEach(Restaurant.mockRestaurants) { restaurant in
                                 RestaurantCard(restaurant: restaurant) {
                                     // Переходим к форме бронирования
-                                    dismiss()
+                                    selectedRestaurant = restaurant
+                                    showingReservationForm = true
                                 }
                             }
                         }
@@ -251,6 +254,11 @@ struct ReservationsRestaurantPicker: View {
                     }
                     .foregroundColor(.white)
                 }
+            }
+        }
+        .sheet(isPresented: $showingReservationForm) {
+            if let restaurant = selectedRestaurant {
+                ReservationFormView(restaurant: restaurant)
             }
         }
     }
