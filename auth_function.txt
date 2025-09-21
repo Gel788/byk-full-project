@@ -1,0 +1,8 @@
+  // Функция для получения заголовков авторизации
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('adminToken') || 'admin-token-123' // Временный токен для админки
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
+  }

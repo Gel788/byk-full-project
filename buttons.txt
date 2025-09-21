@@ -1,0 +1,71 @@
+                            <div className="flex flex-wrap gap-1 mb-2">
+                              {reservation.status === 'pending' && (
+                                <button
+                                  onClick={() => {
+                                    if (confirm('Подтвердить бронирование?')) {
+                                      fetch(`https://bulladmin.ru/api/admin/reservations/${reservation._id}/status`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ status: 'confirmed' })
+                                      }).then(res => {
+                                        if (res.ok) {
+                                          setReservations(reservations.map(r => 
+                                            r._id === reservation._id ? { ...r, status: 'confirmed' } : r
+                                          ))
+                                          alert('Бронирование подтверждено')
+                                        }
+                                      })
+                                    }
+                                  }}
+                                  className="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600"
+                                >
+                                  ✓ Подтвердить
+                                </button>
+                              )}
+                              {reservation.status === 'confirmed' && (
+                                <button
+                                  onClick={() => {
+                                    if (confirm('Завершить бронирование?')) {
+                                      fetch(`https://bulladmin.ru/api/admin/reservations/${reservation._id}/status`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ status: 'completed' })
+                                      }).then(res => {
+                                        if (res.ok) {
+                                          setReservations(reservations.map(r => 
+                                            r._id === reservation._id ? { ...r, status: 'completed' } : r
+                                          ))
+                                          alert('Бронирование завершено')
+                                        }
+                                      })
+                                    }
+                                  }}
+                                  className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                                >
+                                  ✓ Завершить
+                                </button>
+                              )}
+                              {reservation.status !== 'cancelled' && (
+                                <button
+                                  onClick={() => {
+                                    if (confirm('Отменить бронирование?')) {
+                                      fetch(`https://bulladmin.ru/api/admin/reservations/${reservation._id}/status`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ status: 'cancelled' })
+                                      }).then(res => {
+                                        if (res.ok) {
+                                          setReservations(reservations.map(r => 
+                                            r._id === reservation._id ? { ...r, status: 'cancelled' } : r
+                                          ))
+                                          alert('Бронирование отменено')
+                                        }
+                                      })
+                                    }
+                                  }}
+                                  className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                                >
+                                  ✗ Отменить
+                                </button>
+                              )}
+                            </div>

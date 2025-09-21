@@ -19,6 +19,7 @@ const upload_1 = __importDefault(require("./routes/upload"));
 const brands_1 = __importDefault(require("./routes/brands"));
 const cities_1 = __importDefault(require("./routes/cities"));
 const categories_1 = __importDefault(require("./routes/categories"));
+const auth_1 = __importDefault(require("./routes/auth"));
 // Admin Routes
 const adminRoutes_1 = __importDefault(require("./admin/routes/adminRoutes"));
 // Load environment variables
@@ -54,6 +55,7 @@ mongoose_1.default
     .then(() => console.log("MongoDB connected"))
     .catch((err) => console.error("MongoDB connection error:", err));
 // API Routes
+app.use("/api/auth", auth_1.default);
 app.use("/api/users", users_1.default);
 app.use("/api/restaurants", restaurants_1.default);
 app.use("/api/dishes", dishes_1.default);
@@ -84,8 +86,8 @@ app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send('Что-то пошло не так!');
 });
-const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => {
+const PORT = parseInt(process.env.PORT || '5001');
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
 });
 exports.default = app;

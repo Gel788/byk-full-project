@@ -161,7 +161,7 @@ struct AnimatedTextField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             // Заголовок с индикатором обязательности
-        HStack {
+            HStack {
                 Text(title)
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.white.opacity(0.8))
@@ -199,10 +199,10 @@ struct AnimatedTextField: View {
                 .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isFocused)
                 
                 // Текстовое поле
-            TextField(placeholder, text: $text)
+                TextField(placeholder, text: $text)
                     .font(.system(size: 16))
                     .foregroundColor(.white)
-                .keyboardType(keyboardType)
+                    .keyboardType(keyboardType)
                     .textInputAutocapitalization(.never)
                     .disableAutocorrection(keyboardType == .emailAddress)
                     .onChange(of: text) { _, _ in

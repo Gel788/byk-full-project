@@ -279,7 +279,8 @@ struct ProfileEditView: View {
         if let user = user {
             fullName = user.fullName
             email = user.email
-            print("ProfileEditView: Загружены данные пользователя - \(user.fullName), \(user.email)")
+            phone = user.phoneNumber
+            print("ProfileEditView: Загружены данные пользователя - \(user.fullName), \(user.email), \(user.phoneNumber)")
         } else {
             print("ProfileEditView: Пользователь не найден")
         }

@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 class AuthService: ObservableObject {
     static let shared = AuthService()
@@ -9,11 +10,21 @@ class AuthService: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
+    // Токены для API
+    @Published var accessToken: String?
+    @Published var refreshToken: String?
+    
     private let userDefaults = UserDefaults.standard
     private let userKey = "currentUser"
+    private let accessTokenKey = "accessToken"
+    private let refreshTokenKey = "refreshToken"
+    
+    private let apiService = APIService.shared
+    private var cancellables = Set<AnyCancellable>()
     
     init() {
         loadUserFromStorage()
+        loadTokensFromStorage()
     }
     
     // MARK: - Authentication Methods
@@ -24,36 +35,72 @@ class AuthService: ObservableObject {
             errorMessage = nil
         }
         
-        // Имитация задержки сети
-        try? await Task.sleep(nanoseconds: 1_500_000_000)
+        // Создаем запрос для API
+        let registerRequest = RegisterRequest(
+            phoneNumber: data.phoneNumber,
+            password: data.password,
+            fullName: data.name,
+            email: data.email
+        )
         
-        await MainActor.run {
-            // Проверка существования пользователя
-            if getStoredUser(phoneNumber: data.phoneNumber) != nil {
-                errorMessage = "Пользователь с таким номером уже существует"
-                isLoading = false
-                return
+        do {
+            // Отправляем запрос на сервер
+            let response = try await withCheckedThrowingContinuation { continuation in
+                apiService.register(registerRequest)
+                    .sink(
+                        receiveCompletion: { completion in
+                            if case .failure(let error) = completion {
+                                continuation.resume(throwing: error)
+                            }
+                        },
+                        receiveValue: { response in
+                            continuation.resume(returning: response)
+                        }
+                    )
+                    .store(in: &cancellables)
             }
             
-            // Создание нового пользователя
-            let newUser = User(
-                username: data.phoneNumber,
-                fullName: data.name,
-                email: data.email ?? ""
-            )
-            
-            print("AuthService: Регистрируем нового пользователя - \(newUser.fullName), \(newUser.email)")
-            
-            // Сохранение пользователя
-            saveUser(newUser)
-            savePassword(phoneNumber: data.phoneNumber, password: data.password)
-            saveCurrentUser(newUser)
-            
-            currentUser = newUser
-            isAuthenticated = true
-            isLoading = false
-            
-            print("AuthService: Регистрация завершена успешно")
+            await MainActor.run {
+                if response.success, let userAPI = response.user, let token = response.token, let refreshToken = response.refreshToken {
+                    // Логируем данные с сервера
+                    print("AuthService: Получены данные с сервера:")
+                    print("  - ID: \(userAPI.id)")
+                    print("  - Phone: \(userAPI.phoneNumber)")
+                    print("  - Name: \(userAPI.fullName)")
+                    print("  - Email: \(userAPI.email ?? "nil")")
+                    
+                    // Преобразуем API модель в локальную
+                    let newUser = userAPI.toLocalUser()
+                    
+                    // Логируем локальную модель
+                    print("AuthService: Преобразовано в локальную модель:")
+                    print("  - ID: \(newUser.id)")
+                    print("  - Phone: \(newUser.phoneNumber)")
+                    print("  - Name: \(newUser.fullName)")
+                    print("  - Email: \(newUser.email)")
+                    
+                    // Сохраняем данные
+                    self.currentUser = newUser
+                    self.accessToken = token
+                    self.refreshToken = refreshToken
+                    self.isAuthenticated = true
+                    
+                    // Сохраняем в локальное хранилище
+                    self.saveCurrentUser(newUser)
+                    self.saveTokens(token: token, refreshToken: refreshToken)
+                    
+                    print("AuthService: Регистрация завершена успешно через API")
+                } else {
+                    self.errorMessage = response.message
+                }
+                self.isLoading = false
+            }
+        } catch {
+            await MainActor.run {
+                print("AuthService: Ошибка регистрации - \(error)")
+                self.errorMessage = "Ошибка сети при регистрации"
+                self.isLoading = false
+            }
         }
     }
     
@@ -63,40 +110,100 @@ class AuthService: ObservableObject {
             errorMessage = nil
         }
         
-        // Имитация задержки сети
-        try? await Task.sleep(nanoseconds: 1_000_000_000)
+        // Создаем запрос для API
+        let loginRequest = LoginRequest(
+            phoneNumber: credentials.phoneNumber,
+            password: credentials.password
+        )
         
-        await MainActor.run {
-            // Проверка пользователя
-            guard let user = getStoredUser(phoneNumber: credentials.phoneNumber) else {
-                errorMessage = "Пользователь не найден"
-                isLoading = false
-                return
+        do {
+            // Отправляем запрос на сервер
+            let response = try await withCheckedThrowingContinuation { continuation in
+                apiService.login(loginRequest)
+                    .sink(
+                        receiveCompletion: { completion in
+                            if case .failure(let error) = completion {
+                                continuation.resume(throwing: error)
+                            }
+                        },
+                        receiveValue: { response in
+                            continuation.resume(returning: response)
+                        }
+                    )
+                    .store(in: &cancellables)
             }
             
-            // Проверка пароля
-            guard let storedPassword = getStoredPassword(phoneNumber: credentials.phoneNumber),
-                  storedPassword == credentials.password else {
-                errorMessage = "Неверный пароль"
-                isLoading = false
-                return
+            await MainActor.run {
+                if response.success, let userAPI = response.user, let token = response.token, let refreshToken = response.refreshToken {
+                    // Преобразуем API модель в локальную
+                    let user = userAPI.toLocalUser()
+                    
+                    // Сохраняем данные
+                    self.currentUser = user
+                    self.accessToken = token
+                    self.refreshToken = refreshToken
+                    self.isAuthenticated = true
+                    
+                    // Сохраняем в локальное хранилище
+                    self.saveCurrentUser(user)
+                    self.saveTokens(token: token, refreshToken: refreshToken)
+                    
+                    print("AuthService: Вход выполнен успешно через API - \(user.fullName)")
+                } else {
+                    self.errorMessage = response.message
+                }
+                self.isLoading = false
             }
-            
-            print("AuthService: Вход пользователя - \(user.fullName), \(user.email)")
-            
-            saveCurrentUser(user)
-            currentUser = user
-            isAuthenticated = true
-            isLoading = false
-            
-            print("AuthService: Вход выполнен успешно")
+        } catch {
+            await MainActor.run {
+                print("AuthService: Ошибка входа - \(error)")
+                self.errorMessage = "Ошибка сети при входе"
+                self.isLoading = false
+            }
         }
     }
     
-    func logout() {
-        currentUser = nil
-        isAuthenticated = false
-        userDefaults.removeObject(forKey: userKey)
+    func logout() async {
+        // Если есть токен, отправляем запрос на сервер
+        if let token = accessToken {
+            let logoutRequest = LogoutRequest(token: token)
+            
+            do {
+                let response = try await withCheckedThrowingContinuation { continuation in
+                    apiService.logout(logoutRequest)
+                        .sink(
+                            receiveCompletion: { completion in
+                                if case .failure(let error) = completion {
+                                    continuation.resume(throwing: error)
+                                }
+                            },
+                            receiveValue: { response in
+                                continuation.resume(returning: response)
+                            }
+                        )
+                        .store(in: &cancellables)
+                }
+                
+                print("AuthService: Выход выполнен через API - \(response.message)")
+            } catch {
+                print("AuthService: Ошибка выхода через API - \(error)")
+            }
+        }
+        
+        // Очищаем локальные данные
+        await MainActor.run {
+            currentUser = nil
+            isAuthenticated = false
+            accessToken = nil
+            refreshToken = nil
+            
+            // Очищаем хранилище
+            userDefaults.removeObject(forKey: userKey)
+            userDefaults.removeObject(forKey: accessTokenKey)
+            userDefaults.removeObject(forKey: refreshTokenKey)
+            
+            print("AuthService: Локальные данные очищены")
+        }
     }
     
     // MARK: - User Data Methods
@@ -152,6 +259,112 @@ class AuthService: ObservableObject {
     private func saveCurrentUser(_ user: User) {
         if let encoded = try? JSONEncoder().encode(user) {
             userDefaults.set(encoded, forKey: userKey)
+        }
+    }
+    
+    // MARK: - Token Management
+    
+    private func loadTokensFromStorage() {
+        accessToken = userDefaults.string(forKey: accessTokenKey)
+        refreshToken = userDefaults.string(forKey: refreshTokenKey)
+        
+        // Если есть токены, считаем пользователя авторизованным
+        if accessToken != nil && refreshToken != nil && currentUser != nil {
+            isAuthenticated = true
+        }
+    }
+    
+    private func saveTokens(token: String, refreshToken: String) {
+        userDefaults.set(token, forKey: accessTokenKey)
+        userDefaults.set(refreshToken, forKey: refreshTokenKey)
+    }
+    
+    // MARK: - Token Refresh
+    
+    func refreshAccessToken() async -> Bool {
+        guard let refreshToken = refreshToken else {
+            print("AuthService: Нет refresh токена")
+            return false
+        }
+        
+        do {
+            let response = try await withCheckedThrowingContinuation { continuation in
+                apiService.refreshToken(refreshToken)
+                    .sink(
+                        receiveCompletion: { completion in
+                            if case .failure(let error) = completion {
+                                continuation.resume(throwing: error)
+                            }
+                        },
+                        receiveValue: { response in
+                            continuation.resume(returning: response)
+                        }
+                    )
+                    .store(in: &cancellables)
+            }
+            
+            if response.success, let newToken = response.token, let newRefreshToken = response.refreshToken {
+                await MainActor.run {
+                    self.accessToken = newToken
+                    self.refreshToken = newRefreshToken
+                    self.saveTokens(token: newToken, refreshToken: newRefreshToken)
+                }
+                print("AuthService: Токен обновлен успешно")
+                return true
+            }
+        } catch {
+            print("AuthService: Ошибка обновления токена - \(error)")
+        }
+        
+        return false
+    }
+    
+    // MARK: - Profile Management
+    
+    func updateProfile(_ user: User) async {
+        guard let token = accessToken else {
+            print("AuthService: Нет токена для обновления профиля")
+            return
+        }
+        
+        // Создаем UserAPI из локального User
+        let userAPI = UserAPI(
+            id: user.id.uuidString,
+            phoneNumber: user.username,
+            fullName: user.fullName,
+            email: user.email.isEmpty ? nil : user.email,
+            avatar: user.avatar,
+            isVerified: user.isVerified,
+            followersCount: user.followersCount,
+            followingCount: user.followingCount,
+            postsCount: user.postsCount,
+            createdAt: ISO8601DateFormatter().string(from: user.createdAt),
+            updatedAt: ISO8601DateFormatter().string(from: Date())
+        )
+        
+        do {
+            let updatedUser = try await withCheckedThrowingContinuation { continuation in
+                apiService.updateProfile(token: token, user: userAPI)
+                    .sink(
+                        receiveCompletion: { completion in
+                            if case .failure(let error) = completion {
+                                continuation.resume(throwing: error)
+                            }
+                        },
+                        receiveValue: { userAPI in
+                            continuation.resume(returning: userAPI)
+                        }
+                    )
+                    .store(in: &cancellables)
+            }
+            
+            await MainActor.run {
+                self.currentUser = updatedUser.toLocalUser()
+                self.saveCurrentUser(self.currentUser!)
+                print("AuthService: Профиль обновлен через API")
+            }
+        } catch {
+            print("AuthService: Ошибка обновления профиля - \(error)")
         }
     }
 } 

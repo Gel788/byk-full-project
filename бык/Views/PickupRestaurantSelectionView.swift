@@ -319,5 +319,5 @@ struct PickupSearchBar: View {
 #Preview {
     PickupRestaurantSelectionView()
         .environmentObject(RestaurantService())
-        .environmentObject(CartViewModel(restaurantService: RestaurantService()))
+        .environmentObject(CartViewModel(restaurantService: RestaurantService(), menuService: MenuService()))
 } 

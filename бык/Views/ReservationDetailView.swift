@@ -31,7 +31,7 @@ struct ReservationDetailView: View {
                     }
                     
                     // Информация о ресторане
-                    RestaurantInfoSection(restaurant: reservation.restaurant, brandColors: brandColors)
+                    ReservationRestaurantInfoSection(restaurant: reservation.restaurant, brandColors: brandColors)
                     
                     // Карта
                     MapSection(restaurant: reservation.restaurant, showingMap: $showingMap)
@@ -90,11 +90,23 @@ private struct RestaurantHeaderSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             // Изображение ресторана
-            Image(restaurant.imageURL)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(height: 200)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+            AsyncImage(url: URL(string: restaurant.imageURL)) { image in
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxHeight: 200)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.black.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+            } placeholder: {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(height: 200)
+                    .overlay(
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    )
+            }
                 .overlay(
                     LinearGradient(
                         gradient: Gradient(colors: [
@@ -279,7 +291,7 @@ private struct ReservationSpecialRequestsSection: View {
 }
 
 // MARK: - Restaurant Info Section
-private struct RestaurantInfoSection: View {
+private struct ReservationRestaurantInfoSection: View {
     let restaurant: Restaurant
     let brandColors: (primary: Color, secondary: Color, accent: Color)
     

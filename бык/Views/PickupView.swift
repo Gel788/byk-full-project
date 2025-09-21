@@ -8,7 +8,7 @@ struct PickupView: View {
     @State private var name = ""
     @State private var phone = ""
     @State private var address = ""
-    @State private var selectedPaymentMethod: PaymentMethod = .card
+    @State private var selectedPaymentMethod: PickupPaymentMethod = .card
     @State private var tipAmount: Double = 0
     @State private var specialRequests = ""
     @State private var selectedPickupTime = Date().addingTimeInterval(1800)
@@ -57,7 +57,7 @@ struct PickupView: View {
                     .padding(.top, 20)
                     
                     // Информация о ресторане
-                    RestaurantInfoCard(
+                    PickupRestaurantInfoCard(
                         restaurant: restaurant,
                         brandColors: brandColors
                     )
@@ -74,7 +74,7 @@ struct PickupView: View {
                     .opacity(animateCards ? 1 : 0)
                     
                     // Контактная информация
-                    ContactInfoSection(
+                    PickupContactInfoSection(
                         name: $name,
                         phone: $phone,
                         address: $address,
@@ -84,7 +84,7 @@ struct PickupView: View {
                     .opacity(animateCards ? 1 : 0)
                     
                     // Способ оплаты
-                    PaymentMethodSection(
+                    PickupPaymentMethodSection(
                         selectedMethod: $selectedPaymentMethod,
                         brandColors: brandColors
                     )
@@ -92,7 +92,7 @@ struct PickupView: View {
                     .opacity(animateCards ? 1 : 0)
                     
                     // Чаевые
-                    TipSection(
+                    PickupTipSection(
                         tipAmount: $tipAmount,
                         brandColors: brandColors
                     )
@@ -188,7 +188,7 @@ struct PickupView: View {
         }
     }
     
-    private func convertPaymentMethod(_ method: PaymentMethod) -> DeliveryPaymentMethod {
+    private func convertPaymentMethod(_ method: PickupPaymentMethod) -> DeliveryPaymentMethod {
         switch method {
         case .card:
             return .card
@@ -200,113 +200,6 @@ struct PickupView: View {
     }
 }
 
-// MARK: - Pickup Time Section
-struct PickupTimeSection: View {
-    @Binding var selectedTime: Date
-    let brandColors: (primary: Color, secondary: Color, accent: Color)
-    let restaurant: Restaurant
-    
-    private var dateRange: ClosedRange<Date> {
-        let now = Date()
-        let minTime = now.addingTimeInterval(1800) // 30 минут от сейчас
-        let maxTime = now.addingTimeInterval(86400) // 24 часа от сейчас
-        return minTime...maxTime
-    }
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Image(systemName: "clock.fill")
-                    .font(.title2)
-                    .foregroundColor(brandColors.accent)
-                
-                Text("Время самовывоза")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.white)
-            }
-            
-            // Календарь
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Выберите дату")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.white.opacity(0.8))
-                
-                DatePicker("", selection: $selectedTime, in: dateRange, displayedComponents: .date)
-                    .datePickerStyle(.graphical)
-                    .environment(\.locale, Locale(identifier: "ru_RU"))
-                    .tint(brandColors.accent)
-                    .background(Color.black.opacity(0.6))
-                    .cornerRadius(12)
-            }
-            
-            // Время
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Выберите время")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.white.opacity(0.8))
-                
-                PickupTimePickerView(
-                    selectedTime: $selectedTime,
-                    brandColors: brandColors
-                )
-            }
-        }
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.black.opacity(0.8))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(brandColors.accent.opacity(0.3), lineWidth: 1)
-                )
-        )
-    }
-}
-
-// MARK: - Pickup Time Picker View
-struct PickupTimePickerView: View {
-    @Binding var selectedTime: Date
-    let brandColors: (primary: Color, secondary: Color, accent: Color)
-    
-    private var timeSlots: [Date] {
-        let calendar = Calendar.current
-        let now = Date()
-        let minTime = now.addingTimeInterval(1800)
-        let maxTime = now.addingTimeInterval(86400)
-        
-        var slots: [Date] = []
-        var currentTime = minTime
-        
-        while currentTime <= maxTime {
-            slots.append(currentTime)
-            currentTime = calendar.date(byAdding: .minute, value: 30, to: currentTime) ?? currentTime
-        }
-        
-        return slots
-    }
-    
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
-                ForEach(0..<timeSlots.count, id: \.self) { index in
-                    let time = timeSlots[index]
-                    let isSelected = Calendar.current.isDate(selectedTime, equalTo: time, toGranularity: .minute)
-                    TimeSlotButton(
-                        time: time,
-                        isSelected: isSelected,
-                        brandColors: brandColors
-                    ) {
-                        selectedTime = time
-                    }
-                }
-            }
-            .padding(.horizontal, 16)
-        }
-        .frame(height: 60)
-        .background(Color.black.opacity(0.6))
-        .cornerRadius(12)
-    }
-}
 
 
 
@@ -423,5 +316,5 @@ struct PickupSuccessView: View {
 
 #Preview {
     PickupView(restaurant: Restaurant.mock)
-        .environmentObject(CartViewModel(restaurantService: RestaurantService()))
+        .environmentObject(CartViewModel(restaurantService: RestaurantService(), menuService: MenuService()))
 } 

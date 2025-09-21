@@ -247,11 +247,18 @@ struct OrderCard: View {
                 VStack(spacing: 8) {
                     ForEach(order.items.prefix(3)) { item in
                         HStack {
-                            Image(item.image)
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 40, height: 40)
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                            AsyncImage(url: URL(string: item.image)) { image in
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 40, height: 40)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                            } placeholder: {
+                                Rectangle()
+                                    .fill(Color.gray.opacity(0.3))
+                                    .frame(width: 40, height: 40)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                            }
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 8)
                                         .stroke(Color.white.opacity(0.2), lineWidth: 1)

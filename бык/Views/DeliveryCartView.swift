@@ -65,16 +65,13 @@ struct DeliveryCartView: View {
             VStack(spacing: 20) {
                 // Список блюд
                 ForEach(cartDishes, id: \.dish.id) { item in
-                    let groupedItem = CartGroupedItem(dish: item.dish, quantity: item.quantity, restaurant: restaurant)
-                    ImprovedCartItemRowView(
-                        item: groupedItem,
-                        onUpdateQuantity: onUpdateQuantity,
-                        onRemoveItem: { dishId in
-                            cartViewModel.removeFromCart(dishId: dishId)
-                        },
-                        onItemTap: { _ in
-                            // Можно добавить детальный просмотр блюда
-                        }
+                    let groupedItem = CartGroupedItem(dish: item.dish, quantity: item.quantity)
+                    CartItemRow(
+                        item: CartItem(
+                            dish: item.dish,
+                            quantity: item.quantity
+                        ),
+                        cartViewModel: cartViewModel
                     )
                 }
                 

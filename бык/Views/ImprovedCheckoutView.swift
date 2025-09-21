@@ -508,5 +508,5 @@ struct CheckoutBottomButtons: View {
 
 #Preview {
     ImprovedCheckoutView(restaurant: Restaurant.mock)
-        .environmentObject(CartViewModel(restaurantService: RestaurantService()))
+        .environmentObject(CartViewModel(restaurantService: RestaurantService(), menuService: MenuService()))
 }

@@ -1,76 +1,39 @@
 import SwiftUI
 
 struct ReservationsView: View {
-    @State private var activeReservations: [Reservation] = []
-    @State private var pastReservations: [Reservation] = []
-    @State private var selectedTab = 0
-    @State private var showingNewReservation = false
-    @State private var selectedReservation: Reservation?
-    @State private var animateCards = false
+    @StateObject private var viewModel = ReservationsViewModel()
+    @EnvironmentObject private var reservationService: ReservationService
     
     var body: some View {
+        NavigationView {
         ZStack {
-            // Градиентный фон
-            let gradientColors = [
+                // Фон
+                LinearGradient(
+                    gradient: Gradient(colors: [
                 Color.black,
                 Color.purple.opacity(0.1),
                 Color.black
-            ]
-            
-            LinearGradient(
-                gradient: Gradient(colors: gradientColors),
+                    ]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Премиальный заголовок
-                PremiumHeaderSection()
+                    // Заголовок
+                    ReservationsHeaderView()
                 
-                // Переключатель табов с анимацией
-                PremiumTabSelector(selectedTab: $selectedTab)
+                    // Переключатель табов
+                    ReservationsTabSelector(selectedTab: $viewModel.selectedTab)
                 
                 // Контент
-                if selectedTab == 0 {
-                    if activeReservations.isEmpty {
-                        PremiumEmptyState(
-                            icon: "calendar.badge.plus",
-                            title: "Нет активных броней",
-                            subtitle: "Создайте новое бронирование, чтобы начать",
-                            actionTitle: "Забронировать стол",
-                            action: { showingNewReservation = true }
-                        )
-                    } else {
-                        PremiumReservationsList(
-                            reservations: activeReservations,
-                            isActive: true,
-                            animateCards: animateCards,
-                            onReservationTap: { reservation in
-                                selectedReservation = reservation
-                            }
-                        )
-                    }
-                } else {
-                    if pastReservations.isEmpty {
-                        PremiumEmptyState(
-                            icon: "clock.arrow.circlepath",
-                            title: "История пуста",
-                            subtitle: "Ваши завершенные бронирования появятся здесь",
-                            actionTitle: "Забронировать стол",
-                            action: { showingNewReservation = true }
-                        )
-                    } else {
-                        PremiumReservationsList(
-                            reservations: pastReservations,
-                            isActive: false,
-                            animateCards: animateCards,
-                            onReservationTap: { reservation in
-                                selectedReservation = reservation
-                            }
-                        )
-                    }
-                }
+                    ReservationsContentView(
+                        selectedTab: viewModel.selectedTab,
+                        activeReservations: reservationService.reservations.filter { $0.status != .completed && $0.status != .cancelled },
+                        pastReservations: reservationService.reservations.filter { $0.status == .completed || $0.status == .cancelled },
+                        onNewReservation: { viewModel.showingNewReservation = true },
+                        onReservationTap: { viewModel.selectedReservation = $0 }
+                    )
             }
         }
         .navigationTitle("Мои бронирования")
@@ -78,231 +41,47 @@ struct ReservationsView: View {
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbarBackground(Color.black, for: .navigationBar)
         .toolbarColorScheme(.dark, for: .navigationBar)
-
-        .onAppear {
-            loadReservations()
-            withAnimation(.easeInOut(duration: 0.8)) {
-                animateCards = true
-            }
         }
-        .sheet(isPresented: $showingNewReservation) {
-            NavigationStack {
-                VStack(spacing: 20) {
-                    Text("Выберите ресторан для бронирования")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .padding(.top)
-                    
-                    ScrollView {
-                        LazyVStack(spacing: 16) {
-                            ForEach(Restaurant.mockRestaurants) { restaurant in
-                                RestaurantCard(
-                                    restaurant: restaurant,
-                                    onTap: {
-                                        showingNewReservation = false
-                                        // Здесь можно открыть форму бронирования для выбранного ресторана
-                                    }
-                                )
-                            }
-                        }
-                        .padding()
-                    }
-                }
-                .background(Color.black)
-                .navigationTitle("Новое бронирование")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button("Отмена") {
-                            showingNewReservation = false
-                        }
-                        .foregroundColor(.white)
-                    }
-                }
-            }
+        .sheet(isPresented: $viewModel.showingNewReservation) {
+            ReservationsRestaurantPicker()
         }
-        .sheet(item: $selectedReservation) { reservation in
+        .sheet(item: $viewModel.selectedReservation) { reservation in
             ReservationDetailView(reservation: reservation)
         }
-    }
-    
-    private func loadReservations() {
-        print("🔄 Загружаем бронирования...")
-        
-        // Временные данные для демонстрации
-        activeReservations = [
-            Reservation(
-                id: UUID(),
-                restaurant: Restaurant.mock,
-                date: Date().addingTimeInterval(24 * 3600),
-                guestCount: 4,
-                status: .confirmed,
-                tableNumber: 12
-            ),
-            Reservation(
-                id: UUID(),
-                restaurant: Restaurant.mock,
-                date: Date().addingTimeInterval(3 * 24 * 3600),
-                guestCount: 2,
-                status: .pending,
-                tableNumber: 8
-            )
-        ]
-        
-        pastReservations = [
-            Reservation(
-                id: UUID(),
-                restaurant: Restaurant.mock,
-                date: Date().addingTimeInterval(-2 * 24 * 3600),
-                guestCount: 3,
-                status: .completed,
-                tableNumber: 15
-            )
-        ]
-        
-        print("✅ Активных бронирований: \(activeReservations.count)")
-        print("✅ Прошлых бронирований: \(pastReservations.count)")
-    }
-}
-
-// EmptyReservationsView удален - используется из ReservationsManagementView
-
-struct ReservationsList: View {
-    let reservations: [Reservation]
-    let isActive: Bool
-    
-    var body: some View {
-        ScrollView {
-            LazyVStack(spacing: 16) {
-                ForEach(reservations) { reservation in
-                    ReservationCardView(reservation: reservation)
-                        .padding(.horizontal)
-                }
-            }
-            .padding(.vertical)
-        }
-        .background(Color.black)
-    }
-}
-
-struct ReservationCardView: View {
-    let reservation: Reservation
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // Заголовок с названием ресторана
-            HStack {
-                Text(reservation.restaurant.name)
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.white)
-                
-                Spacer()
-                
-                StatusBadge(status: reservation.status)
-            }
-            
-            // Детали бронирования
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Image(systemName: "calendar")
-                        .foregroundColor(.gray)
-                    Text(reservation.formattedDate)
-                        .foregroundColor(.white)
-                }
-                
-                HStack {
-                    Image(systemName: "person.2")
-                        .foregroundColor(.gray)
-                    Text("\(reservation.guestCount) гостей")
-                        .foregroundColor(.white)
-                }
-                
-                HStack {
-                    Image(systemName: "tablecells")
-                        .foregroundColor(.gray)
-                    Text("Стол №\(reservation.tableNumber)")
-                        .foregroundColor(.white)
-                }
-                
-                if let specialRequests = reservation.specialRequests, !specialRequests.isEmpty {
-                    HStack {
-                        Image(systemName: "text.bubble")
-                            .foregroundColor(.gray)
-                        Text(specialRequests)
-                            .foregroundColor(.white)
-                            .lineLimit(2)
-                    }
-                }
-            }
-        }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.black.opacity(0.8))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                )
-        )
-    }
-}
-
-// ReservationCard удален - используется из ReservationsManagementView
-
-struct StatusBadge: View {
-    let status: Reservation.Status
-    
-    var body: some View {
-        Text(status.rawValue)
-            .font(.caption)
-            .fontWeight(.medium)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(status.color.opacity(0.1))
-            .foregroundColor(status.color)
-            .cornerRadius(8)
-    }
-}
-
-// Удалено дублирующееся определение InfoRow - используется из CommonComponents.swift
-
-struct ActionButton: View {
-    let title: String
-    let icon: String
-    let color: Color
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            Label(title, systemImage: icon)
-                .font(.caption)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(color.opacity(0.1))
-                .foregroundColor(color)
-                .cornerRadius(8)
+        .onAppear {
+            // Данные уже загружаются автоматически в ReservationService
         }
     }
 }
 
-// MARK: - Premium Components
+// MARK: - View Model
+class ReservationsViewModel: ObservableObject {
+    @Published var selectedTab = 0
+    @Published var showingNewReservation = false
+    @Published var selectedReservation: Reservation?
+}
 
-struct PremiumHeaderSection: View {
+// MARK: - Header View
+struct ReservationsHeaderView: View {
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 16) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Мои бронирования")
-                        .font(.custom("Helvetica Neue", size: 28, relativeTo: .largeTitle))
-                        .fontWeight(.light)
+                        .font(.title)
+                        .fontWeight(.bold)
                         .foregroundColor(.white)
                     
                     Text("Управляйте своими столиками")
-                        .font(.system(size: 16))
-                        .foregroundColor(.white.opacity(0.7))
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
                 }
                 
                 Spacer()
+                
+                Image(systemName: "calendar.badge.plus")
+                    .font(.title2)
+                    .foregroundColor(Color("BykAccent"))
             }
             .padding(.horizontal, 20)
             .padding(.top, 20)
@@ -310,7 +89,8 @@ struct PremiumHeaderSection: View {
     }
 }
 
-struct PremiumTabSelector: View {
+// MARK: - Tab Selector
+struct ReservationsTabSelector: View {
     @Binding var selectedTab: Int
     
     var body: some View {
@@ -323,25 +103,13 @@ struct PremiumTabSelector: View {
                 }) {
                     VStack(spacing: 8) {
                         Text(index == 0 ? "Активные" : "История")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(selectedTab == index ? .white : .white.opacity(0.6))
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(selectedTab == index ? .white : .gray)
                         
-                        // Индикатор
                         Rectangle()
-                            .fill(
-                                selectedTab == index ?
-                                LinearGradient(
-                                    gradient: Gradient(colors: [.purple, .blue]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                ) : LinearGradient(
-                                    gradient: Gradient(colors: [Color.clear, Color.clear]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .frame(height: 3)
-                            .cornerRadius(1.5)
+                            .fill(Color("BykAccent"))
+                            .frame(height: 2)
+                            .opacity(selectedTab == index ? 1 : 0)
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -352,330 +120,139 @@ struct PremiumTabSelector: View {
     }
 }
 
-struct PremiumEmptyState: View {
-    let icon: String
-    let title: String
-    let subtitle: String
-    let actionTitle: String
-    let action: () -> Void
-    @State private var isPressed = false
-    
-    var body: some View {
-        VStack(spacing: 24) {
-            Spacer()
-            
-            // Иконка
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [.purple.opacity(0.2), .blue.opacity(0.2)]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 100, height: 100)
-                
-                Image(systemName: icon)
-                    .font(.system(size: 40, weight: .light))
-                    .foregroundColor(.white)
-            }
-            
-            VStack(spacing: 8) {
-                Text(title)
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(.white)
-                
-                Text(subtitle)
-                    .font(.system(size: 16))
-                    .foregroundColor(.white.opacity(0.7))
-                    .multilineTextAlignment(.center)
-            }
-            
-            // Кнопка действия
-            Button(action: action) {
-                HStack(spacing: 8) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 16, weight: .semibold))
-                    
-                    Text(actionTitle)
-                        .font(.system(size: 16, weight: .semibold))
-                }
-                .foregroundColor(.white)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 12)
-                .background(
-                    RoundedRectangle(cornerRadius: 25)
-                        .fill(
-                            LinearGradient(
-                                gradient: Gradient(colors: [.purple, .blue]),
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                )
-                .shadow(color: .purple.opacity(0.3), radius: 10, x: 0, y: 5)
-                .scaleEffect(isPressed ? 0.95 : 1.0)
-            }
-            .buttonStyle(PlainButtonStyle())
-            .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
-                withAnimation(.easeInOut(duration: 0.1)) {
-                    isPressed = pressing
-                }
-            }, perform: {})
-            
-            Spacer()
-        }
-        .padding(.horizontal, 40)
-    }
-}
-
-struct PremiumReservationsList: View {
-    let reservations: [Reservation]
-    let isActive: Bool
-    let animateCards: Bool
+// MARK: - Content View
+struct ReservationsContentView: View {
+    let selectedTab: Int
+    let activeReservations: [Reservation]
+    let pastReservations: [Reservation]
+    let onNewReservation: () -> Void
     let onReservationTap: (Reservation) -> Void
     
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 16) {
-                ForEach(Array(reservations.enumerated()), id: \.element.id) { index, reservation in
-                    PremiumReservationCard(
-                        reservation: reservation,
-                        isActive: isActive,
-                        onTap: {
-                            onReservationTap(reservation)
-                        }
-                    )
-                    .offset(y: animateCards ? 0 : 50)
-                    .opacity(animateCards ? 1 : 0)
-                    .animation(
-                        .easeInOut(duration: 0.6)
-                        .delay(Double(index) * 0.1),
-                        value: animateCards
-                    )
-                    .padding(.horizontal, 20)
-                }
-            }
-            .padding(.vertical, 20)
-        }
-    }
-}
-
-struct PremiumReservationCard: View {
-    let reservation: Reservation
-    let isActive: Bool
-    let onTap: () -> Void
-    @State private var isPressed = false
-    
-    var body: some View {
-        Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 16) {
-                // Заголовок с рестораном и статусом
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(reservation.restaurant.name)
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.white)
-                        
-                        Text(reservation.restaurant.address)
-                            .font(.system(size: 14))
-                            .foregroundColor(.white.opacity(0.7))
-                    }
-                    
-                    Spacer()
-                    
-                    PremiumStatusBadge(status: reservation.status)
-                }
-                
-                // Детали бронирования
-                VStack(spacing: 12) {
-                    PremiumInfoRow(
-                        icon: "calendar",
-                        title: "Дата и время",
-                        value: reservation.formattedDate,
-                        color: .blue
-                    )
-                    
-                    PremiumInfoRow(
-                        icon: "person.2.fill",
-                        title: "Гости",
-                        value: "\(reservation.guestCount) человек",
-                        color: .green
-                    )
-                    
-                    PremiumInfoRow(
-                        icon: "tablecells.fill",
-                        title: "Стол",
-                        value: "№\(reservation.tableNumber)",
-                        color: .orange
-                    )
-                    
-                    if let specialRequests = reservation.specialRequests, !specialRequests.isEmpty {
-                        PremiumInfoRow(
-                            icon: "text.bubble.fill",
-                            title: "Особые пожелания",
-                            value: specialRequests,
-                            color: .purple
+                if selectedTab == 0 {
+                    if activeReservations.isEmpty {
+                        ReservationsEmptyState(
+                            icon: "calendar.badge.plus",
+                            title: "Нет активных броней",
+                            subtitle: "Создайте новое бронирование",
+                            actionTitle: "Забронировать стол",
+                            action: onNewReservation
                         )
-                    }
-                }
-                
-                // Кнопки действий (только для активных бронирований)
-                if isActive {
-                    HStack(spacing: 12) {
-                        PremiumActionButton(
-                            title: "Изменить",
-                            icon: "pencil",
-                            color: .blue
-                        ) {
-                            // Действие изменения
-                        }
-                        
-                        PremiumActionButton(
-                            title: "Отменить",
-                            icon: "xmark.circle",
-                            color: .red
-                        ) {
-                            // Действие отмены
+                    } else {
+                        ForEach(activeReservations) { reservation in
+                            ReservationCardView(reservation: reservation) {
+                                onReservationTap(reservation)
+                            }
                         }
                     }
-                }
-            }
-            .padding(20)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color.black.opacity(0.8),
-                                Color.black.opacity(0.6)
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+                } else {
+                    if pastReservations.isEmpty {
+                        ReservationsEmptyState(
+                            icon: "clock.arrow.circlepath",
+                            title: "История пуста",
+                            subtitle: "Ваши завершенные бронирования появятся здесь",
+                            actionTitle: "Забронировать стол",
+                            action: onNewReservation
                         )
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [
-                                        .purple.opacity(0.3),
-                                        .blue.opacity(0.3)
-                                    ]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 1
-                            )
-                    )
-            )
-            .shadow(color: .purple.opacity(0.2), radius: 10, x: 0, y: 5)
-            .scaleEffect(isPressed ? 0.98 : 1.0)
-        }
-        .buttonStyle(PlainButtonStyle())
-        .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
-            withAnimation(.easeInOut(duration: 0.1)) {
-                isPressed = pressing
+                    } else {
+                        ForEach(pastReservations) { reservation in
+                            ReservationCardView(reservation: reservation) {
+                                onReservationTap(reservation)
+                            }
+                        }
+                    }
+                }
             }
-        }, perform: {})
-    }
-}
-
-struct PremiumStatusBadge: View {
-    let status: Reservation.Status
-    
-    var body: some View {
-        HStack(spacing: 6) {
-            Circle()
-                .fill(status.color)
-                .frame(width: 8, height: 8)
-            
-            Text(status.rawValue)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(status.color)
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(status.color.opacity(0.1))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(status.color.opacity(0.3), lineWidth: 1)
-                )
-        )
     }
 }
 
-struct PremiumInfoRow: View {
+// MARK: - Empty State
+struct ReservationsEmptyState: View {
     let icon: String
     let title: String
-    let value: String
-    let color: Color
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(color.opacity(0.2))
-                    .frame(width: 32, height: 32)
-                
-                Image(systemName: icon)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(color)
-            }
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.white.opacity(0.7))
-                
-                Text(value)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.white)
-            }
-            
-            Spacer()
-        }
-    }
-}
-
-struct PremiumActionButton: View {
-    let title: String
-    let icon: String
-    let color: Color
+    let subtitle: String
+    let actionTitle: String
     let action: () -> Void
-    @State private var isPressed = false
     
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
+        VStack(spacing: 20) {
                 Image(systemName: icon)
-                    .font(.system(size: 12, weight: .semibold))
-                
+                .font(.system(size: 60))
+                .foregroundColor(Color("BykAccent"))
+            
+            VStack(spacing: 8) {
                 Text(title)
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+                
+                Text(subtitle)
+                    .font(.body)
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
             }
-            .foregroundColor(color)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(color.opacity(0.1))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(color.opacity(0.3), lineWidth: 1)
+            
+            Button(action: action) {
+                    Text(actionTitle)
+                    .font(.headline)
+                .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color("BykAccent"))
                     )
-            )
-            .scaleEffect(isPressed ? 0.95 : 1.0)
-        }
-        .buttonStyle(PlainButtonStyle())
-        .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
-            withAnimation(.easeInOut(duration: 0.1)) {
-                isPressed = pressing
             }
-        }, perform: {})
+        }
+        .padding(.horizontal, 40)
+        .padding(.vertical, 60)
+    }
+}
+
+// MARK: - Restaurant Picker
+struct ReservationsRestaurantPicker: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationView {
+            ZStack {
+                Color.black.ignoresSafeArea()
+                
+                VStack(spacing: 20) {
+                    Text("Выберите ресторан")
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .padding(.top)
+                    
+                    ScrollView {
+                        LazyVStack(spacing: 16) {
+                            ForEach(Restaurant.mockRestaurants) { restaurant in
+                                RestaurantCard(restaurant: restaurant) {
+                                    // Переходим к форме бронирования
+                                    dismiss()
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                    }
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Отмена") {
+                        dismiss()
+                    }
+                    .foregroundColor(.white)
+                }
+            }
+        }
     }
 }
 

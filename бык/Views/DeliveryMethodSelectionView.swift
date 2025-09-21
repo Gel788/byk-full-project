@@ -200,5 +200,5 @@ struct ContinueButton: View {
 
 #Preview {
     DeliveryMethodSelectionView(restaurant: Restaurant.mock)
-        .environmentObject(CartViewModel(restaurantService: RestaurantService()))
+        .environmentObject(CartViewModel(restaurantService: RestaurantService(), menuService: MenuService()))
 } 

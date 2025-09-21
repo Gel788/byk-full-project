@@ -1,0 +1,83 @@
+                            </div>
+                            
+                            {/* Кнопки управления статусом */}
+                            <div className="flex gap-1 mt-2">
+                              {reservation.status === 'pending' && (
+                                <button
+                                  onClick={async () => {
+                                    if (confirm('Подтвердить бронирование?')) {
+                                      try {
+                                        const response = await fetch(`https://bulladmin.ru/api/admin/reservations/${reservation._id}/status`, {
+                                          method: 'PUT',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ status: 'confirmed' })
+                                        })
+                                        if (response.ok) {
+                                          setReservations(reservations.map(r => 
+                                            r._id === reservation._id ? { ...r, status: 'confirmed' } : r
+                                          ))
+                                          alert('Бронирование подтверждено')
+                                        }
+                                      } catch (error) {
+                                        alert('Ошибка обновления статуса')
+                                      }
+                                    }
+                                  }}
+                                  className="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600"
+                                >
+                                  ✓ Подтвердить
+                                </button>
+                              )}
+                              {reservation.status === 'confirmed' && (
+                                <button
+                                  onClick={async () => {
+                                    if (confirm('Завершить бронирование?')) {
+                                      try {
+                                        const response = await fetch(`https://bulladmin.ru/api/admin/reservations/${reservation._id}/status`, {
+                                          method: 'PUT',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ status: 'completed' })
+                                        })
+                                        if (response.ok) {
+                                          setReservations(reservations.map(r => 
+                                            r._id === reservation._id ? { ...r, status: 'completed' } : r
+                                          ))
+                                          alert('Бронирование завершено')
+                                        }
+                                      } catch (error) {
+                                        alert('Ошибка обновления статуса')
+                                      }
+                                    }
+                                  }}
+                                  className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                                >
+                                  ✓ Завершить
+                                </button>
+                              )}
+                              {reservation.status !== 'cancelled' && reservation.status !== 'completed' && (
+                                <button
+                                  onClick={async () => {
+                                    if (confirm('Отменить бронирование?')) {
+                                      try {
+                                        const response = await fetch(`https://bulladmin.ru/api/admin/reservations/${reservation._id}/status`, {
+                                          method: 'PUT',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ status: 'cancelled' })
+                                        })
+                                        if (response.ok) {
+                                          setReservations(reservations.map(r => 
+                                            r._id === reservation._id ? { ...r, status: 'cancelled' } : r
+                                          ))
+                                          alert('Бронирование отменено')
+                                        }
+                                      } catch (error) {
+                                        alert('Ошибка обновления статуса')
+                                      }
+                                    }
+                                  }}
+                                  className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                                >
+                                  ✗ Отменить
+                                </button>
+                              )}
+                            </div>

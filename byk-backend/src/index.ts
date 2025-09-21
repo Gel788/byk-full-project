@@ -17,6 +17,7 @@ import uploadRouter from "./routes/upload";
 import brandsRouter from "./routes/brands";
 import citiesRouter from "./routes/cities";
 import categoriesRouter from "./routes/categories";
+import authRouter from "./routes/auth";
 
 // Admin Routes
 import adminRouter from "./admin/routes/adminRoutes";
@@ -60,6 +61,7 @@ mongoose
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // API Routes
+app.use("/api/auth", authRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/restaurants", restaurantsRouter);
 app.use("/api/dishes", dishesRouter);

@@ -21,12 +21,23 @@ struct RestaurantDetailView: View {
                     if !restaurant.imageURL.isEmpty {
                         Button(action: { showingPhotoGallery = true }) {
                             ZStack {
-                                Image(restaurant.imageURL)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(height: 250)
-                                    .clipped()
-                                    .cornerRadius(16)
+                                AsyncImage(url: URL(string: restaurant.imageURL)) { image in
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(maxHeight: 250)
+                                        .frame(maxWidth: .infinity)
+                                        .background(Color.black.opacity(0.1))
+                                        .cornerRadius(16)
+                                } placeholder: {
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(Color.gray.opacity(0.3))
+                                        .frame(height: 250)
+                                        .overlay(
+                                            ProgressView()
+                                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                        )
+                                }
                                 
                                 // Индикатор галереи
                                 VStack {

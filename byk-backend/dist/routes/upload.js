@@ -11,7 +11,7 @@ const router = express_1.default.Router();
 // Настройка multer для загрузки файлов
 const storage = multer_1.default.diskStorage({
     destination: (req, file, cb) => {
-        const uploadDir = process.env.NODE_ENV === 'production' ? '/var/www/uploads/' : './uploads/';
+        const uploadDir = process.env.NODE_ENV === 'production' ? './uploads/' : './uploads/';
         if (!fs_1.default.existsSync(uploadDir)) {
             fs_1.default.mkdirSync(uploadDir, { recursive: true });
         }
@@ -25,7 +25,7 @@ const storage = multer_1.default.diskStorage({
 const upload = (0, multer_1.default)({
     storage: storage,
     limits: {
-        fileSize: 10 * 1024 * 1024 // 10MB limit
+        fileSize: 100 * 1024 * 1024 // 100MB limit
     }
 });
 // Получить список файлов
@@ -45,7 +45,7 @@ router.get('/files', async (req, res) => {
             name: file,
             size: fs_1.default.statSync(path_1.default.join(uploadDir, file)).size,
             uploadDate: fs_1.default.statSync(path_1.default.join(uploadDir, file)).mtime,
-            url: process.env.NODE_ENV === 'production' ? `https://bulladmin.ru/api/uploads/${file}` : `http://localhost:5001/api/uploads/${file}`
+            url: process.env.NODE_ENV === 'production' ? `https://bulladmin.ru/api/upload/uploads/${file}` : `http://localhost:5001/api/upload/uploads/${file}`
         }));
         res.json({
             success: true,
@@ -78,7 +78,7 @@ router.post('/upload', upload.single('file'), (req, res) => {
                 originalName: req.file.originalname,
                 size: req.file.size,
                 path: req.file.path,
-                url: process.env.NODE_ENV === 'production' ? `https://bulladmin.ru/api/uploads/${req.file.filename}` : `http://localhost:5001/api/uploads/${req.file.filename}`
+                url: process.env.NODE_ENV === 'production' ? `https://bulladmin.ru/api/upload/uploads/${req.file.filename}` : `http://localhost:5001/api/upload/uploads/${req.file.filename}`
             }
         });
     }
@@ -104,7 +104,7 @@ router.post('/upload-multiple', upload.array('files', 10), (req, res) => {
             originalName: file.originalname,
             size: file.size,
             path: file.path,
-            url: `https://bulladmin.ru/api/uploads/${file.filename}`
+            url: `https://bulladmin.ru/api/upload/uploads/${file.filename}`
         }));
         res.json({
             success: true,
@@ -142,6 +142,30 @@ router.delete('/files/:filename', (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Ошибка удаления файла',
+            error: error.message
+        });
+    }
+});
+// Маршрут для обслуживания файлов
+router.get('/uploads/:filename', (req, res) => {
+    try {
+        const filename = req.params.filename;
+        const uploadDir = process.env.NODE_ENV === 'production' ? './uploads/' : './uploads/';
+        const filePath = path_1.default.join(uploadDir, filename);
+        // Проверяем, существует ли файл
+        if (!fs_1.default.existsSync(filePath)) {
+            return res.status(404).json({
+                success: false,
+                message: 'Файл не найден'
+            });
+        }
+        // Отправляем файл
+        res.sendFile(path_1.default.resolve(filePath));
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Ошибка при получении файла',
             error: error.message
         });
     }

@@ -111,6 +111,15 @@ struct Restaurant: Identifiable, Hashable, Codable {
             case .theGeorgia: return "🍇"
             }
         }
+        
+        var color: Color {
+            switch self {
+            case .theByk: return .red
+            case .thePivo: return .orange
+            case .mosca: return .purple
+            case .theGeorgia: return .green
+            }
+        }
     }
     
     enum Feature: String, Codable {
@@ -147,9 +156,15 @@ struct Restaurant: Identifiable, Hashable, Codable {
 }
 
 struct GalleryImage: Identifiable, Hashable, Codable {
-    let id: UUID = UUID()
+    let id: UUID
     let imageURL: String
     let description: String
+    
+    init(imageURL: String, description: String) {
+        self.id = UUID()
+        self.imageURL = imageURL
+        self.description = description
+    }
 }
 
 struct ContactInfo: Hashable, Codable {
@@ -216,11 +231,19 @@ struct WorkingHours: Hashable, Codable {
 }
 
 struct Table: Identifiable, Hashable, Codable {
-    let id: UUID = UUID()
+    let id: UUID
     let number: Int
     let capacity: Int
     let isAvailable: Bool
     let location: TableLocation
+    
+    init(number: Int, capacity: Int, isAvailable: Bool, location: TableLocation) {
+        self.id = UUID()
+        self.number = number
+        self.capacity = capacity
+        self.isAvailable = isAvailable
+        self.location = location
+    }
     
     enum TableLocation: String, Hashable, Codable {
         case main = "Основной зал"
@@ -383,7 +406,7 @@ enum CuisineType: String {
 extension Restaurant {
     static var mock: Restaurant {
         Restaurant(
-            name: "THE БЫК на Тверской тест",
+            name: "THE БЫК на Тверской",
             description: "Премиальный стейк-хаус в самом сердце Москвы. Мы специализируемся на приготовлении высококачественных стейков из отборной мраморной говядины. Уютная атмосфера, профессиональное обслуживание и богатая винная карта сделают ваш вечер незабываемым.",
             address: "ул. Тверская, 15",
             city: "Москва",

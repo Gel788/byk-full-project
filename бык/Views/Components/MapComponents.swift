@@ -309,6 +309,22 @@ struct BrandFilterCard: View {
         }
     }
     
+    private var selectedBackgroundGradient: LinearGradient {
+        LinearGradient(
+            colors: [brandColors.accent.opacity(0.3), brandColors.primary.opacity(0.2)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+    
+    private var unselectedBackgroundGradient: LinearGradient {
+        LinearGradient(
+            colors: [Color.white.opacity(0.1), Color.white.opacity(0.05)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+    
     var body: some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 8) {
@@ -333,11 +349,7 @@ struct BrandFilterCard: View {
             .padding(12)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(
-                        isSelected 
-                        ? LinearGradient(colors: [brandColors.accent.opacity(0.3), brandColors.primary.opacity(0.2)], startPoint: .topLeading, endPoint: .bottomTrailing)
-                        : LinearGradient(colors: [Color.white.opacity(0.1), Color.white.opacity(0.05)], startPoint: .topLeading, endPoint: .bottomTrailing)
-                    )
+                    .fill(isSelected ? selectedBackgroundGradient : unselectedBackgroundGradient)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(isSelected ? brandColors.accent : Color.white.opacity(0.3), lineWidth: 1.5)

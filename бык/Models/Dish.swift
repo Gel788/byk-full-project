@@ -1,6 +1,6 @@
 import Foundation
 
-struct Dish: Identifiable, Codable {
+struct Dish: Identifiable, Codable, Equatable {
     let id: UUID
     let name: String
     let description: String
@@ -15,6 +15,21 @@ struct Dish: Identifiable, Codable {
     
     init(name: String, description: String, price: Double, image: String, category: String, restaurantBrand: Restaurant.Brand, isAvailable: Bool = true, preparationTime: Int = 20, calories: Int = 0, allergens: [String] = []) {
         self.id = UUID()
+        self.name = name
+        self.description = description
+        self.price = price
+        self.image = image
+        self.category = category
+        self.restaurantBrand = restaurantBrand
+        self.isAvailable = isAvailable
+        self.preparationTime = preparationTime
+        self.calories = calories
+        self.allergens = allergens
+    }
+    
+    // Инициализатор с указанным UUID (для API данных)
+    init(id: UUID, name: String, description: String, price: Double, image: String, category: String, restaurantBrand: Restaurant.Brand, isAvailable: Bool = true, preparationTime: Int = 20, calories: Int = 0, allergens: [String] = []) {
+        self.id = id
         self.name = name
         self.description = description
         self.price = price

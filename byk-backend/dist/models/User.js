@@ -35,13 +35,20 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
 const UserSchema = new mongoose_1.Schema({
-    username: { type: String, required: true, unique: true },
+    username: { type: String, unique: true, sparse: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     fullName: { type: String, required: true },
     phone: { type: String },
+    phoneNumber: { type: String },
     role: { type: String, enum: ['admin', 'user'], default: 'user' },
     isActive: { type: Boolean, default: true },
+    avatar: { type: String, default: '' },
+    isVerified: { type: Boolean, default: false },
+    followersCount: { type: Number, default: 0 },
+    followingCount: { type: Number, default: 0 },
+    postsCount: { type: Number, default: 0 },
+    refreshTokens: [{ type: String }],
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });

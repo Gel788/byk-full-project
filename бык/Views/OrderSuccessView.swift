@@ -551,7 +551,7 @@ struct ConfettiPiece: View {
         order: DeliveryOrder.mockOrder,
         restaurant: Restaurant.mock
     )
-    .environmentObject(CartViewModel(restaurantService: RestaurantService()))
+    .environmentObject(CartViewModel(restaurantService: RestaurantService(), menuService: MenuService()))
 }
 
 // MARK: - Mock Data Extension

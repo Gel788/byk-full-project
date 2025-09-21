@@ -12,6 +12,11 @@ struct User: Identifiable, Codable, Hashable {
     let postsCount: Int
     let createdAt: Date
     
+    // Computed property для телефона
+    var phoneNumber: String {
+        return username
+    }
+    
     init(
         id: UUID = UUID(),
         username: String,

@@ -1,11 +1,16 @@
 import Foundation
 import SwiftUI
+import Combine
 
 @MainActor
 class ReservationService: ObservableObject {
     @Published var reservations: [Reservation] = []
+    @Published var availableTables: [AvailableTableResponse] = []
     @Published private(set) var isLoading = false
     @Published private(set) var error: Error?
+    
+    private let apiService = APIService.shared
+    private var cancellables = Set<AnyCancellable>()
     
     init() {
         Task {
@@ -17,10 +22,30 @@ class ReservationService: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        // Симулируем задержку сети
-        try? await Task.sleep(nanoseconds: 1_000_000_000)
+        print("ReservationService: Загружаем резервации через API")
         
-        // Загружаем тестовые данные
+        // Загружаем резервации через API
+        apiService.fetchUserReservations(userId: "current") // userId будет заменен на сервере
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    if case .failure(let error) = completion {
+                        print("ReservationService: Ошибка загрузки резерваций - \(error)")
+                        self?.error = error
+                        // Убираем fallback на mock данные - показываем только реальные данные
+                    }
+                },
+                receiveValue: { [weak self] response in
+                    print("ReservationService: Загружено резерваций через API: \(response.data.count)")
+                    self?.reservations = response.data.map { $0.toLocalReservation() }
+                    self?.error = nil // Очищаем ошибку при успешной загрузке
+                }
+            )
+            .store(in: &cancellables)
+    }
+    
+    private func loadMockData() async {
+        // Загружаем тестовые данные если API недоступен
         reservations = [
             Reservation(
                 restaurant: Restaurant.mock,
@@ -52,6 +77,52 @@ class ReservationService: ObservableObject {
         date: Date,
         guestCount: Int,
         tableNumber: Int,
+        specialRequests: String? = nil,
+        contactName: String? = nil,
+        contactPhone: String? = nil
+    ) async throws -> Reservation {
+        isLoading = true
+        defer { isLoading = false }
+        
+        // Создаем запрос для API
+        let request = CreateReservationRequest(
+            restaurantId: restaurant.id.uuidString,
+            restaurantName: restaurant.name, // Добавили обязательное поле
+            date: ISO8601DateFormatter().string(from: date),
+            guestCount: guestCount,
+            tableNumber: tableNumber,
+            specialRequests: specialRequests,
+            contactPhone: contactPhone,
+            contactName: contactName
+        )
+        
+        // Отправляем запрос через API
+        return try await withCheckedThrowingContinuation { continuation in
+            apiService.createReservation(request)
+                .receive(on: DispatchQueue.main)
+                .sink(
+                    receiveCompletion: { completion in
+                        if case .failure(let error) = completion {
+                            print("ReservationService: Ошибка создания резервации - \(error)")
+                            continuation.resume(throwing: error)
+                        }
+                    },
+                    receiveValue: { [weak self] response in
+                        print("ReservationService: Резервация создана через API")
+                        let reservation = response.toLocalReservation()
+                        self?.reservations.append(reservation)
+                        continuation.resume(returning: reservation)
+                    }
+                )
+                .store(in: &cancellables)
+        }
+    }
+    
+    func createReservationLocal(
+        restaurant: Restaurant,
+        date: Date,
+        guestCount: Int,
+        tableNumber: Int,
         specialRequests: String? = nil
     ) -> Reservation {
         let reservation = Reservation(
@@ -64,6 +135,10 @@ class ReservationService: ObservableObject {
         )
         reservations.append(reservation)
         return reservation
+    }
+    
+    func addReservation(_ reservation: Reservation) {
+        reservations.append(reservation)
     }
     
     func isTableAvailable(
@@ -99,5 +174,67 @@ class ReservationService: ObservableObject {
     
     func completeReservation(_ reservation: Reservation) {
         updateReservation(reservation, status: .completed)
+    }
+    
+    func fetchAvailableTables(for restaurantId: String, date: Date) async {
+        isLoading = true
+        defer { isLoading = false }
+        
+        // Форматируем дату для API
+        let dateFormatter = ISO8601DateFormatter()
+        let dateString = dateFormatter.string(from: date)
+        
+        // Загружаем доступные столы через API
+        apiService.fetchAvailableTables(restaurantId: restaurantId, date: dateString)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    if case .failure(let error) = completion {
+                        print("ReservationService: Ошибка загрузки столов - \(error)")
+                        self?.error = error
+                        // Убираем fallback на mock данные - показываем только реальные данные
+                    }
+                },
+                receiveValue: { [weak self] response in
+                    print("ReservationService: Загружено столов через API: \(response.data.count)")
+                    self?.availableTables = response.data
+                    self?.error = nil // Очищаем ошибку при успешной загрузке
+                }
+            )
+            .store(in: &cancellables)
+    }
+    
+    private func loadMockTables() {
+        // Mock данные для столов
+        availableTables = [
+            AvailableTableResponse(
+                tableNumber: 1,
+                capacity: 2,
+                location: "Зал",
+                isAvailable: true,
+                availableTimes: ["18:00", "19:00", "20:00"]
+            ),
+            AvailableTableResponse(
+                tableNumber: 2,
+                capacity: 4,
+                location: "Зал",
+                isAvailable: true,
+                availableTimes: ["18:30", "19:30", "20:30"]
+            ),
+            AvailableTableResponse(
+                tableNumber: 3,
+                capacity: 6,
+                location: "Терраса",
+                isAvailable: false,
+                availableTimes: []
+            ),
+            AvailableTableResponse(
+                tableNumber: 4,
+                capacity: 2,
+                location: "У окна",
+                isAvailable: true,
+                availableTimes: ["18:00", "20:00", "21:00"]
+            )
+        ]
     }
 } 

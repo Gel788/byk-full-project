@@ -74,7 +74,7 @@ struct CheckoutView: View {
                     .opacity(animateCards ? 1 : 0)
                     
                     // Контактная информация
-                    ContactInfoSection(
+                        CheckoutContactInfoSection(
                         name: $name,
                         phone: $phone,
                         address: $address,
@@ -269,7 +269,7 @@ struct DeliveryTimeSection: View {
 }
 
 // MARK: - Contact Info Section
-struct ContactInfoSection: View {
+struct CheckoutContactInfoSection: View {
     @Binding var name: String
     @Binding var phone: String
     @Binding var address: String
@@ -589,5 +589,5 @@ struct CheckoutButtonSection: View {
 
 #Preview {
     CheckoutView(restaurant: Restaurant.mock)
-        .environmentObject(CartViewModel(restaurantService: RestaurantService()))
+        .environmentObject(CartViewModel(restaurantService: RestaurantService(), menuService: MenuService()))
 } 

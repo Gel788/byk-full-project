@@ -8,9 +8,34 @@ class RestaurantService: ObservableObject {
     @Published var error: String?
     
     private var cancellables = Set<AnyCancellable>()
+    private let apiService = APIService.shared
     
     init() {
-        loadMockData()
+        loadRestaurantsFromAPI()
+    }
+    
+    @MainActor
+    private func loadRestaurantsFromAPI() {
+        loadingState = .loading
+        error = nil
+        
+        apiService.fetchRestaurants()
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.loadingState = .idle
+                    if case .failure(let error) = completion {
+                        self?.error = error.localizedDescription
+                        // Если API не работает, загружаем mock данные
+                        self?.loadMockData()
+                    }
+                },
+                receiveValue: { [weak self] apiRestaurants in
+                    self?.restaurants = apiRestaurants.map { $0.toLocalRestaurant() }
+                    self?.loadingState = .loaded
+                }
+            )
+            .store(in: &cancellables)
     }
     
     @MainActor
@@ -28,6 +53,10 @@ class RestaurantService: ObservableObject {
     private func loadRestaurantsData() {
         
     // MARK: - Public Methods
+    
+    func refreshData() {
+        loadRestaurantsFromAPI()
+    }
     
     func getAllDishes() -> [Dish] {
         return restaurants.flatMap { $0.menu }
@@ -70,7 +99,7 @@ class RestaurantService: ObservableObject {
         // THE БЫК
         let bykRestaurants = [
             Restaurant(
-                name: "THE БЫК на Тверской тест",
+                name: "THE БЫК на Тверской",
                 description: "Премиальные стейки из мраморной говядины",
                 address: "ул. Тверская, 15",
                 city: "Москва",

@@ -491,7 +491,7 @@ struct TermsRow: View {
         orderData: OrderData(),
         restaurant: Restaurant.mock,
         cartItems: [
-            CartGroupedItem(dish: Dish(name: "Тест", description: "", price: 500, image: "", category: "", restaurantBrand: .theByk), quantity: 2, restaurant: nil)
+            CartGroupedItem(dish: Dish(name: "Тест", description: "", price: 500, image: "", category: "", restaurantBrand: .theByk), quantity: 2)
         ],
         totalAmount: 1200,
         brandColors: Colors.brandColors(for: .theByk)

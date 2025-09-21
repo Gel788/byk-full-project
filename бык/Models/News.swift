@@ -26,6 +26,7 @@ struct NewsItem: Identifiable, Equatable {
     let title: String
     let description: String
     let image: String
+    let videoURL: String?
     let date: Date
     let brand: Restaurant.Brand
     let type: NewsType
@@ -33,6 +34,7 @@ struct NewsItem: Identifiable, Equatable {
     var isLiked: Bool
     var comments: [NewsComment]
     var isRead: Bool
+    var views: Int
     
     static func == (lhs: NewsItem, rhs: NewsItem) -> Bool {
         lhs.id == rhs.id
@@ -43,18 +45,21 @@ struct NewsItem: Identifiable, Equatable {
         title: String,
         description: String,
         image: String,
+        videoURL: String? = nil,
         date: Date,
         brand: Restaurant.Brand,
         type: NewsType = .news,
         likes: Int = 0,
         isLiked: Bool = false,
         comments: [NewsComment] = [],
-        isRead: Bool = false
+        isRead: Bool = false,
+        views: Int = 0
     ) {
         self.id = id
         self.title = title
         self.description = description
         self.image = image
+        self.videoURL = videoURL
         self.date = date
         self.brand = brand
         self.type = type
@@ -62,13 +67,15 @@ struct NewsItem: Identifiable, Equatable {
         self.isLiked = isLiked
         self.comments = comments
         self.isRead = isRead
+        self.views = views
     }
     
     // Mock данные для превью
     static let mock = NewsItem(
-        title: "Новое сезонное меню в THE БЫК тест",
+        title: "Новое сезонное меню в THE БЫК",
         description: "Мы рады представить вам наше новое сезонное меню, созданное специально для летнего сезона. Наши шеф-повара подготовили уникальные блюда.",
-        image: "XXL_height",
+        image: "https://bulladmin.ru/api/upload/uploads/file-1758303306377-535852281.jpg",
+        videoURL: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBun.mp4",
         date: Date(),
         brand: .theByk,
         type: .news,
@@ -79,7 +86,8 @@ struct NewsItem: Identifiable, Equatable {
             NewsComment(author: "Мария", text: "Когда будет доступно в моем городе?"),
             NewsComment(author: "Дмитрий", text: "Выглядит аппетитно! 👍")
         ],
-        isRead: false
+        isRead: false,
+        views: 128
     )
 }
 
@@ -108,6 +116,17 @@ enum NewsType: String, CaseIterable {
         case .promotion: return .orange
         case .announcement: return .green
         case .update: return .gray
+        }
+    }
+    
+    static func fromString(_ string: String) -> NewsType {
+        switch string.lowercased() {
+        case "новости", "news": return .news
+        case "события", "events", "event": return .event
+        case "акции", "promotions", "promotion": return .promotion
+        case "анонсы", "announcements", "announcement": return .announcement
+        case "обновления", "updates", "update": return .update
+        default: return .news
         }
     }
 } 

@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 @MainActor
 class NewsService: ObservableObject {
@@ -7,11 +8,42 @@ class NewsService: ObservableObject {
     @Published var isLoading = false
     @Published var error: String?
     
+    private var cancellables = Set<AnyCancellable>()
+    private let apiService = APIService.shared
+    
     init() {
-        loadNews()
+        print("DEBUG: NewsService init called")
+        loadNewsFromAPI()
     }
     
-    func loadNews() {
+    func loadNewsFromAPI() {
+        isLoading = true
+        error = nil
+        
+        
+        apiService.fetchNews()
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    self?.isLoading = false
+                    switch completion {
+                    case .finished:
+                        break
+                    case .failure(let error):
+                        self?.error = error.localizedDescription
+                        // Используем mock данные если API не работает
+                        self?.loadMockNews()
+                    }
+                },
+                receiveValue: { [weak self] apiNews in
+                    let localNews = apiNews.map { $0.toLocalNews() }
+                    self?.news = localNews
+                }
+            )
+            .store(in: &cancellables)
+    }
+    
+    func loadMockNews() {
         isLoading = true
         error = nil
         
@@ -21,7 +53,8 @@ class NewsService: ObservableObject {
                 id: UUID(uuidString: "DABC5A12-68FF-464C-9809-0EF73C00CD54")!,
                 title: "Новое сезонное меню в THE БЫК",
                 description: "Мы рады представить вам наше новое сезонное меню, созданное специально для летнего сезона. Наши шеф-повара подготовили уникальные блюда, которые подчеркивают вкус и качество ингредиентов.",
-                image: "XXL_height",
+                image: "https://bulladmin.ru/api/upload/uploads/file-1758303306377-535852281.jpg",
+                videoURL: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBun.mp4",
                 date: Date().addingTimeInterval(-86400 * 2),
                 brand: .theByk,
                 type: .news,
@@ -37,7 +70,8 @@ class NewsService: ObservableObject {
                 id: UUID(uuidString: "27DCC686-1E0F-4CF9-9AEC-1E97C7DEB6FF")!,
                 title: "Специальное предложение в THE ПИВО",
                 description: "Только в эти выходные скидка 20% на все сорта крафтового пива! Приходите и насладитесь уникальными вкусами.",
-                image: "XXL_heightw",
+                image: "https://bulladmin.ru/api/upload/uploads/file-1758303306377-535852281.jpg",
+                videoURL: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBun.mp4",
                 date: Date().addingTimeInterval(-86400 * 5),
                 brand: .thePivo,
                 type: .promotion,
@@ -53,7 +87,8 @@ class NewsService: ObservableObject {
                 id: UUID(uuidString: "66DBDD38-9474-471B-901F-4805D2B75858")!,
                 title: "Открытие нового ресторана MOSCA",
                 description: "Мы рады объявить об открытии нашего нового ресторана MOSCA в центре города. Современный интерьер и изысканная кухня ждут вас!",
-                image: "XXL_heightww",
+                image: "https://bulladmin.ru/api/upload/uploads/file-1758303306377-535852281.jpg",
+                videoURL: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBun.mp4",
                 date: Date().addingTimeInterval(-86400 * 7),
                 brand: .mosca,
                 type: .announcement,
@@ -70,7 +105,8 @@ class NewsService: ObservableObject {
                 id: UUID(uuidString: "B8CBB911-508B-4547-AE6A-927FC6D62FF7")!,
                 title: "Кулинарный мастер-класс",
                 description: "Приглашаем всех желающих на кулинарный мастер-класс от наших шеф-поваров. Научитесь готовить фирменные блюда!",
-                image: "XXL_heightwww",
+                image: "https://bulladmin.ru/api/upload/uploads/file-1758303306377-535852281.jpg",
+                videoURL: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBun.mp4",
                 date: Date().addingTimeInterval(-86400 * 10),
                 brand: .theByk,
                 type: .event,
@@ -84,11 +120,29 @@ class NewsService: ObservableObject {
                 isRead: true
             )
         ]
+        
+        print("DEBUG: Mock news loaded: \(self.news.count) items")
+        for news in self.news {
+            if let videoURL = news.videoURL {
+                print("DEBUG: Mock news with video: \(news.title) - \(videoURL)")
+            } else {
+                print("DEBUG: Mock news without video: \(news.title)")
+            }
+        }
+        
         self.isLoading = false
     }
     
-    func refreshNews() {
-        loadNews()
+    func refreshNews() async {
+        print("DEBUG: NewsService.refreshNews - Starting refresh")
+        loadNewsFromAPI()
+        
+        // Ждем завершения загрузки
+        while isLoading {
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 секунда
+        }
+        
+        print("DEBUG: NewsService.refreshNews - Refresh completed, news count: \(news.count)")
     }
     
     func filterNews(by brand: Restaurant.Brand?) -> [NewsItem] {

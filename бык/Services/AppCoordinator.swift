@@ -13,13 +13,13 @@ enum AppState {
 class AppServices: ObservableObject {
     let authService = AuthService.shared  // Используем shared instance
     let restaurantService = RestaurantService()
+    let menuService = MenuService()
     let cartViewModel: CartViewModel
     let reservationService = ReservationService()
     let userDataService = UserDataService()
-    let newsService = NewsService()
     
     init() {
-        self.cartViewModel = CartViewModel(restaurantService: restaurantService)
+        self.cartViewModel = CartViewModel(restaurantService: restaurantService, menuService: menuService)
         // Связываем UserDataService с AuthService
         self.userDataService.setAuthService(authService)
     }
@@ -49,7 +49,6 @@ class AppCoordinator: ObservableObject {
             try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 секунды для анимации
             await MainActor.run {
                 self.isLoading = false
-                // Сразу переходим к основному приложению
                 self.currentState = .main
             }
         }

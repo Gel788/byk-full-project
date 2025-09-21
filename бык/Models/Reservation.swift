@@ -103,4 +103,40 @@ struct Reservation: Identifiable {
             )
         ]
     }
+    
+    static let mockActiveReservations: [Reservation] = [
+        Reservation(
+            restaurant: .mock,
+            date: Date().addingTimeInterval(86400),
+            guestCount: 4,
+            status: .confirmed,
+            tableNumber: 12,
+            specialRequests: "Столик у окна, пожалуйста"
+        ),
+        Reservation(
+            restaurant: .mock,
+            date: Date().addingTimeInterval(172800),
+            guestCount: 2,
+            status: .pending,
+            tableNumber: 5
+        )
+    ]
+    
+    static let mockPastReservations: [Reservation] = [
+        Reservation(
+            restaurant: .mock,
+            date: Date().addingTimeInterval(-86400),
+            guestCount: 6,
+            status: .completed,
+            tableNumber: 8,
+            specialRequests: "День рождения"
+        ),
+        Reservation(
+            restaurant: .mock,
+            date: Date().addingTimeInterval(-172800),
+            guestCount: 3,
+            status: .cancelled,
+            tableNumber: 15
+        )
+    ]
 } 

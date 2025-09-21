@@ -1,6 +1,7 @@
 [build]
-  command = "npm run build"
-  publish = "out"
+  base = "."
+  command = "cd web && npm install && npm run build"
+  publish = "web/out"
 
 [build.environment]
   NODE_VERSION = "18"

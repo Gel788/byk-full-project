@@ -1,0 +1,26 @@
+{
+  "name": "byk-full-project",
+  "version": "1.0.0",
+  "description": "BYK Restaurant Management System",
+  "private": true,
+  "workspaces": [
+    "web",
+    "byk-backend"
+  ],
+  "scripts": {
+    "build": "cd web && npm run build",
+    "dev": "cd web && npm run dev",
+    "install:web": "cd web && npm install",
+    "install:backend": "cd byk-backend && npm install",
+    "install:all": "npm run install:web && npm run install:backend"
+  },
+  "keywords": [
+    "restaurant",
+    "management",
+    "nextjs",
+    "react",
+    "nodejs"
+  ],
+  "author": "BYK Team",
+  "license": "Private"
+}
