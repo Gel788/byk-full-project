@@ -46,7 +46,7 @@ app.use('/uploads', (req, res, next) => {
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   // Убираем Cross-Origin-Resource-Policy чтобы не блокировать изображения
   next();
-}, express.static('uploads'));
+}, express.static('/var/www/uploads'));
 
 // Middleware (helmet disabled for development)
 // app.use(helmet());

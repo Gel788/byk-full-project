@@ -6,10 +6,18 @@ import { Request, Response } from 'express';
 
 const router = express.Router();
 
+console.log('=== UPLOAD ROUTE INIT ===');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('Current working directory:', process.cwd());
+console.log('Upload directory for production:', '/var/www/uploads/');
+console.log('Upload directory for development:', path.join(process.cwd(), 'uploads'));
+
 // Настройка multer для загрузки файлов
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = process.env.NODE_ENV === 'production' ? './uploads/' : './uploads/';
+    const uploadDir = path.join(process.cwd(), 'uploads');
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('Upload directory:', uploadDir);
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -31,7 +39,7 @@ const upload = multer({
 // Получить список файлов
 router.get('/files', async (req: Request, res: Response) => {
   try {
-    const uploadDir = process.env.NODE_ENV === 'production' ? '/var/www/uploads/' : './uploads/';
+    const uploadDir = path.join(process.cwd(), 'uploads');
     if (!fs.existsSync(uploadDir)) {
       return res.json({
         success: true,
@@ -158,8 +166,13 @@ router.delete('/files/:filename', (req: Request, res: Response) => {
 router.get('/uploads/:filename', (req: Request, res: Response) => {
   try {
     const filename = req.params.filename;
-    const uploadDir = process.env.NODE_ENV === 'production' ? './uploads/' : './uploads/';
+    const uploadDir = path.join(process.cwd(), 'uploads');
     const filePath = path.join(uploadDir, filename);
+    
+    process.stdout.write(`Requested filename: ${filename}\n`);
+    process.stdout.write(`Upload directory: ${uploadDir}\n`);
+    process.stdout.write(`Full file path: ${filePath}\n`);
+    process.stdout.write(`File exists: ${fs.existsSync(filePath)}\n`);
     
     // Проверяем, существует ли файл
     if (!fs.existsSync(filePath)) {

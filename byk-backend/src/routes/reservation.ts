@@ -8,9 +8,43 @@ const router = express.Router();
 router.get('/', async (req: Request, res: Response) => {
   try {
     const reservations = await Reservation.find();
-    res.json(reservations);
+    res.json({
+      success: true,
+      data: reservations,
+      count: reservations.length
+    });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: error.message 
+    });
+  }
+});
+
+// Get user's reservations
+router.get('/my', async (req: Request, res: Response) => {
+  try {
+    // Получаем userId из заголовков или query параметров
+    const userId = req.headers['user-id'] || req.query.userId;
+    
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID is required'
+      });
+    }
+    
+    const reservations = await Reservation.find({ userId: userId });
+    res.json({
+      success: true,
+      data: reservations,
+      count: reservations.length
+    });
+  } catch (error: any) {
+    res.status(500).json({ 
+      success: false,
+      message: error.message 
+    });
   }
 });
 
@@ -18,10 +52,19 @@ router.get('/', async (req: Request, res: Response) => {
 router.get('/:id', async (req: Request, res: Response) => {
   try {
     const reservation = await Reservation.findById(req.params.id);
-    if (!reservation) return res.status(404).json({ message: 'Reservation not found' });
-    res.json(reservation);
+    if (!reservation) return res.status(404).json({ 
+      success: false,
+      message: 'Reservation not found' 
+    });
+    res.json({
+      success: true,
+      data: reservation
+    });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: error.message 
+    });
   }
 });
 
@@ -86,10 +129,19 @@ router.put('/:id', async (req: Request, res: Response) => {
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
     const deletedReservation = await Reservation.findByIdAndDelete(req.params.id);
-    if (!deletedReservation) return res.status(404).json({ message: 'Reservation not found' });
-    res.json({ message: 'Reservation deleted' });
+    if (!deletedReservation) return res.status(404).json({ 
+      success: false,
+      message: 'Reservation not found' 
+    });
+    res.json({ 
+      success: true,
+      message: 'Reservation deleted' 
+    });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: error.message 
+    });
   }
 });
 
