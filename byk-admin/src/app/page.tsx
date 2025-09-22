@@ -259,11 +259,31 @@ export default function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/admin/dashboard')
-      const data = await response.json()
-      if (data.success) {
-        setStats(data.data)
-      }
+      // Получаем статистику из разных API эндпоинтов
+      const [restaurantsRes, dishesRes, newsRes, usersRes, reservationsRes] = await Promise.all([
+        fetch('https://bulladmin.ru/api/restaurants'),
+        fetch('https://bulladmin.ru/api/dishes'),
+        fetch('https://bulladmin.ru/api/news'),
+        fetch('https://bulladmin.ru/api/users'),
+        fetch('https://bulladmin.ru/api/reservations')
+      ])
+      
+      const [restaurants, dishes, news, users, reservations] = await Promise.all([
+        restaurantsRes.json(),
+        dishesRes.json(),
+        newsRes.json(),
+        usersRes.json(),
+        reservationsRes.json()
+      ])
+      
+      setStats({
+        restaurants: restaurants.length || 0,
+        dishes: dishes.length || 0,
+        news: news.length || 0,
+        users: users.length || 0,
+        totalRevenue: 0, // Пока не реализовано
+        activeOrders: reservations.filter((r: any) => r.status === 'confirmed').length || 0
+      })
     } catch (error) {
       console.error('Ошибка загрузки статистики:', error)
       // Fallback данные для демо
@@ -562,7 +582,7 @@ export default function AdminDashboard() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/admin/users')
+      const response = await fetch('https://bulladmin.ru/api/users')
       const data = await response.json()
       if (data.success) {
         setUsers(data.data)
