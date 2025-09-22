@@ -282,7 +282,7 @@ export default function AdminDashboard() {
         news: news.length || 0,
         users: users.length || 0,
         totalRevenue: 0, // Пока не реализовано
-        activeOrders: reservations.filter((r: any) => r.status === 'confirmed').length || 0
+        activeOrders: reservations.filter((r: {status: string}) => r.status === 'confirmed').length || 0
       })
     } catch (error) {
       console.error('Ошибка загрузки статистики:', error)
