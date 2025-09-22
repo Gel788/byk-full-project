@@ -1,0 +1,37 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="40" cy="40" r="38" fill="url(#gradient)" stroke="url(#gradient2)" stroke-width="2"/>
+  
+  <!-- Bull head silhouette -->
+  <path d="M25 45 C25 35, 35 25, 45 25 C55 25, 65 35, 65 45 C65 55, 55 65, 45 65 C35 65, 25 55, 25 45 Z" fill="white" opacity="0.9"/>
+  
+  <!-- Bull horns -->
+  <path d="M35 35 L30 25 L32 23 L37 33 Z" fill="white" opacity="0.8"/>
+  <path d="M45 35 L50 25 L48 23 L43 33 Z" fill="white" opacity="0.8"/>
+  
+  <!-- Bull eyes -->
+  <circle cx="38" cy="42" r="3" fill="url(#gradient3)"/>
+  <circle cx="52" cy="42" r="3" fill="url(#gradient3)"/>
+  
+  <!-- Bull nose -->
+  <ellipse cx="45" cy="52" rx="4" ry="3" fill="url(#gradient3)"/>
+  
+  <!-- Bull mouth -->
+  <path d="M42 56 Q45 58 48 56" stroke="url(#gradient3)" stroke-width="2" fill="none" stroke-linecap="round"/>
+  
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#DC2626;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EA580C;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#EF4444;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F97316;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1F2937;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#374151;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+</svg>

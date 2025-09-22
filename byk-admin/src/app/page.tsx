@@ -9,8 +9,10 @@ import {
   PlusIcon,
   PencilIcon,
   TrashIcon,
-  CalendarIcon
+  CalendarIcon,
+  EyeIcon
 } from '@heroicons/react/24/outline'
+import AuthGuard from '../components/AuthGuard'
 
 interface DashboardStats {
   restaurants: number
@@ -127,14 +129,18 @@ interface Reservation {
   _id: string
   reservationNumber: string
   userId: string
-  userName: string
+  userName?: string
+  contactName?: string
+  contactPhone?: string
   restaurantId: string
   restaurantName: string
   date: string
   time: string
-  guests: number
+  guests?: number
+  guestCount?: number
   status: 'pending' | 'confirmed' | 'cancelled'
-  specialRequests: string
+  specialRequests?: string
+  tableNumber?: number
   createdAt: string
   updatedAt: string
 }
@@ -165,7 +171,7 @@ interface OrderItem {
 }
 
 
-export default function AdminDashboard() {
+function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [brands, setBrands] = useState<Brand[]>([])
   const [cities, setCities] = useState<City[]>([])
@@ -181,6 +187,7 @@ export default function AdminDashboard() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showReservationModal, setShowReservationModal] = useState(false)
   const [showPreviewModal, setShowPreviewModal] = useState(false)
+  const [selectedUserForReservation, setSelectedUserForReservation] = useState<User | null>(null)
   const [previewNews, setPreviewNews] = useState<News | null>(null)
   
   // Предпросмотр ресторанов
@@ -199,6 +206,7 @@ export default function AdminDashboard() {
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [previewUser, setPreviewUser] = useState<User | null>(null)
   const [previewOrder, setPreviewOrder] = useState<Order | null>(null)
+  const [previewReservation, setPreviewReservation] = useState<Reservation | null>(null)
   const [editingOrder, setEditingOrder] = useState<Order | null>(null)
   const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState<string>('delivery')
   const [selectedDishes, setSelectedDishes] = useState<Array<{dishId: string, dishName: string, quantity: number, price: number}>>([])
@@ -260,19 +268,17 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     try {
       // Получаем статистику из разных API эндпоинтов
-      const [restaurantsRes, dishesRes, newsRes, usersRes, reservationsRes] = await Promise.all([
-        fetch('https://bulladmin.ru/api/restaurants'),
-        fetch('https://bulladmin.ru/api/dishes'),
-        fetch('https://bulladmin.ru/api/news'),
-        fetch('https://bulladmin.ru/api/users'),
-        fetch('https://bulladmin.ru/api/reservations')
+      const [restaurantsRes, dishesRes, newsRes, reservationsRes] = await Promise.all([
+        fetch('http://localhost:5001/api/restaurants'),
+        fetch('http://localhost:5001/api/dishes'),
+        fetch('http://localhost:5001/api/news'),
+        fetch('http://localhost:5001/api/reservations')
       ])
       
-      const [restaurants, dishes, news, users, reservations] = await Promise.all([
+      const [restaurants, dishes, news, reservations] = await Promise.all([
         restaurantsRes.json(),
         dishesRes.json(),
         newsRes.json(),
-        usersRes.json(),
         reservationsRes.json()
       ])
       
@@ -280,9 +286,9 @@ export default function AdminDashboard() {
         restaurants: restaurants.length || 0,
         dishes: dishes.length || 0,
         news: news.length || 0,
-        users: users.length || 0,
+        users: 3, // Моковое количество пользователей
         totalRevenue: 0, // Пока не реализовано
-        activeOrders: reservations.filter((r: {status: string}) => r.status === 'confirmed').length || 0
+        activeOrders: Array.isArray(reservations) ? reservations.filter((r: {status: string}) => r.status === 'confirmed').length : 0
       })
     } catch (error) {
       console.error('Ошибка загрузки статистики:', error)
@@ -300,7 +306,7 @@ export default function AdminDashboard() {
 
   const fetchBrands = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/brands')
+      const response = await fetch('http://localhost:5001/api/brands')
       const data = await response.json()
       console.log('Загружены бренды:', data)
       setBrands(data)
@@ -311,7 +317,7 @@ export default function AdminDashboard() {
 
   const fetchCities = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/cities')
+      const response = await fetch('http://localhost:5001/api/cities')
       const data = await response.json()
       console.log('Загружены города:', data)
       setCities(data)
@@ -322,7 +328,7 @@ export default function AdminDashboard() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/categories')
+      const response = await fetch('http://localhost:5001/api/categories')
       const data = await response.json()
       console.log('Загружены категории:', data)
       setCategories(data)
@@ -333,14 +339,14 @@ export default function AdminDashboard() {
 
   const fetchRestaurants = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/admin/restaurants')
+      const response = await fetch('http://localhost:5001/api/admin/restaurants')
       const data = await response.json()
       console.log('Загружены рестораны:', data)
       if (data.success) {
         setRestaurants(data.data)
       } else {
         // Fallback на обычный API
-        const fallbackResponse = await fetch('https://bulladmin.ru/api/restaurants')
+        const fallbackResponse = await fetch('http://localhost:5001/api/restaurants')
         const fallbackData = await fallbackResponse.json()
         console.log('Загружены рестораны (fallback):', fallbackData)
         setRestaurants(fallbackData)
@@ -411,7 +417,7 @@ export default function AdminDashboard() {
 
   const fetchDishes = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/dishes')
+      const response = await fetch('http://localhost:5001/api/dishes')
       const data = await response.json()
       console.log('Загружены блюда:', data)
       setDishes(data)
@@ -553,7 +559,7 @@ export default function AdminDashboard() {
 
   const fetchNews = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/admin/news')
+      const response = await fetch('http://localhost:5001/api/admin/news')
       const data = await response.json()
       if (data.success) {
         setNews(data.data)
@@ -582,7 +588,7 @@ export default function AdminDashboard() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/users')
+      const response = await fetch('http://localhost:5001/api/admin/users')
       const data = await response.json()
       if (data.success) {
         setUsers(data.data)
@@ -611,7 +617,7 @@ export default function AdminDashboard() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/admin/orders')
+      const response = await fetch('http://localhost:5001/api/admin/orders')
       const data = await response.json()
       if (data.success) {
         setOrders(data.data)
@@ -671,7 +677,7 @@ export default function AdminDashboard() {
   const fetchFiles = async () => {
     try {
       console.log('Загружаем файлы...')
-      const response = await fetch('https://bulladmin.ru/api/upload/files')
+      const response = await fetch('http://localhost:5001/api/upload/files')
       const data = await response.json()
       console.log('Получены файлы:', data)
       if (data.success) {
@@ -690,7 +696,7 @@ export default function AdminDashboard() {
       const formData = new FormData()
       formData.append('file', file)
       
-      const response = await fetch('https://bulladmin.ru/api/upload/upload', {
+      const response = await fetch('http://localhost:5001/api/upload/upload', {
         method: 'POST',
         body: formData
       })
@@ -720,7 +726,7 @@ export default function AdminDashboard() {
       const formData = new FormData()
       formData.append('file', file)
       
-      const response = await fetch('https://bulladmin.ru/api/upload/upload', {
+      const response = await fetch('http://localhost:5001/api/upload/upload', {
         method: 'POST',
         body: formData
       })
@@ -747,7 +753,7 @@ export default function AdminDashboard() {
       const formData = new FormData()
       formData.append('file', file)
       
-      const response = await fetch('https://bulladmin.ru/api/upload/upload', {
+      const response = await fetch('http://localhost:5001/api/upload/upload', {
         method: 'POST',
         body: formData
       })
@@ -774,7 +780,7 @@ export default function AdminDashboard() {
       const formData = new FormData()
       formData.append('file', file)
       
-      const response = await fetch('https://bulladmin.ru/api/upload/upload', {
+      const response = await fetch('http://localhost:5001/api/upload/upload', {
         method: 'POST',
         body: formData
       })
@@ -804,7 +810,7 @@ export default function AdminDashboard() {
         formData.append('files', file)
       })
       
-      const response = await fetch('https://bulladmin.ru/api/upload/upload-multiple', {
+      const response = await fetch('http://localhost:5001/api/upload/upload-multiple', {
         method: 'POST',
         body: formData
       })
@@ -829,7 +835,7 @@ export default function AdminDashboard() {
 
   const deleteFile = async (filename: string) => {
     try {
-      const response = await fetch(`https://bulladmin.ru/api/upload/files/${filename}`, {
+      const response = await fetch(`http://localhost:5001/api/upload/files/${filename}`, {
         method: 'DELETE'
       })
       
@@ -866,10 +872,12 @@ export default function AdminDashboard() {
 
   const fetchReservations = async () => {
     try {
-      const response = await fetch('https://bulladmin.ru/api/admin/reservations')
+      const response = await fetch('http://localhost:5001/api/admin/reservations')
       const data = await response.json()
       if (data.success) {
         setReservations(data.data)
+        
+        // Данные бронирований загружены
       }
     } catch (error) {
       console.error('Ошибка загрузки бронирований:', error)
@@ -944,7 +952,7 @@ export default function AdminDashboard() {
   const handleDeleteRestaurant = async (id: string) => {
     if (confirm('Удалить ресторан?')) {
       try {
-        const response = await fetch(`https://bulladmin.ru/api/restaurants/${id}`, {
+        const response = await fetch(`http://localhost:5001/api/restaurants/${id}`, {
           method: 'DELETE'
         })
         
@@ -984,8 +992,8 @@ export default function AdminDashboard() {
       // Определяем метод и URL в зависимости от того, редактируем ли существующий ресторан
       const isEditing = editingRestaurant && editingRestaurant._id
       const url = isEditing 
-        ? `https://bulladmin.ru/api/restaurants/${editingRestaurant._id}`
-        : 'https://bulladmin.ru/api/restaurants'
+        ? `http://localhost:5001/api/restaurants/${editingRestaurant._id}`
+        : 'http://localhost:5001/api/restaurants'
       const method = isEditing ? 'PUT' : 'POST'
       
       // API вызов для сохранения
@@ -1048,8 +1056,8 @@ export default function AdminDashboard() {
       // Определяем метод и URL в зависимости от того, редактируем ли существующее блюдо
       const isEditing = editingDish && editingDish._id
       const url = isEditing 
-        ? `https://bulladmin.ru/api/dishes/${editingDish._id}`
-        : 'https://bulladmin.ru/api/dishes'
+        ? `http://localhost:5001/api/dishes/${editingDish._id}`
+        : 'http://localhost:5001/api/dishes'
       const method = isEditing ? 'PUT' : 'POST'
       
       // API вызов для сохранения
@@ -1091,7 +1099,7 @@ export default function AdminDashboard() {
   const handleDeleteDish = async (id: string) => {
     if (confirm('Удалить блюдо?')) {
       try {
-        const response = await fetch(`https://bulladmin.ru/api/dishes/${id}`, {
+        const response = await fetch(`http://localhost:5001/api/dishes/${id}`, {
           method: 'DELETE'
         })
         
@@ -1125,14 +1133,14 @@ export default function AdminDashboard() {
       
       const newsWithFile = {
         ...newsData,
-        imageURL: imageFiles.length > 0 ? imageFiles[imageFiles.length - 1].url : (newsData.imageURL || 'https://bulladmin.ru/uploads/default.jpg'),
+        imageURL: imageFiles.length > 0 ? imageFiles[imageFiles.length - 1].url : (newsData.imageURL || 'http://localhost:5001/uploads/default.jpg'),
         videoURL: videoFiles.length > 0 ? videoFiles[videoFiles.length - 1].url : (newsData.videoURL || '')
       }
       
       console.log('Сохранение новости:', newsWithFile)
       
       // API вызов для сохранения
-      const response = await fetch('https://bulladmin.ru/api/news', {
+      const response = await fetch('http://localhost:5001/api/news', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newsWithFile)
@@ -1163,7 +1171,7 @@ export default function AdminDashboard() {
   const handleDeleteNews = async (id: string) => {
     if (confirm('Удалить новость?')) {
       try {
-        const response = await fetch(`https://bulladmin.ru/api/news/${id}`, {
+        const response = await fetch(`http://localhost:5001/api/news/${id}`, {
           method: 'DELETE'
         })
         
@@ -1185,8 +1193,8 @@ export default function AdminDashboard() {
     try {
       const isEditing = editingBrand?._id
       const url = isEditing 
-        ? `https://bulladmin.ru/api/brands/${editingBrand._id}`
-        : 'https://bulladmin.ru/api/brands'
+        ? `http://localhost:5001/api/brands/${editingBrand._id}`
+        : 'http://localhost:5001/api/brands'
       const method = isEditing ? 'PUT' : 'POST'
 
       const response = await fetch(url, {
@@ -1216,7 +1224,7 @@ export default function AdminDashboard() {
   const handleDeleteBrand = async (id: string) => {
     if (confirm('Удалить бренд?')) {
       try {
-        const response = await fetch(`https://bulladmin.ru/api/brands/${id}`, {
+        const response = await fetch(`http://localhost:5001/api/brands/${id}`, {
           method: 'DELETE'
         })
         
@@ -1238,8 +1246,8 @@ export default function AdminDashboard() {
     try {
       const isEditing = editingCity?._id
       const url = isEditing 
-        ? `https://bulladmin.ru/api/cities/${editingCity._id}`
-        : 'https://bulladmin.ru/api/cities'
+        ? `http://localhost:5001/api/cities/${editingCity._id}`
+        : 'http://localhost:5001/api/cities'
       const method = isEditing ? 'PUT' : 'POST'
 
       const response = await fetch(url, {
@@ -1269,7 +1277,7 @@ export default function AdminDashboard() {
   const handleDeleteCity = async (id: string) => {
     if (confirm('Удалить город?')) {
       try {
-        const response = await fetch(`https://bulladmin.ru/api/cities/${id}`, {
+        const response = await fetch(`http://localhost:5001/api/cities/${id}`, {
           method: 'DELETE'
         })
         
@@ -1291,8 +1299,8 @@ export default function AdminDashboard() {
     try {
       const isEditing = editingCategory?._id
       const url = isEditing 
-        ? `https://bulladmin.ru/api/categories/${editingCategory._id}`
-        : 'https://bulladmin.ru/api/categories'
+        ? `http://localhost:5001/api/categories/${editingCategory._id}`
+        : 'http://localhost:5001/api/categories'
       const method = isEditing ? 'PUT' : 'POST'
 
       const response = await fetch(url, {
@@ -1322,7 +1330,7 @@ export default function AdminDashboard() {
   const handleDeleteCategory = async (id: string) => {
     if (confirm('Удалить категорию?')) {
       try {
-        const response = await fetch(`https://bulladmin.ru/api/categories/${id}`, {
+        const response = await fetch(`http://localhost:5001/api/categories/${id}`, {
           method: 'DELETE'
         })
         
@@ -1346,8 +1354,8 @@ export default function AdminDashboard() {
       
       const isEditing = editingUser && editingUser._id
       const url = isEditing 
-        ? `https://bulladmin.ru/api/users/${editingUser._id}`
-        : 'https://bulladmin.ru/api/users'
+        ? `http://localhost:5001/api/users/${editingUser._id}`
+        : 'http://localhost:5001/api/users'
       
       console.log('URL:', url, 'Method:', isEditing ? 'PUT' : 'POST')
       
@@ -1386,7 +1394,7 @@ export default function AdminDashboard() {
   const handleDeleteUser = async (id: string) => {
     if (confirm('Удалить пользователя?')) {
       try {
-        const response = await fetch(`https://bulladmin.ru/api/users/${id}`, {
+        const response = await fetch(`http://localhost:5001/api/users/${id}`, {
           method: 'DELETE'
         })
         
@@ -1448,8 +1456,8 @@ export default function AdminDashboard() {
       
       const isEditing = editingOrder && editingOrder._id
       const url = isEditing 
-        ? `https://bulladmin.ru/api/orders/${editingOrder._id}`
-        : 'https://bulladmin.ru/api/orders'
+        ? `http://localhost:5001/api/orders/${editingOrder._id}`
+        : 'http://localhost:5001/api/orders'
       
       const response = await fetch(url, {
         method: isEditing ? 'PUT' : 'POST',
@@ -1480,10 +1488,76 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
+    try {
+      console.log('Обновление статуса заказа:', orderId, newStatus)
+      
+      const response = await fetch(`http://localhost:5001/api/orders/${orderId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        console.log('Статус заказа обновлен:', result)
+        
+        // Обновляем заказ в списке
+        setOrders(orders.map(o => o._id === orderId ? result : o))
+        
+        // Обновляем заказ в предпросмотре, если он открыт
+        if (previewOrder && previewOrder._id === orderId) {
+          setPreviewOrder(result)
+        }
+        
+        alert('Статус заказа успешно обновлен!')
+      } else {
+        console.error('Ошибка обновления статуса заказа:', response.statusText)
+        alert('Ошибка обновления статуса заказа')
+      }
+    } catch (error) {
+      console.error('Ошибка обновления статуса заказа:', error)
+      alert('Ошибка обновления статуса заказа')
+    }
+  }
+
+  const handleUpdateReservationStatus = async (reservationId: string, newStatus: string) => {
+    try {
+      console.log('Обновление статуса бронирования:', reservationId, newStatus)
+      
+      const response = await fetch(`http://localhost:5001/api/reservations/${reservationId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        console.log('Статус бронирования обновлен:', result)
+        
+        // Обновляем бронирование в списке
+        setReservations(reservations.map(r => r._id === reservationId ? result.data : r))
+        
+        // Обновляем бронирование в предпросмотре, если оно открыто
+        if (previewReservation && previewReservation._id === reservationId) {
+          setPreviewReservation(result.data)
+        }
+        
+        alert('Статус бронирования успешно обновлен!')
+      } else {
+        console.error('Ошибка обновления статуса бронирования:', response.statusText)
+        alert('Ошибка обновления статуса бронирования')
+      }
+    } catch (error) {
+      console.error('Ошибка обновления статуса бронирования:', error)
+      alert('Ошибка обновления статуса бронирования')
+    }
+  }
+
   const handleDeleteOrder = async (id: string) => {
     if (confirm('Удалить заказ?')) {
       try {
-        const response = await fetch(`https://bulladmin.ru/api/orders/${id}`, {
+        const response = await fetch(`http://localhost:5001/api/orders/${id}`, {
           method: 'DELETE'
         })
         
@@ -1506,8 +1580,8 @@ export default function AdminDashboard() {
 
       const isEditing = editingReservation && editingReservation._id
       const url = isEditing
-        ? `https://bulladmin.ru/api/reservations/${editingReservation._id}`
-        : 'https://bulladmin.ru/api/reservations'
+        ? `http://localhost:5001/api/reservations/${editingReservation._id}`
+        : 'http://localhost:5001/api/reservations'
 
       const response = await fetch(url, {
         method: isEditing ? 'PUT' : 'POST',
@@ -1545,7 +1619,7 @@ export default function AdminDashboard() {
   const handleDeleteReservation = async (id: string) => {
     if (confirm('Удалить бронирование?')) {
       try {
-        const response = await fetch(`https://bulladmin.ru/api/reservations/${id}`, {
+        const response = await fetch(`http://localhost:5001/api/reservations/${id}`, {
           method: 'DELETE'
         })
         
@@ -2386,12 +2460,12 @@ export default function AdminDashboard() {
                             </div>
                           </div>
                           
-                          {dish.allergens.length > 0 && (
+                          {dish.allergens && dish.allergens.length > 0 && (
                             <div className="mb-3">
                               <p className="text-xs text-gray-500 mb-1">Аллергены:</p>
                               <div className="flex flex-wrap gap-1">
                                 {dish.allergens.map((allergen, index) => (
-                                  <span key={index} className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">
+                                  <span key={`allergen-${dish._id}-${index}`} className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">
                                     {allergen}
                                   </span>
                                 ))}
@@ -2550,7 +2624,7 @@ export default function AdminDashboard() {
                                   onClick={async () => {
                                     if (confirm('Удалить новость?')) {
                                       try {
-                                        const response = await fetch(`https://bulladmin.ru/api/news/${article._id}`, {
+                                        const response = await fetch(`http://localhost:5001/api/news/${article._id}`, {
                                           method: 'DELETE'
                                         })
                                         
@@ -2616,10 +2690,15 @@ export default function AdminDashboard() {
         {/* Users Tab */}
         {activeTab === 'users' && (
           <div>
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                👥 Пользователи
+            {/* Header Section */}
+            <div className="bg-gradient-to-r from-orange-500 to-pink-500 rounded-2xl p-6 mb-8 shadow-xl">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                <div>
+                  <h2 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+                    👥 Управление пользователями
               </h2>
+                  <p className="text-orange-100 text-lg">Всего пользователей: {users.length}</p>
+                </div>
               <button 
                 onClick={() => {
                   setEditingUser({} as User)
@@ -2628,89 +2707,114 @@ export default function AdminDashboard() {
                   setEditingNews(null)
                   setShowAddModal(true)
                 }}
-                className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center"
+                  className="bg-white text-orange-600 px-6 py-3 rounded-xl hover:bg-orange-50 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center font-semibold"
               >
-                <PlusIcon className="h-4 w-4 mr-2" />
+                  <PlusIcon className="h-5 w-5 mr-2" />
                 Добавить пользователя
               </button>
+              </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow">
-              <div className="p-6">
+            {/* Users Grid */}
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+              <div className="p-8">
                 {loading ? (
-                  <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
-                    <p className="mt-2 text-gray-500">Загрузка пользователей...</p>
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-orange-500 mx-auto"></div>
+                    <p className="mt-4 text-gray-500 text-lg">Загрузка пользователей...</p>
                   </div>
                 ) : users.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {users.map((user) => (
-                      <div key={user._id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3">
-                          <div className="flex items-center space-x-3 mb-3 sm:mb-0">
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
-                              <span className="text-sm sm:text-lg font-medium text-gray-600">
+                      <div key={user._id} className="group bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-2xl p-5 hover:shadow-2xl hover:scale-105 transition-all duration-500 hover:border-orange-300 overflow-hidden">
+                        {/* User Avatar & Info */}
+                        <div className="flex items-start space-x-3 mb-4">
+                          <div className="relative flex-shrink-0">
+                            <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-pink-400 rounded-xl flex items-center justify-center shadow-lg">
+                              <span className="text-white text-sm font-bold">
                                 {user.fullName.split(' ').map(n => n[0]).join('')}
                               </span>
                             </div>
-                            <div className="min-w-0 flex-1">
-                              <h3 className="font-medium text-gray-900 text-sm sm:text-base truncate">{user.fullName}</h3>
-                              <p className="text-xs sm:text-sm text-gray-500 truncate">{user.email}</p>
-                              <p className="text-xs sm:text-sm text-gray-500">{user.phone}</p>
+                            {user.isActive ? (
+                              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                            ) : (
+                              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white"></div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-base font-bold text-gray-900 truncate mb-1">{user.fullName}</h3>
+                            <p className="text-xs text-gray-600 truncate mb-1">{user.email}</p>
+                            <p className="text-xs text-gray-500">{user.phone}</p>
                             </div>
                           </div>
                           
-                          <div className="flex items-center justify-between sm:flex-col sm:items-end">
-                            <div className="text-right">
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                user.membershipLevel === 'Платина' ? 'bg-purple-100 text-purple-800' :
-                                user.membershipLevel === 'Золото' ? 'bg-yellow-100 text-yellow-800' :
-                                user.membershipLevel === 'Серебро' ? 'bg-gray-100 text-gray-800' :
-                                'bg-orange-100 text-orange-800'
+                        {/* Membership & Points */}
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between">
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold shadow-md ${
+                              user.membershipLevel === 'Платина' ? 'bg-gradient-to-r from-purple-400 to-purple-600 text-white' :
+                              user.membershipLevel === 'Золото' ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white' :
+                              user.membershipLevel === 'Серебро' ? 'bg-gradient-to-r from-gray-400 to-gray-600 text-white' :
+                              'bg-gradient-to-r from-orange-400 to-orange-600 text-white'
                               }`}>
                                 {user.membershipLevel}
                               </span>
-                              <p className="text-xs text-gray-500 mt-1">{user.loyaltyPoints} баллов</p>
+                            <div className="text-right">
+                              <p className="text-lg font-bold text-gray-900">{user.loyaltyPoints}</p>
+                              <p className="text-xs text-gray-500">баллов</p>
+                            </div>
+                          </div>
                             </div>
                             
-                            <div className="flex items-center space-x-2 ml-2 sm:ml-0 sm:mt-2">
-                              <button 
-                                onClick={() => setPreviewUser(user)}
-                                className="p-2 text-gray-400 hover:text-green-500 hover:bg-green-50 rounded-md transition-colors"
-                                title="Предпросмотр"
-                              >
-                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                              </button>
+                        {/* Role Badge */}
+                        <div className="mb-4">
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            user.role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+                          }`}>
+                            {user.role === 'admin' ? '👑 Админ' : '👤 Пользователь'}
+                          </span>
+                        </div>
+                        
+                        {/* Action Buttons */}
+                        <div className="grid grid-cols-3 gap-2">
+                          <button 
+                            onClick={() => setPreviewUser(user)}
+                            className="bg-green-500 hover:bg-green-600 text-white px-2 py-2 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center"
+                            title="Предпросмотр"
+                          >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </button>
                               <button 
                                 onClick={() => {
                                   setEditingUser(user)
                                   setShowAddModal(true)
                                 }}
-                                className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-md transition-colors"
+                            className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-2 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center"
                                 title="Редактировать"
                               >
                                 <PencilIcon className="h-4 w-4" />
                               </button>
                               <button 
                                 onClick={() => handleDeleteUser(user._id)}
-                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                            className="bg-red-500 hover:bg-red-600 text-white px-2 py-2 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center"
                                 title="Удалить"
                               >
                                 <TrashIcon className="h-4 w-4" />
                               </button>
-                            </div>
-                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <UserGroupIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">Нет пользователей</p>
+                  <div className="text-center py-16">
+                    <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <UserGroupIcon className="h-12 w-12 text-gray-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Нет пользователей</h3>
+                    <p className="text-gray-500 mb-6">Добавьте первого пользователя в систему</p>
                     <button 
                       onClick={() => {
                         setEditingUser({} as User)
@@ -2957,7 +3061,7 @@ export default function AdminDashboard() {
                 ) : files.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {files.map((file, index) => (
-                      <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div key={`file-${file.filename}-${index}`} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
                             <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
@@ -3080,10 +3184,15 @@ export default function AdminDashboard() {
                             </div>
                             <div>
                               <h3 className="font-medium text-gray-900">{reservation.reservationNumber}</h3>
-                              <p className="text-sm text-gray-500">{reservation.userName}</p>
+                              <p className="text-sm text-gray-500">
+                                {reservation.contactName || reservation.userName}
+                                {reservation.contactPhone && (
+                                  <span className="block text-xs text-gray-400">{reservation.contactPhone}</span>
+                                )}
+                              </p>
                               <p className="text-sm text-gray-500">{reservation.restaurantName}</p>
                               <p className="text-sm text-gray-500">{reservation.date} в {reservation.time}</p>
-                              <p className="text-sm text-gray-500">{reservation.guests} гостей</p>
+                              <p className="text-sm text-gray-500">{reservation.guestCount || reservation.guests} гостей</p>
                             </div>
                           </div>
                           
@@ -3103,6 +3212,15 @@ export default function AdminDashboard() {
                             </div>
                             
                             <div className="flex items-center space-x-2">
+                              <button 
+                                onClick={() => {
+                                  setPreviewReservation(reservation)
+                                }}
+                                className="p-2 text-gray-400 hover:text-green-500 hover:bg-green-50 rounded-md transition-colors"
+                                title="Предпросмотр"
+                              >
+                                <EyeIcon className="h-4 w-4" />
+                              </button>
                               <button 
                                 onClick={() => {
                                   setEditingReservation(reservation)
@@ -3285,33 +3403,21 @@ export default function AdminDashboard() {
                 } else if (editingUser) {
                   // Форма для пользователей
                   const fullName = (formData.get('userName') as string) || ''
-                  const username = (formData.get('userUsername') as string) || ''
                   const email = (formData.get('userEmail') as string) || ''
-                  const password = (formData.get('userPassword') as string) || ''
                   
                   // Проверяем обязательные поля
                   if (!fullName.trim()) {
                     alert('Полное имя обязательно для заполнения')
                     return
                   }
-                  if (!username.trim()) {
-                    alert('Логин обязателен для заполнения')
-                    return
-                  }
                   if (!email.trim()) {
                     alert('Email обязателен для заполнения')
-                    return
-                  }
-                  if (!password.trim()) {
-                    alert('Пароль обязателен для заполнения')
                     return
                   }
                   
                   const data = {
                     fullName: fullName.trim(),
-                    username: username.trim(),
                     email: email.trim(),
-                    password: password.trim(),
                     phone: (formData.get('userPhone') as string) || '',
                     role: 'user' as const,
                     isActive: formData.get('userActive') === 'true'
@@ -3431,7 +3537,7 @@ export default function AdminDashboard() {
                           <p className="text-sm font-medium text-gray-700 mb-2">Загруженные фото:</p>
                           <div className="grid grid-cols-2 gap-2">
                             {dishFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.jpeg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp')).map((file, index) => (
-                              <div key={index} className="relative group">
+                              <div key={`dish-file-${file.filename}-${index}`} className="relative group">
                                 <img 
                                   src={file.url} 
                                   alt={file.originalName}
@@ -3550,7 +3656,7 @@ export default function AdminDashboard() {
                                 const isSelected = selectedFiles.some(f => f.filename === file.filename)
                                 return (
                                   <div
-                                    key={index}
+                                    key={`dish-select-${file.filename}-${index}`}
                                     onClick={() => toggleFileSelection(file)}
                                     className={`p-2 rounded border cursor-pointer transition-colors ${
                                       isSelected 
@@ -3710,7 +3816,7 @@ export default function AdminDashboard() {
                             <p className="text-sm font-medium text-gray-700 mb-2">Загруженные изображения:</p>
                             <div className="grid grid-cols-2 gap-2">
                               {newsFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.jpeg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp')).map((file, index) => (
-                                <div key={index} className="relative group">
+                                <div key={`news-file-${file.filename}-${index}`} className="relative group">
                                   <img 
                                     src={file.url} 
                                     alt={file.originalName}
@@ -3795,7 +3901,7 @@ export default function AdminDashboard() {
                             <p className="text-sm font-medium text-gray-700 mb-2">Загруженные видео:</p>
                             <div className="space-y-2">
                               {newsFiles.filter(f => f.filename.includes('.mp4') || f.filename.includes('.mov') || f.filename.includes('.avi')).map((file, index) => (
-                                <div key={index} className="flex items-center space-x-3 p-2 border rounded">
+                                <div key={`news-video-${file.filename}-${index}`} className="flex items-center space-x-3 p-2 border rounded">
                                   <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
                                     <span className="text-lg">🎥</span>
                                   </div>
@@ -3869,7 +3975,7 @@ export default function AdminDashboard() {
                                 const isSelected = selectedFiles.some(f => f.filename === file.filename)
                                 return (
                                   <div
-                                    key={index}
+                                    key={`news-file-select-${file.filename}-${index}`}
                                     onClick={() => toggleFileSelection(file)}
                                     className={`p-2 rounded border cursor-pointer transition-colors ${
                                       isSelected 
@@ -3918,38 +4024,12 @@ export default function AdminDashboard() {
                       
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Логин
-                        </label>
-                        <input
-                          type="text"
-                          name="userUsername"
-                          defaultValue={editingUser?.username || ''}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
-                          required
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
                           Email
                         </label>
                         <input
                           type="email"
                           name="userEmail"
                           defaultValue={editingUser?.email || ''}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
-                          required
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Пароль
-                        </label>
-                        <input
-                          type="password"
-                          name="userPassword"
-                          defaultValue=""
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
                           required
                         />
@@ -4156,7 +4236,7 @@ export default function AdminDashboard() {
                             <p className="text-sm font-medium text-gray-700 mb-2">Загруженные фото ресторана:</p>
                             <div className="grid grid-cols-2 gap-2">
                               {restaurantFiles.filter(f => f.filename.includes('.jpg') || f.filename.includes('.jpeg') || f.filename.includes('.png') || f.filename.includes('.gif') || f.filename.includes('.webp')).map((file, index) => (
-                                <div key={index} className="relative group">
+                                <div key={`restaurant-photo-${file.filename}-${index}`} className="relative group">
                                   <img 
                                     src={file.url} 
                                     alt={file.originalName}
@@ -4209,7 +4289,7 @@ export default function AdminDashboard() {
                                 const isSelected = selectedFiles.some(f => f.filename === file.filename)
                                 return (
                                   <div
-                                    key={index}
+                                    key={`restaurant-file-select-${file.filename}-${index}`}
                                     onClick={() => toggleFileSelection(file)}
                                     className={`p-2 rounded border cursor-pointer transition-colors ${
                                       isSelected 
@@ -4906,7 +4986,7 @@ export default function AdminDashboard() {
                   </label>
                   <div className="space-y-2 max-h-60 overflow-y-auto">
                     {dishCategories.map((category, index) => (
-                      <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-md">
+                      <div key={`category-${category}-${index}`} className="flex items-center justify-between bg-gray-50 p-3 rounded-md">
                         <span className="text-gray-900">{category}</span>
                         <button
                           onClick={() => {
@@ -5031,7 +5111,7 @@ export default function AdminDashboard() {
                     <h2 className="text-xl font-semibold text-gray-900 mb-3">Теги</h2>
                     <div className="flex flex-wrap gap-2">
                       {previewNews.tags.map((tag, index) => (
-                        <span key={index} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                        <span key={`news-tag-${tag}-${index}`} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
                           #{tag}
                         </span>
                       ))}
@@ -5099,7 +5179,7 @@ export default function AdminDashboard() {
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {previewRestaurant.photos.map((photo, index) => (
                           <img
-                            key={index}
+                            key={`restaurant-photo-${index}`}
                             src={photo}
                             alt={`Фото ресторана ${index + 1}`}
                             className="w-full h-48 object-cover rounded-lg"
@@ -5116,7 +5196,7 @@ export default function AdminDashboard() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {previewRestaurant.videos.map((video, index) => (
                           <video
-                            key={index}
+                            key={`restaurant-video-${index}`}
                             src={video}
                             controls
                             className="w-full rounded-lg"
@@ -5306,7 +5386,7 @@ export default function AdminDashboard() {
                       <h4 className="text-lg font-semibold text-gray-900 mb-3">Аллергены</h4>
                       <div className="flex flex-wrap gap-2">
                         {previewDish.allergens.map((allergen, index) => (
-                          <span key={index} className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">
+                          <span key={`dish-allergen-${allergen}-${index}`} className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">
                             {allergen}
                           </span>
                         ))}
@@ -5320,7 +5400,7 @@ export default function AdminDashboard() {
                       <h4 className="text-lg font-semibold text-gray-900 mb-3">Ингредиенты</h4>
                       <div className="flex flex-wrap gap-2">
                         {previewDish.ingredients.map((ingredient, index) => (
-                          <span key={index} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                          <span key={`dish-ingredient-${ingredient}-${index}`} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
                             {ingredient}
                           </span>
                         ))}
@@ -5556,7 +5636,20 @@ export default function AdminDashboard() {
                     </div>
                     <div>
                       <span className="text-sm font-medium text-gray-600">Статус:</span>
-                      <p className="text-sm text-gray-900">{previewOrder.status}</p>
+                      <div className="mt-1">
+                        <select
+                          value={previewOrder.status}
+                          onChange={(e) => handleUpdateOrderStatus(previewOrder._id, e.target.value)}
+                          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                        >
+                          <option value="pending">Ожидает</option>
+                          <option value="confirmed">Подтвержден</option>
+                          <option value="preparing">Готовится</option>
+                          <option value="ready">Готов</option>
+                          <option value="delivered">Доставлен</option>
+                          <option value="cancelled">Отменен</option>
+                        </select>
+                      </div>
                     </div>
                     <div>
                       <span className="text-sm font-medium text-gray-600">Клиент:</span>
@@ -5605,7 +5698,7 @@ export default function AdminDashboard() {
                   {previewOrder && Array.isArray(previewOrder.items) && previewOrder.items.length > 0 ? (
                     <div className="space-y-2">
                       {previewOrder.items.map((item: {dishName: string, quantity: number, price: number}, index: number) => (
-                        <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                        <div key={`order-item-${item.dishName}-${index}`} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
                           <div className="flex-1">
                             <p className="text-sm font-medium text-gray-900">{item.dishName}</p>
                             <p className="text-xs text-gray-500">Количество: {item.quantity}</p>
@@ -5662,6 +5755,123 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {/* Модал предпросмотра бронирования */}
+        {previewReservation && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setPreviewReservation(null)
+              }
+            }}
+          >
+            <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-semibold text-gray-900">📅 Предпросмотр бронирования</h3>
+                <button
+                  onClick={() => setPreviewReservation(null)}
+                  className="text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                {/* Основная информация */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3">📋 Информация о бронировании</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-sm font-medium text-gray-600">Номер бронирования:</span>
+                      <p className="text-sm text-gray-900 font-mono">{previewReservation.reservationNumber}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-600">Статус:</span>
+                      <div className="mt-1">
+                        <select
+                          value={previewReservation.status}
+                          onChange={(e) => handleUpdateReservationStatus(previewReservation._id, e.target.value)}
+                          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                        >
+                          <option value="pending">Ожидает</option>
+                          <option value="confirmed">Подтверждено</option>
+                          <option value="cancelled">Отменено</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-600">Клиент:</span>
+                      <p className="text-sm text-gray-900">{previewReservation.contactName || previewReservation.userName}</p>
+                      {previewReservation.contactPhone && (
+                        <p className="text-xs text-gray-500">{previewReservation.contactPhone}</p>
+                      )}
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-600">Ресторан:</span>
+                      <p className="text-sm text-gray-900">{previewReservation.restaurantName}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-600">Дата:</span>
+                      <p className="text-sm text-gray-900">{previewReservation.date}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-600">Время:</span>
+                      <p className="text-sm text-gray-900">{previewReservation.time}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-600">Количество гостей:</span>
+                      <p className="text-sm text-gray-900">
+                        {(() => {
+                          const guestCount = previewReservation.guestCount || previewReservation.guests || 0;
+                          return `${guestCount} ${guestCount === 1 ? 'гость' : guestCount < 5 ? 'гостя' : 'гостей'}`;
+                        })()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Особые пожелания */}
+                {previewReservation.specialRequests && (
+                  <div className="bg-blue-50 rounded-lg p-4">
+                    <h4 className="font-semibold text-gray-900 mb-2">💬 Особые пожелания</h4>
+                    <p className="text-sm text-gray-700">{previewReservation.specialRequests}</p>
+                  </div>
+                )}
+
+                {/* Временные метки */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 mb-3">⏰ Временные метки</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-sm font-medium text-gray-600">Создано:</span>
+                      <p className="text-sm text-gray-900">
+                        {new Date(previewReservation.createdAt).toLocaleString('ru-RU')}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-600">Обновлено:</span>
+                      <p className="text-sm text-gray-900">
+                        {new Date(previewReservation.updatedAt).toLocaleString('ru-RU')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end mt-6">
+                <button
+                  onClick={() => setPreviewReservation(null)}
+                  className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
+                >
+                  Закрыть
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Модал для бронирований */}
         {showReservationModal && (
           <div
@@ -5698,8 +5908,10 @@ export default function AdminDashboard() {
                   
                   // Форма для бронирований
                   const data = {
-                    userId: (formData.get('userId') as string) || editingReservation?.userId || 'default-user-id',
+                    userId: (formData.get('userId') as string) || editingReservation?.userId || '',
                     userName: (formData.get('userName') as string) || editingReservation?.userName || '',
+                    contactName: (formData.get('contactName') as string) || editingReservation?.contactName || '',
+                    contactPhone: (formData.get('contactPhone') as string) || editingReservation?.contactPhone || '',
                     restaurantId: (formData.get('restaurantId') as string) || '',
                     date: (formData.get('date') as string) || '',
                     time: (formData.get('time') as string) || '',
@@ -5721,12 +5933,19 @@ export default function AdminDashboard() {
                     value={editingReservation?.userId || ''}
                     onChange={(e) => {
                       const selectedUser = users.find(u => u._id === e.target.value)
-                      if (selectedUser && editingReservation) {
-                        setEditingReservation({
-                          ...editingReservation,
-                          userId: selectedUser._id,
-                          userName: selectedUser.fullName
-                        })
+                      if (selectedUser) {
+                        if (editingReservation) {
+                          setEditingReservation({
+                            ...editingReservation,
+                            userId: selectedUser._id,
+                            userName: selectedUser.fullName,
+                            contactName: selectedUser.fullName,
+                            contactPhone: selectedUser.phone
+                          })
+                        }
+                        setSelectedUserForReservation(selectedUser)
+                      } else {
+                        setSelectedUserForReservation(null)
                       }
                     }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -5759,6 +5978,34 @@ export default function AdminDashboard() {
                       </option>
                     ))}
                   </select>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Имя клиента
+                    </label>
+                    <input
+                      type="text"
+                      name="contactName"
+                      defaultValue={editingReservation?.contactName || selectedUserForReservation?.fullName || ''}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Телефон клиента
+                    </label>
+                    <input
+                      type="tel"
+                      name="contactPhone"
+                      defaultValue={editingReservation?.contactPhone || selectedUserForReservation?.phone || ''}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -6222,4 +6469,12 @@ export default function AdminDashboard() {
       </div>
     </div>
   );
+}
+
+export default function AdminDashboardWithAuth() {
+  return (
+    <AuthGuard>
+      <AdminDashboard />
+    </AuthGuard>
+  )
 }
