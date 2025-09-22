@@ -357,7 +357,7 @@ function AdminDashboard() {
       setRestaurants([
         {
           _id: '1',
-          name: 'БЫК Steakhouse',
+          name: 'Бык Steakhouse',
           brandId: '1',
           cityId: '1',
           rating: 4.8,
@@ -432,8 +432,8 @@ function AdminDashboard() {
           price: 2500,
           categoryId: '1',
           restaurantId: '1',
-          restaurantName: 'БЫК Steakhouse',
-          restaurantBrand: 'БЫК',
+          restaurantName: 'Бык Steakhouse',
+          restaurantBrand: 'Бык',
           imageURL: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400',
           isAvailable: true,
           preparationTime: 25,
@@ -480,8 +480,8 @@ function AdminDashboard() {
           price: 600,
           categoryId: '4',
           restaurantId: '1',
-          restaurantName: 'БЫК Steakhouse',
-          restaurantBrand: 'БЫК',
+          restaurantName: 'Бык Steakhouse',
+          restaurantBrand: 'Бык',
           imageURL: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400',
           isAvailable: true,
           preparationTime: 8,
@@ -544,8 +544,8 @@ function AdminDashboard() {
           price: 900,
           categoryId: '8',
           restaurantId: '1',
-          restaurantName: 'БЫК Steakhouse',
-          restaurantBrand: 'БЫК',
+          restaurantName: 'Бык Steakhouse',
+          restaurantBrand: 'Бык',
           imageURL: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=400',
           isAvailable: false,
           preparationTime: 5,
@@ -570,7 +570,7 @@ function AdminDashboard() {
       setNews([
         {
           _id: '1',
-          title: 'Новое меню в БЫК Steakhouse',
+          title: 'Новое меню в Бык Steakhouse',
           content: 'Представляем обновленное меню с новыми блюдами',
           author: 'Администратор',
           imageURL: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400',
@@ -632,7 +632,7 @@ function AdminDashboard() {
           userId: '1',
           userName: 'Иван Петров',
           restaurantId: '1',
-          restaurantName: 'БЫК Steakhouse',
+          restaurantName: 'Бык Steakhouse',
           items: [
             {
               dishId: '1',
@@ -889,7 +889,7 @@ function AdminDashboard() {
           userId: '1',
           userName: 'Иван Петров',
           restaurantId: '1',
-          restaurantName: 'БЫК Steakhouse',
+          restaurantName: 'Бык Steakhouse',
           date: '2024-01-25',
           time: '19:00',
           guests: 4,
@@ -1700,7 +1700,7 @@ function AdminDashboard() {
             <div>
               <h1 className={`text-xl font-bold transition-colors duration-300 ${
                 isDarkMode ? 'text-white' : 'text-gray-900'
-              }`}>БЫК Holding</h1>
+              }`}>Бык Холдинг</h1>
               <p className={`text-xs transition-colors duration-300 ${
                 isDarkMode ? 'text-gray-400' : 'text-gray-500'
               }`}>Админ Панель</p>
@@ -2358,7 +2358,7 @@ function AdminDashboard() {
                     className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 w-full sm:w-auto"
                   >
                     <option value="all">Все бренды</option>
-                    <option value="БЫК">БЫК</option>
+                    <option value="Бык">Бык</option>
                     <option value="Пиво">Пиво</option>
                     <option value="Моска">Моска</option>
                     <option value="Грузия">Грузия</option>
