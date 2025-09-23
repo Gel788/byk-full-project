@@ -17,11 +17,11 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Proxy to bulladmin.ru
+  // Proxy to real backend
   proxy.web(req, res, { 
-    target: 'https://bulladmin.ru',
+    target: 'http://localhost:5000',
     changeOrigin: true,
-    secure: true
+    secure: false
   });
 });
 

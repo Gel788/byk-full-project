@@ -269,10 +269,10 @@ function AdminDashboard() {
     try {
       // Получаем статистику из разных API эндпоинтов
       const [restaurantsRes, dishesRes, newsRes, reservationsRes] = await Promise.all([
-        fetch('http://localhost:5001/api/restaurants'),
-        fetch('http://localhost:5001/api/dishes'),
-        fetch('http://localhost:5001/api/news'),
-        fetch('http://localhost:5001/api/reservations')
+        fetch('https://bulladmin.ru/api/restaurants'),
+        fetch('https://bulladmin.ru/api/dishes'),
+        fetch('https://bulladmin.ru/api/news'),
+        fetch('https://bulladmin.ru/api/reservations')
       ])
       
       const [restaurants, dishes, news, reservations] = await Promise.all([
@@ -306,7 +306,7 @@ function AdminDashboard() {
 
   const fetchBrands = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/brands')
+      const response = await fetch('https://bulladmin.ru/api/brands')
       const data = await response.json()
       console.log('Загружены бренды:', data)
       setBrands(data)
@@ -317,7 +317,7 @@ function AdminDashboard() {
 
   const fetchCities = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/cities')
+      const response = await fetch('https://bulladmin.ru/api/cities')
       const data = await response.json()
       console.log('Загружены города:', data)
       setCities(data)
@@ -328,7 +328,7 @@ function AdminDashboard() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/categories')
+      const response = await fetch('https://bulladmin.ru/api/categories')
       const data = await response.json()
       console.log('Загружены категории:', data)
       setCategories(data)
@@ -339,14 +339,14 @@ function AdminDashboard() {
 
   const fetchRestaurants = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/admin/restaurants')
+      const response = await fetch('https://bulladmin.ru/api/admin/restaurants')
       const data = await response.json()
       console.log('Загружены рестораны:', data)
       if (data.success) {
         setRestaurants(data.data)
       } else {
         // Fallback на обычный API
-        const fallbackResponse = await fetch('http://localhost:5001/api/restaurants')
+        const fallbackResponse = await fetch('https://bulladmin.ru/api/restaurants')
         const fallbackData = await fallbackResponse.json()
         console.log('Загружены рестораны (fallback):', fallbackData)
         setRestaurants(fallbackData)
@@ -417,7 +417,7 @@ function AdminDashboard() {
 
   const fetchDishes = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/dishes')
+      const response = await fetch('https://bulladmin.ru/api/dishes')
       const data = await response.json()
       console.log('Загружены блюда:', data)
       setDishes(data)
@@ -559,7 +559,7 @@ function AdminDashboard() {
 
   const fetchNews = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/admin/news')
+      const response = await fetch('https://bulladmin.ru/api/admin/news')
       const data = await response.json()
       if (data.success) {
         setNews(data.data)
@@ -588,7 +588,7 @@ function AdminDashboard() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/admin/users')
+      const response = await fetch('https://bulladmin.ru/api/admin/users')
       const data = await response.json()
       if (data.success) {
         setUsers(data.data)
@@ -617,7 +617,7 @@ function AdminDashboard() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/admin/orders')
+      const response = await fetch('https://bulladmin.ru/api/admin/orders')
       const data = await response.json()
       if (data.success) {
         setOrders(data.data)
@@ -677,7 +677,7 @@ function AdminDashboard() {
   const fetchFiles = async () => {
     try {
       console.log('Загружаем файлы...')
-      const response = await fetch('http://localhost:5001/api/upload/files')
+      const response = await fetch('https://bulladmin.ru/api/upload/files')
       const data = await response.json()
       console.log('Получены файлы:', data)
       if (data.success) {
@@ -696,7 +696,7 @@ function AdminDashboard() {
       const formData = new FormData()
       formData.append('file', file)
       
-      const response = await fetch('http://localhost:5001/api/upload/upload', {
+      const response = await fetch('https://bulladmin.ru/api/upload/upload', {
         method: 'POST',
         body: formData
       })
@@ -726,7 +726,7 @@ function AdminDashboard() {
       const formData = new FormData()
       formData.append('file', file)
       
-      const response = await fetch('http://localhost:5001/api/upload/upload', {
+      const response = await fetch('https://bulladmin.ru/api/upload/upload', {
         method: 'POST',
         body: formData
       })
@@ -753,7 +753,7 @@ function AdminDashboard() {
       const formData = new FormData()
       formData.append('file', file)
       
-      const response = await fetch('http://localhost:5001/api/upload/upload', {
+      const response = await fetch('https://bulladmin.ru/api/upload/upload', {
         method: 'POST',
         body: formData
       })
@@ -780,7 +780,7 @@ function AdminDashboard() {
       const formData = new FormData()
       formData.append('file', file)
       
-      const response = await fetch('http://localhost:5001/api/upload/upload', {
+      const response = await fetch('https://bulladmin.ru/api/upload/upload', {
         method: 'POST',
         body: formData
       })
@@ -810,7 +810,7 @@ function AdminDashboard() {
         formData.append('files', file)
       })
       
-      const response = await fetch('http://localhost:5001/api/upload/upload-multiple', {
+      const response = await fetch('https://bulladmin.ru/api/upload/upload-multiple', {
         method: 'POST',
         body: formData
       })
@@ -835,7 +835,7 @@ function AdminDashboard() {
 
   const deleteFile = async (filename: string) => {
     try {
-      const response = await fetch(`http://localhost:5001/api/upload/files/${filename}`, {
+      const response = await fetch(`https://bulladmin.ru/api/upload/files/${filename}`, {
         method: 'DELETE'
       })
       
@@ -872,7 +872,7 @@ function AdminDashboard() {
 
   const fetchReservations = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/admin/reservations')
+      const response = await fetch('https://bulladmin.ru/api/admin/reservations')
       const data = await response.json()
       if (data.success) {
         setReservations(data.data)
@@ -952,7 +952,7 @@ function AdminDashboard() {
   const handleDeleteRestaurant = async (id: string) => {
     if (confirm('Удалить ресторан?')) {
       try {
-        const response = await fetch(`http://localhost:5001/api/restaurants/${id}`, {
+        const response = await fetch(`https://bulladmin.ru/api/restaurants/${id}`, {
           method: 'DELETE'
         })
         
@@ -992,8 +992,8 @@ function AdminDashboard() {
       // Определяем метод и URL в зависимости от того, редактируем ли существующий ресторан
       const isEditing = editingRestaurant && editingRestaurant._id
       const url = isEditing 
-        ? `http://localhost:5001/api/restaurants/${editingRestaurant._id}`
-        : 'http://localhost:5001/api/restaurants'
+        ? `https://bulladmin.ru/api/restaurants/${editingRestaurant._id}`
+        : 'https://bulladmin.ru/api/restaurants'
       const method = isEditing ? 'PUT' : 'POST'
       
       // API вызов для сохранения
@@ -1056,8 +1056,8 @@ function AdminDashboard() {
       // Определяем метод и URL в зависимости от того, редактируем ли существующее блюдо
       const isEditing = editingDish && editingDish._id
       const url = isEditing 
-        ? `http://localhost:5001/api/dishes/${editingDish._id}`
-        : 'http://localhost:5001/api/dishes'
+        ? `https://bulladmin.ru/api/dishes/${editingDish._id}`
+        : 'https://bulladmin.ru/api/dishes'
       const method = isEditing ? 'PUT' : 'POST'
       
       // API вызов для сохранения
@@ -1099,7 +1099,7 @@ function AdminDashboard() {
   const handleDeleteDish = async (id: string) => {
     if (confirm('Удалить блюдо?')) {
       try {
-        const response = await fetch(`http://localhost:5001/api/dishes/${id}`, {
+        const response = await fetch(`https://bulladmin.ru/api/dishes/${id}`, {
           method: 'DELETE'
         })
         
@@ -1133,14 +1133,14 @@ function AdminDashboard() {
       
       const newsWithFile = {
         ...newsData,
-        imageURL: imageFiles.length > 0 ? imageFiles[imageFiles.length - 1].url : (newsData.imageURL || 'http://localhost:5001/uploads/default.jpg'),
+        imageURL: imageFiles.length > 0 ? imageFiles[imageFiles.length - 1].url : (newsData.imageURL || 'https://bulladmin.ru/uploads/default.jpg'),
         videoURL: videoFiles.length > 0 ? videoFiles[videoFiles.length - 1].url : (newsData.videoURL || '')
       }
       
       console.log('Сохранение новости:', newsWithFile)
       
       // API вызов для сохранения
-      const response = await fetch('http://localhost:5001/api/news', {
+      const response = await fetch('https://bulladmin.ru/api/news', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newsWithFile)
@@ -1171,7 +1171,7 @@ function AdminDashboard() {
   const handleDeleteNews = async (id: string) => {
     if (confirm('Удалить новость?')) {
       try {
-        const response = await fetch(`http://localhost:5001/api/news/${id}`, {
+        const response = await fetch(`https://bulladmin.ru/api/news/${id}`, {
           method: 'DELETE'
         })
         
@@ -1193,8 +1193,8 @@ function AdminDashboard() {
     try {
       const isEditing = editingBrand?._id
       const url = isEditing 
-        ? `http://localhost:5001/api/brands/${editingBrand._id}`
-        : 'http://localhost:5001/api/brands'
+        ? `https://bulladmin.ru/api/brands/${editingBrand._id}`
+        : 'https://bulladmin.ru/api/brands'
       const method = isEditing ? 'PUT' : 'POST'
 
       const response = await fetch(url, {
@@ -1224,7 +1224,7 @@ function AdminDashboard() {
   const handleDeleteBrand = async (id: string) => {
     if (confirm('Удалить бренд?')) {
       try {
-        const response = await fetch(`http://localhost:5001/api/brands/${id}`, {
+        const response = await fetch(`https://bulladmin.ru/api/brands/${id}`, {
           method: 'DELETE'
         })
         
@@ -1246,8 +1246,8 @@ function AdminDashboard() {
     try {
       const isEditing = editingCity?._id
       const url = isEditing 
-        ? `http://localhost:5001/api/cities/${editingCity._id}`
-        : 'http://localhost:5001/api/cities'
+        ? `https://bulladmin.ru/api/cities/${editingCity._id}`
+        : 'https://bulladmin.ru/api/cities'
       const method = isEditing ? 'PUT' : 'POST'
 
       const response = await fetch(url, {
@@ -1277,7 +1277,7 @@ function AdminDashboard() {
   const handleDeleteCity = async (id: string) => {
     if (confirm('Удалить город?')) {
       try {
-        const response = await fetch(`http://localhost:5001/api/cities/${id}`, {
+        const response = await fetch(`https://bulladmin.ru/api/cities/${id}`, {
           method: 'DELETE'
         })
         
@@ -1299,8 +1299,8 @@ function AdminDashboard() {
     try {
       const isEditing = editingCategory?._id
       const url = isEditing 
-        ? `http://localhost:5001/api/categories/${editingCategory._id}`
-        : 'http://localhost:5001/api/categories'
+        ? `https://bulladmin.ru/api/categories/${editingCategory._id}`
+        : 'https://bulladmin.ru/api/categories'
       const method = isEditing ? 'PUT' : 'POST'
 
       const response = await fetch(url, {
@@ -1330,7 +1330,7 @@ function AdminDashboard() {
   const handleDeleteCategory = async (id: string) => {
     if (confirm('Удалить категорию?')) {
       try {
-        const response = await fetch(`http://localhost:5001/api/categories/${id}`, {
+        const response = await fetch(`https://bulladmin.ru/api/categories/${id}`, {
           method: 'DELETE'
         })
         
@@ -1354,8 +1354,8 @@ function AdminDashboard() {
       
       const isEditing = editingUser && editingUser._id
       const url = isEditing 
-        ? `http://localhost:5001/api/users/${editingUser._id}`
-        : 'http://localhost:5001/api/users'
+        ? `https://bulladmin.ru/api/users/${editingUser._id}`
+        : 'https://bulladmin.ru/api/users'
       
       console.log('URL:', url, 'Method:', isEditing ? 'PUT' : 'POST')
       
@@ -1394,7 +1394,7 @@ function AdminDashboard() {
   const handleDeleteUser = async (id: string) => {
     if (confirm('Удалить пользователя?')) {
       try {
-        const response = await fetch(`http://localhost:5001/api/users/${id}`, {
+        const response = await fetch(`https://bulladmin.ru/api/users/${id}`, {
           method: 'DELETE'
         })
         
@@ -1456,8 +1456,8 @@ function AdminDashboard() {
       
       const isEditing = editingOrder && editingOrder._id
       const url = isEditing 
-        ? `http://localhost:5001/api/orders/${editingOrder._id}`
-        : 'http://localhost:5001/api/orders'
+        ? `https://bulladmin.ru/api/orders/${editingOrder._id}`
+        : 'https://bulladmin.ru/api/orders'
       
       const response = await fetch(url, {
         method: isEditing ? 'PUT' : 'POST',
@@ -1492,7 +1492,7 @@ function AdminDashboard() {
     try {
       console.log('Обновление статуса заказа:', orderId, newStatus)
       
-      const response = await fetch(`http://localhost:5001/api/orders/${orderId}`, {
+      const response = await fetch(`https://bulladmin.ru/api/orders/${orderId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -1525,7 +1525,7 @@ function AdminDashboard() {
     try {
       console.log('Обновление статуса бронирования:', reservationId, newStatus)
       
-      const response = await fetch(`http://localhost:5001/api/reservations/${reservationId}`, {
+      const response = await fetch(`https://bulladmin.ru/api/reservations/${reservationId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -1557,7 +1557,7 @@ function AdminDashboard() {
   const handleDeleteOrder = async (id: string) => {
     if (confirm('Удалить заказ?')) {
       try {
-        const response = await fetch(`http://localhost:5001/api/orders/${id}`, {
+        const response = await fetch(`https://bulladmin.ru/api/orders/${id}`, {
           method: 'DELETE'
         })
         
@@ -1580,8 +1580,8 @@ function AdminDashboard() {
 
       const isEditing = editingReservation && editingReservation._id
       const url = isEditing
-        ? `http://localhost:5001/api/reservations/${editingReservation._id}`
-        : 'http://localhost:5001/api/reservations'
+        ? `https://bulladmin.ru/api/reservations/${editingReservation._id}`
+        : 'https://bulladmin.ru/api/reservations'
 
       const response = await fetch(url, {
         method: isEditing ? 'PUT' : 'POST',
@@ -1619,7 +1619,7 @@ function AdminDashboard() {
   const handleDeleteReservation = async (id: string) => {
     if (confirm('Удалить бронирование?')) {
       try {
-        const response = await fetch(`http://localhost:5001/api/reservations/${id}`, {
+        const response = await fetch(`https://bulladmin.ru/api/reservations/${id}`, {
           method: 'DELETE'
         })
         
@@ -2624,7 +2624,7 @@ function AdminDashboard() {
                                   onClick={async () => {
                                     if (confirm('Удалить новость?')) {
                                       try {
-                                        const response = await fetch(`http://localhost:5001/api/news/${article._id}`, {
+                                        const response = await fetch(`https://bulladmin.ru/api/news/${article._id}`, {
                                           method: 'DELETE'
                                         })
                                         
