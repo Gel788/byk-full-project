@@ -8,10 +8,17 @@ const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 const router = express_1.default.Router();
+console.log('=== UPLOAD ROUTE INIT ===');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('Current working directory:', process.cwd());
+console.log('Upload directory for production:', '/var/www/uploads/');
+console.log('Upload directory for development:', path_1.default.join(process.cwd(), 'uploads'));
 // Настройка multer для загрузки файлов
 const storage = multer_1.default.diskStorage({
     destination: (req, file, cb) => {
-        const uploadDir = process.env.NODE_ENV === 'production' ? './uploads/' : './uploads/';
+        const uploadDir = path_1.default.join(process.cwd(), 'uploads');
+        console.log('NODE_ENV:', process.env.NODE_ENV);
+        console.log('Upload directory:', uploadDir);
         if (!fs_1.default.existsSync(uploadDir)) {
             fs_1.default.mkdirSync(uploadDir, { recursive: true });
         }
@@ -31,7 +38,7 @@ const upload = (0, multer_1.default)({
 // Получить список файлов
 router.get('/files', async (req, res) => {
     try {
-        const uploadDir = process.env.NODE_ENV === 'production' ? '/var/www/uploads/' : './uploads/';
+        const uploadDir = path_1.default.join(process.cwd(), 'uploads');
         if (!fs_1.default.existsSync(uploadDir)) {
             return res.json({
                 success: true,
@@ -150,8 +157,12 @@ router.delete('/files/:filename', (req, res) => {
 router.get('/uploads/:filename', (req, res) => {
     try {
         const filename = req.params.filename;
-        const uploadDir = process.env.NODE_ENV === 'production' ? './uploads/' : './uploads/';
+        const uploadDir = path_1.default.join(process.cwd(), 'uploads');
         const filePath = path_1.default.join(uploadDir, filename);
+        process.stdout.write(`Requested filename: ${filename}\n`);
+        process.stdout.write(`Upload directory: ${uploadDir}\n`);
+        process.stdout.write(`Full file path: ${filePath}\n`);
+        process.stdout.write(`File exists: ${fs_1.default.existsSync(filePath)}\n`);
         // Проверяем, существует ли файл
         if (!fs_1.default.existsSync(filePath)) {
             return res.status(404).json({

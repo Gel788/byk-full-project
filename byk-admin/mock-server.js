@@ -1,7 +1,7 @@
 const http = require('http');
 const url = require('url');
 
-const PORT = 5001;
+const PORT = 3001;
 
 // Mock data
 const mockData = {

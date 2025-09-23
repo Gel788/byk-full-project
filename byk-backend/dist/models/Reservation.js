@@ -37,11 +37,16 @@ const mongoose_1 = __importStar(require("mongoose"));
 const ReservationSchema = new mongoose_1.Schema({
     userId: { type: String, required: true },
     restaurantId: { type: String, required: true },
+    restaurantName: { type: String },
     date: { type: Date, required: true },
     time: { type: String, required: true },
-    guests: { type: Number, required: true },
+    guestCount: { type: Number, required: true },
     status: { type: String, enum: ['pending', 'confirmed', 'cancelled'], default: 'pending' },
     specialRequests: { type: String },
+    reservationNumber: { type: String, unique: true, required: true },
+    contactName: { type: String },
+    contactPhone: { type: String },
+    tableNumber: { type: Number },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });

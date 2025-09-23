@@ -17,9 +17,9 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Proxy to real backend
+  // Proxy to mock server
   proxy.web(req, res, { 
-    target: 'http://localhost:5000',
+    target: 'http://localhost:3001',
     changeOrigin: true,
     secure: false
   });
@@ -27,5 +27,5 @@ const server = http.createServer((req, res) => {
 
 server.listen(5001, () => {
   console.log('Proxy server listening on port 5001');
-  console.log('Proxying requests to https://bulladmin.ru');
+  console.log('Proxying requests to http://localhost:3001 (mock server)');
 });

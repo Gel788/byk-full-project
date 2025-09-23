@@ -30,6 +30,14 @@ app.use((0, cors_1.default)({
     origin: [
         "http://localhost:3000",
         "http://localhost:3001",
+        "http://localhost:3002",
+        "http://localhost:3003",
+        "http://localhost:3004",
+        "http://localhost:3005",
+        "http://localhost:3006",
+        "http://localhost:3007",
+        "http://localhost:3008",
+        "http://localhost:3009",
         "https://bulladmin.ru",
         "http://45.12.75.59:3000",
         "http://45.12.75.59:3001"
@@ -43,7 +51,7 @@ app.use('/uploads', (req, res, next) => {
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     // Убираем Cross-Origin-Resource-Policy чтобы не блокировать изображения
     next();
-}, express_1.default.static('uploads'));
+}, express_1.default.static('/var/www/uploads'));
 // Middleware (helmet disabled for development)
 // app.use(helmet());
 app.use((0, morgan_1.default)("combined"));
@@ -86,7 +94,7 @@ app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send('Что-то пошло не так!');
 });
-const PORT = parseInt(process.env.PORT || '5001');
+const PORT = parseInt(process.env.PORT || '5000');
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
 });

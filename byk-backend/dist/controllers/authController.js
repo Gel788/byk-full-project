@@ -117,6 +117,7 @@ const register = async (req, res) => {
             password: hashedPassword,
             fullName,
             phone: phone || undefined,
+            phoneNumber: phone || undefined, // Для совместимости с мобильным приложением
             role: 'user',
             isActive: true
         });
@@ -133,7 +134,7 @@ const register = async (req, res) => {
             username: savedUser.username,
             email: savedUser.email,
             fullName: savedUser.fullName,
-            phone: savedUser.phone,
+            phone: savedUser.phone || savedUser.phoneNumber,
             role: savedUser.role,
             isActive: savedUser.isActive
         };
