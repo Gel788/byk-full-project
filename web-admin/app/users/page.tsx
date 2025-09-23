@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
+import { User } from '@/types'
 import { 
   MagnifyingGlassIcon,
   UserIcon,
@@ -50,7 +51,7 @@ export default function UsersPage() {
       setLoading(true)
       const response = await userApi.getUsers()
       if (response.success && response.data) {
-        setUsers(response.data)
+        setUsers(response.data as User[])
       } else {
         toast.error('Ошибка загрузки пользователей')
       }
