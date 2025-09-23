@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { User } from '@/types'
 import { 
   MagnifyingGlassIcon,
   UserIcon,
@@ -22,15 +21,18 @@ import UserForm from '@/components/UserForm'
 import { userApi } from '@/lib/api'
 
 interface User {
-  _id: string
-  username: string
+  id: string
+  name: string
   email: string
-  fullName: string
-  phone?: string
-  role: 'admin' | 'user'
+  phone: string
+  registrationDate: string
+  lastVisit: string
+  totalOrders: number
+  totalSpent: number
+  averageOrder: number
+  rating: number
   isActive: boolean
-  createdAt: string
-  updatedAt: string
+  avatar?: string
 }
 
 export default function UsersPage() {
@@ -109,9 +111,9 @@ export default function UsersPage() {
   }
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (user.phone && user.phone.includes(searchTerm))
     const matchesStatus = selectedStatus === 'all' || 
                          (selectedStatus === 'active' && user.isActive) ||
