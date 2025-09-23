@@ -22,6 +22,7 @@ import { userApi } from '@/lib/api'
 
 interface User {
   id: string
+  _id?: string  // Для совместимости с API
   name: string
   email: string
   phone: string
@@ -33,6 +34,7 @@ interface User {
   rating: number
   isActive: boolean
   avatar?: string
+  role?: 'admin' | 'user'  // Для совместимости с API
 }
 
 export default function UsersPage() {
@@ -82,7 +84,7 @@ export default function UsersPage() {
     if (!editingUser) return
     
     try {
-      const response = await userApi.updateUser(editingUser._id, userData)
+      const response = await userApi.updateUser(editingUser.id || editingUser._id || '', userData)
       if (response.success) {
         toast.success('Пользователь успешно обновлен')
         loadUsers()
